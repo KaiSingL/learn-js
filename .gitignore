@@ -6,9 +6,9 @@ dist/
 *.html
 !index.html
 
-# Hashed asset copies published next to courses.html (regenerated each build)
-icon-*.png
-site-*.webmanifest
+# Asset copies published next to courses.html by scripts/publish.js (regenerated each build)
+/icon.png
+/site.webmanifest
 
 # Archive
 archive/

@@ -174,7 +174,7 @@ export default function Overview({ progress }) {
             {
               icon: "book",
               title: "Read the real form",
-              body: "Ten lessons. Each one shows the code, the sugar it replaces and a full solution.",
+              body: LESSONS.length + " lessons. Each one shows the code, the sugar it replaces and a full solution.",
             },
             {
               icon: "code",
@@ -207,7 +207,7 @@ export default function Overview({ progress }) {
               <span className="rule" />
               Course map
             </div>
-            <h2 className="text-[22px] font-bold tracking-[-0.02em]">Ten parts, one chain</h2>
+            <h2 className="text-[22px] font-bold tracking-[-0.02em]">{LESSONS.length} parts, one chain</h2>
           </div>
           <button
             type="button"
