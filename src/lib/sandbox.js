@@ -299,7 +299,7 @@ export function runInIframe(options) {
   var RUN_ID = ${jsonForScript(runId)};
   var CODE = ${jsonForScript(code)};
   var send = function (type, payload) {
-    parent.postMessage({ __realjs: true, runId: RUN_ID, type: type, payload: payload }, "*");
+    parent.postMessage({ __learnjs: true, runId: RUN_ID, type: type, payload: payload }, "*");
   };
   var formatValue = ${formatValue.toString()};
   var formatArgs = function (args) {
@@ -380,7 +380,7 @@ export function runInIframe(options) {
   function onMessage(event) {
     if (event.source !== iframe.contentWindow) return;
     const data = event.data;
-    if (!data || data.__realjs !== true || data.runId !== runId) return;
+    if (!data || data.__learnjs !== true || data.runId !== runId) return;
     if (data.type === "done") {
       if (settled) return;
       settled = true;

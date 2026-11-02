@@ -40,9 +40,9 @@ export default function MobileNav({ open, onOpen, onClose, route, progress, onOp
         className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-ink px-4 lg:hidden"
         style={{ paddingTop: "var(--safe-top)" }}
       >
-        <a href="#/" className="flex items-center gap-2.5" aria-label="Real JS home">
+        <a href="#/" className="flex items-center gap-2.5" aria-label="Learn JS home">
           <img src="./icon.png" alt="" className="h-[26px] w-[26px] rounded-[6px]" />
-          <span className="text-[13px] font-bold tracking-[0.14em]">REAL.JS</span>
+          <span className="text-[13px] font-bold tracking-[0.14em]">LEARN.JS</span>
           <span className="mono rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">v2</span>
         </a>
         <button
@@ -73,7 +73,7 @@ export default function MobileNav({ open, onOpen, onClose, route, progress, onOp
             style={{ paddingTop: "var(--safe-top)" }}
           >
             <div className="flex h-14 items-center justify-between border-b border-line px-4">
-              <span className="text-[13px] font-bold tracking-[0.14em]">REAL.JS</span>
+              <span className="text-[13px] font-bold tracking-[0.14em]">LEARN.JS</span>
               <button type="button" onClick={onClose} className="btn h-9 w-9" aria-label="Close menu">
                 <Icon name="close" size={16} />
               </button>

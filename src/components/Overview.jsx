@@ -34,7 +34,7 @@ export default function Overview({ progress }) {
 
         <img
           src="./icon.png"
-          alt="Real JS icon"
+          alt="Learn JS icon"
           className="mb-5 h-14 w-14 rounded-xl lg:h-16 lg:w-16"
         />
 

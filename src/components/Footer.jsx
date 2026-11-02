@@ -13,7 +13,7 @@ export default function Footer() {
               R
             </span>
             <span className="mono text-[12px] font-bold tracking-[0.14em]">
-              REAL.JS — NO SUGAR, NO SHORTHAND
+              LEARN.JS — NO SUGAR, NO SHORTHAND
             </span>
           </div>
           <p className="mono mt-2 max-w-[52ch] text-[11px] leading-[1.6] text-muted">
@@ -69,7 +69,7 @@ export default function Footer() {
             steps
           </div>
           <div>Background #0E0E10 · Card #17171A · Accent #FFC52C</div>
-          <div className="mt-2 text-muted">© {new Date().getFullYear()} REAL.JS course spec</div>
+          <div className="mt-2 text-muted">© {new Date().getFullYear()} LEARN.JS course spec</div>
           <div className="mt-1">
             <span className="rounded border border-line px-1.5 py-0.5 text-[9px] uppercase tracking-wide">
               Ctrl K

@@ -39,11 +39,11 @@ export default function Sidebar({ route, progress, onOpenPalette }) {
       <a
         href="#/"
         className="flex h-16 shrink-0 items-center gap-3 border-b border-line px-6"
-        aria-label="Real JS home"
+        aria-label="Learn JS home"
       >
         <img src="./icon.png" alt="" className="h-[28px] w-[28px] rounded-[6px]" />
         <span>
-          <span className="block text-[14px] font-bold leading-none tracking-[0.14em]">REAL.JS</span>
+          <span className="block text-[14px] font-bold leading-none tracking-[0.14em]">LEARN.JS</span>
           <span className="mono mt-[3px] block text-[10px] tracking-[0.16em] text-muted">
             NO SUGAR · NO SHORTHAND
           </span>

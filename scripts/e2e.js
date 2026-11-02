@@ -48,7 +48,7 @@ async function goto(hash) {
 try {
   console.log("\nRouting");
   await goto("");
-  check((await page.title()).indexOf("Real JS") !== -1, "overview title is set", await page.title());
+  check((await page.title()).indexOf("Learn JS") !== -1, "overview title is set", await page.title());
   check((await page.locator("h1").first().innerText()).indexOf("JavaScript") !== -1, "overview h1 renders");
   const iconHref = await page.locator('link[rel="icon"]').first().getAttribute("href");
   check(iconHref.indexOf(".png") !== -1, "favicon points to a png icon", iconHref);

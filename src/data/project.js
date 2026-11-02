@@ -357,9 +357,9 @@ assert("unknown event", bus.emit("missing"), false);
 
 var note = el("p", "note");
 text(note, "the DOM helper works too");
-attr(note, "data-source", "real-js");
+attr(note, "data-source", "learn-js");
 assert("text set", text(note), "the DOM helper works too");
-assert("attr set", attr(note, "data-source"), "real-js");
+assert("attr set", attr(note, "data-source"), "learn-js");
 assert("node type", note.nodeName, "P");
 
 console.log("harness complete");`,

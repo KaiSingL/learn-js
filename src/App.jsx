@@ -15,13 +15,13 @@ import { navigate, routeKey, useRoute } from "./lib/router.js";
 import { useProgress } from "./lib/useProgress.js";
 
 const TITLES = {
-  "/": "Real JS — JavaScript Without the Magic",
-  "/rules": "Rules · Real JS",
-  "/lessons": "Lessons · Real JS",
-  "/cheatsheet": "Cheatsheet · Real JS",
-  "/project": "Final project · Real JS",
-  "/lab": "De-sugar Lab · Real JS",
-  "/playground": "Playground · Real JS",
+  "/": "Learn JS — JavaScript Without the Magic",
+  "/rules": "Rules · Learn JS",
+  "/lessons": "Lessons · Learn JS",
+  "/cheatsheet": "Cheatsheet · Learn JS",
+  "/project": "Final project · Learn JS",
+  "/lab": "De-sugar Lab · Learn JS",
+  "/playground": "Playground · Learn JS",
 };
 
 function isTyping(target) {
@@ -56,7 +56,7 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "auto" });
       if (route.path === "/lesson" && route.param) {
         const lesson = getLesson(route.param);
-        document.title = lesson ? lesson.title + " · Real JS" : "Lesson · Real JS";
+        document.title = lesson ? lesson.title + " · Learn JS" : "Lesson · Learn JS";
       } else {
         document.title = TITLES[route.path] || TITLES["/"];
       }
