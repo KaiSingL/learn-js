@@ -2185,6 +2185,93 @@ p.then(function (v) { console.log("got " + v); });`,
       },
     ],
   },
+  {
+    id: 14,
+    title: "Shallow Copy & Deep Copy — Same Shell vs New Shell",
+    goal: "See that = shares the shell, shallow copy copies only the shell, and deep copy clones every branch.",
+    tier: 0,
+    sugarReplaces: "let b = a, {...a}, structuredClone(a)",
+    longDesc:
+      "Assigning an object does not copy it — both variables point to the same shell. A shallow copy builds a new shell but copies the references inside, so nested arrays and objects are still shared. A deep copy builds a new shell and recursively clones every nested plain object and array, so nothing is shared. The shell analogy makes it permanent: = is two names for one shell, {...a} is a new shell with the same branches inside, and structuredClone is a new shell with brand-new branches.",
+    realCode: `var original = { name: "Ada", tags: ["dev", "js"] };\n\n// = shares the shell — both names point to the same object\nvar alias = original;\nalias.name = "Grace";\nconsole.log(original.name); // "Grace" — same shell, changed through either name\n\n// Shallow copy — new shell, same branches inside\nvar shallow = new Object();\nvar keys = Object.keys(original);\nfor (var i = 0; i < keys.length; i = i + 1) {\n  var key = keys[i];\n  shallow[key] = original[key];\n}\nshallow.name = "Alan";\nconsole.log(original.name); // "Grace" — top-level copy, original untouched\nconsole.log(shallow.tags === original.tags); // true — nested array still shared\nshallow.tags[shallow.tags.length] = "copy";\nconsole.log(original.tags); // ["dev", "js", "copy"] — shared branch mutated\n\n// Deep copy — new shell, new branches, fully disconnected\nfunction deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var j = 0; j < value.length; j = j + 1) {\n      copy[copy.length] = deepCopy(value[j]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var objKeys = Object.keys(value);\n  for (var k = 0; k < objKeys.length; k = k + 1) {\n    var objKey = objKeys[k];\n    copy[objKey] = deepCopy(value[objKey]);\n  }\n  return copy;\n}\n\nvar deep = deepCopy(original);\ndeep.name = "Deep";\ndeep.tags[deep.tags.length] = "deep";\nconsole.log(original.name); // "Grace" — disconnected\nconsole.log(original.tags); // ["dev", "js", "copy"] — deep copy did not touch original`,
+    extraReal: `function deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var i = 0; i < value.length; i = i + 1) {\n      copy[copy.length] = deepCopy(value[i]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var keys = Object.keys(value);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = deepCopy(value[keys[i]]);\n  }\n  return copy;\n}\n\nvar nested = { a: 1, b: { c: 2, d: [3, 4] } };\nvar cloned = deepCopy(nested);\ncloned.b.c = 99;\ncloned.b.d[cloned.b.d.length] = 5;\nconsole.log(nested.b.c); // 2 — untouched\nconsole.log(nested.b.d); // [3, 4] — untouched`,
+    starter: `// Exercise: write deepCopy(obj)\n// It should clone plain objects and arrays recursively.\n// Primitives are returned as-is.\n\nfunction deepCopy(value) {\n  // your recursive copy here\n  return value;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // should still be 2`,
+    exercise:
+      "Write deepCopy(value) that returns a fully disconnected copy of plain objects and arrays. Primitives are returned as-is. Use only var, function, Object.keys, Array.isArray, and for loops. Do not use {...} or structuredClone.",
+    breakIt: `// The modern version — uses spread and structuredClone.\n// Predict: what does original.tags print at the end?\n\nvar original = { name: "Ada", tags: ["dev", "js"] };\n\n// = shares the shell\nvar alias = original;\nalias.name = "Grace";\n\n// Shallow copy — new shell, shared branches\nvar shallow = { ...original };\nshallow.name = "Alan";\nshallow.tags[shallow.tags.length] = "spread";\n\n// Deep copy — new shell, new branches\nvar deep = structuredClone(original);\ndeep.name = "Deep";\ndeep.tags[deep.tags.length] = "clone";\n\nconsole.log(original.name);\nconsole.log(shallow.name);\nconsole.log(deep.name);\nconsole.log(original.tags);`,
+    predict: {
+      q: "What does original.tags print at the end of breakIt?",
+      options: [
+        "[\"dev\", \"js\", \"spread\"]",
+        "[\"dev\", \"js\"]",
+        "[\"dev\", \"js\", \"clone\"]",
+        "[\"dev\", \"js\", \"spread\", \"clone\"]",
+      ],
+      answer: 0,
+      why: "shallow.tags and original.tags are the same array, so shallow.tags.push(\"spread\") mutates original too. deep.tags is a separate array, so deep.tags.push(\"clone\") does not affect original.",
+    },
+    translate: {
+      task: "Rewrite the breakIt snippet using only var, Object.keys, for loops, and recursion. Replace { ... original } with a manual shallow copy and structuredClone with a recursive deep copy. Keep the = alias to show shared shells.",
+      hint: "Build shallow with var shallow = new Object(); and a for loop over Object.keys(original). Build deep with a function that calls itself for nested objects and arrays.",
+    },
+    solutions: [
+      {
+        title: "Manual shallow copy",
+        note: "Object.keys lists only own enumerable keys, so the loop copies the top-level shell without pulling in prototype properties.",
+        code: `function shallowCopy(obj) {\n  var copy = new Object();\n  var keys = Object.keys(obj);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = obj[keys[i]];\n  }\n  return copy;\n}\n\nvar original = { name: "Ada", tags: ["dev", "js"] };\nvar shallow = shallowCopy(original);\nconsole.log(shallow.tags === original.tags); // true — shared branch`,
+      },
+      {
+        title: "Manual deep copy",
+        note: "The function calls itself for nested objects and arrays, so every branch is brand-new and nothing is shared.",
+        code: `function deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var i = 0; i < value.length; i = i + 1) {\n      copy[copy.length] = deepCopy(value[i]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var keys = Object.keys(value);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = deepCopy(value[keys[i]]);\n  }\n  return copy;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // 2 — fully disconnected`,
+      },
+    ],
+    checklist: [
+      "= with an object shares the shell — two names, one object",
+      "Shallow copy copies the top-level shell only; nested objects stay shared",
+      "Deep copy recurses into every nested object and array",
+      "Object.keys lists own enumerable keys for manual copying",
+      "structuredClone is the built-in deep copy — know what it replaces",
+    ],
+    realTalk:
+      "The shell analogy never fails. = is two labels on one shell. {...a} paints a new shell but stuffs the same branches inside. structuredClone builds a new shell and new branches. Once you see the shell, you stop confusing \"copy the variable\" with \"copy the thing.\".",
+    killsQs: [],
+    quiz: [
+      {
+        q: "What does let b = a do when a is an object?",
+        options: [
+          "Copies the object completely",
+          "Makes b point to the same object",
+          "Copies only the top-level properties",
+          "Throws an error",
+        ],
+        answer: 1,
+        why: "Assignment copies the reference, not the object. Both names point to the same shell.",
+      },
+      {
+        q: "What does { ... a } copy?",
+        options: [
+          "The object and everything inside it",
+          "Only the top-level shell; nested objects stay shared",
+          "Nothing — it is a syntax error",
+          "Only primitive properties",
+        ],
+        answer: 1,
+        why: "Spread creates a new object and copies own enumerable properties. Nested objects are copied by reference, so they are still shared.",
+      },
+      {
+        q: "What does structuredClone(a) do that { ... a } does not?",
+        options: [
+          "It also copies nested objects and arrays recursively",
+          "It is faster",
+          "It copies prototype methods",
+          "It copies only primitives",
+        ],
+        answer: 0,
+        why: "structuredClone recurses into every nested plain object and array, producing a fully disconnected copy.",
+      },
+    ],
+  },
 ];
 
 export const LESSON_MAP = (function () {

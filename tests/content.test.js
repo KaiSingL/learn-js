@@ -18,12 +18,12 @@ function expectClean(label, code) {
 }
 
 describe("curriculum shape", function () {
-  test("has thirteen lessons numbered 1 to 13", function () {
-    expect(LESSONS.length).toBe(13);
+  test("has fourteen lessons numbered 1 to 14", function () {
+    expect(LESSONS.length).toBe(14);
     const ids = LESSONS.map(function (lesson) {
       return lesson.id;
     });
-    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
   });
 
   test("every lesson is complete", function () {
