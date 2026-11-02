@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.html
+!index.html
+!courses.html
+
+# Hashed asset copies published next to courses.html (regenerated each build)
+icon-*.png
+site-*.webmanifest
+
+# Archive
+archive/
+
+# Screenshots / dev artifacts
+screenshots/
+scripts/debug*.js
+
+# Environment / IDE
+.env
+*.local
+.vscode/
+.idea/
+.DS_Store
