@@ -1,14 +1,22 @@
-// The ten lessons. Code fields are plain strings so they can be linted,
+// The twelve lessons. Code fields are plain strings so they can be linted,
 // highlighted, copied and loaded into the playground without transformation.
+//
+// Each lesson follows the "break" pedagogy:
+//   realCode     — Write Real: Tier 0/1 only, linter-clean
+//   breakIt      — Break It: the sugared canyoustill.com version that hides a default
+//   predict      — multiple choice: what does the sugared version print?
+//   translate    — Translate: de-sugar breakIt back to Tier 0/1 code
+//   killsQs      — canyoustill.com question IDs this lesson protects against
 
 export const LESSONS = [
   {
     id: 1,
-    title: "Variables, Types & Truthiness",
-    goal: "Understand primitives vs objects, typeof, and explicit undefined checks.",
+    title: "Variables, Types & Reference vs Value",
+    goal: "Understand primitives vs objects, reference equality, typeof, and explicit undefined checks.",
+    tier: 0,
     sugarReplaces: "let / const, ??, truthy coercion",
     longDesc:
-      "Before let and const there was only var. Primitives are compared by value; objects are compared by reference. typeof is the only safe runtime introspection, and it has one famous bug: typeof null is \"object\". Always check === undefined explicitly instead of leaning on falsiness, because 0, \"\" and false are real values too.",
+      "Before let and const there was only var. Primitives are compared by value; objects are compared by reference. Two objects are never === even when they look identical. typeof is the only safe runtime introspection, and it has one famous bug: typeof null is \"object\". Always check === undefined explicitly instead of leaning on falsiness, because 0, \"\" and false are real values too.",
     realCode: `var a = 5;
 var b = new String("hello");
 var c = new Array();
@@ -26,7 +34,16 @@ if (e === null) {
   console.log("null is intentional empty");
 }
 var isString = typeof b === "string" || b instanceof String;
-console.log(a, b, c.length, isString);`,
+console.log(a, b, c.length, isString);
+
+// Reference vs value: two objects with the same contents are not equal.
+var obj1 = { x: 1 };
+var obj2 = { x: 1 };
+console.log(obj1 === obj2);   // false — different objects, different references
+console.log(obj1 === obj1);   // true — same reference
+var same = obj1;
+console.log(same === obj1);   // true — same reference, assigned by reference`,
+
     extraReal: `function check(value) {
   if (value === undefined) { return "undefined"; }
   if (value === null) { return "null"; }
@@ -38,6 +55,7 @@ console.log(check(undefined));
 console.log(check(null));
 console.log(check(NaN));
 console.log(check(42));`,
+
     starter: `// Exercise: isFalsy(value)
 // Return true only for false, 0, "", null, undefined and NaN.
 // Only === comparisons and value !== value are allowed.
@@ -51,8 +69,34 @@ var samples = [false, 0, "", null, undefined, NaN, true, 1, "a"];
 for (var i = 0; i < samples.length; i = i + 1) {
   console.log(String(samples[i]) + " -> " + isFalsy(samples[i]));
 }`,
+
     exercise:
       "Write isFalsy(v) that returns true only for false, 0, \"\", null, undefined and NaN. Use === and the self-check v !== v. Do not call Boolean().",
+    breakIt: `// The modern version — uses let, const and a template literal.
+// Predict: what does this print?
+
+let user = { name: "Lydia", age: 21 };
+const label = \`User: \${user.name} is \${user.age}\`;
+console.log(label);
+
+var copy = user;
+copy.name = "Changed";
+console.log(user.name);`,
+    predict: {
+      q: "What does the breakIt code print, and why does user.name change?",
+      options: [
+        "User: Lydia is 21, then Lydia",
+        "User: Lydia is 21, then Changed",
+        "User: undefined is undefined, then Changed",
+        "A syntax error because let is not allowed",
+      ],
+      answer: 1,
+      why: "The template prints User: Lydia is 21. Then copy and user refer to the same object, so changing copy.name changes user.name too — objects are compared and assigned by reference.",
+    },
+    translate: {
+      task: "Rewrite the breakIt snippet using only var, function, string concatenation and explicit comparisons. Replace the template literal and let/const.",
+      hint: "Use var user = { name: \"Lydia\", age: 21 }; and var label = \"User: \" + user.name + \" is \" + user.age;",
+    },
     solutions: [
       {
         title: "The six explicit checks",
@@ -95,10 +139,11 @@ console.log(describe("hi"));`,
       "Check === undefined instead of relying on truthiness",
       "Check === null separately from undefined",
       "Use value !== value to detect NaN",
-      "Remember objects compare by reference",
+      "Remember objects compare by reference, not by contents",
     ],
     realTalk:
-      "typeof null returning \"object\" is a bug from 1995 that cannot be fixed without breaking the web. That is why every real codebase checks null explicitly.",
+      "typeof null returning \"object\" is a bug from 1995 that cannot be fixed without breaking the web. That is why every real codebase checks null explicitly. And two objects with identical contents are never === — only the same reference is equal.",
+    killsQs: ["Q6", "Q46", "Q51"],
     quiz: [
       {
         q: "What does typeof null return?",
@@ -113,20 +158,180 @@ console.log(describe("hi"));`,
         why: "NaN is the only value not equal to itself, so value !== value is the reliable test.",
       },
       {
-        q: "What is new String(\"hi\")?",
-        options: ["A primitive string", "An object wrapper", "null", "A syntax error"],
+        q: "What is { x: 1 } === { x: 1 }?",
+        options: ["true", "false", "undefined", "A syntax error"],
         answer: 1,
-        why: "The new operator always produces an object. typeof reports \"object\"; use String(\"hi\") for a primitive.",
+        why: "Two separately created objects are different references, so they are never strictly equal.",
       },
     ],
   },
   {
     id: 2,
-    title: "Functions Are Objects",
-    goal: "A function is a callable object with properties, arguments and return semantics.",
-    sugarReplaces: "arrow functions, rest params, default params",
+    title: "Scope, Hoisting & TDZ",
+    goal: "See var hoisting, function scope, the temporal dead zone, and why let throws where var gives undefined.",
+    tier: 1,
+    sugarReplaces: "let block scope, arrow closure sugar",
     longDesc:
-      "A function is an object with a special internal method that lets you call it. That is why you can attach properties to it, pass it around and store it. Inside every real function there is an arguments object containing the actual values passed. Function declarations hoist; function expressions only hoist their variable, as undefined.",
+      "var is function-scoped. The binding is created when the function starts, so reading it before the assignment gives undefined, not a ReferenceError. Only functions create a new scope. let and const are block-scoped, and they live in the temporal dead zone (TDZ) from the start of the block until their declaration runs — reading them early throws a ReferenceError. That is the difference Q1 tests.",
+    realCode: `var counter = function () {
+  var count = 0;
+  return function () {
+    count = count + 1;
+    return count;
+  };
+};
+
+var inc = counter();
+console.log(inc());
+console.log(inc());
+
+function buildFunctions() {
+  var funcs = [];
+  for (var i = 0; i < 3; i = i + 1) {
+    funcs[i] = (function (j) {
+      return function () { return j; };
+    })(i);
+  }
+  return funcs;
+}
+
+var fns = buildFunctions();
+console.log(fns[0](), fns[1](), fns[2]());`,
+
+    extraReal: `var early;
+console.log(early); // undefined — hoisted, not assigned
+
+var later = 99;
+console.log(later);
+
+// let version — uncomment to see the TDZ throw:
+// console.log(earlyLet); // ReferenceError: Cannot access 'earlyLet' before initialization
+// let earlyLet = 99;`,
+
+    starter: `// Exercise: fix the loop so each function keeps its own number.
+// Right now all three print 3.
+
+function build() {
+  var funcs = [];
+  for (var i = 0; i < 3; i = i + 1) {
+    funcs[i] = function () {
+      return i;
+    };
+  }
+  return funcs;
+}
+
+var fns = build();
+console.log(fns[0]());
+console.log(fns[1]());
+console.log(fns[2]());`,
+
+    exercise:
+      "Fix the classic for(var i) closure bug without let: create three functions that each return their own number. Capture the value with an IIFE.",
+    breakIt: `// The modern version — uses let in the loop.
+// Predict: what does this print?
+
+function build() {
+  var funcs = [];
+  for (let i = 0; i < 3; i = i + 1) {
+    funcs[i] = function () { return i; };
+  }
+  return funcs;
+}
+
+var fns = build();
+console.log(fns[0]());
+console.log(fns[1]());
+console.log(fns[2]());`,
+
+    predict: {
+      q: "What does the breakIt (let) version print?",
+      options: ["0 1 2", "3 3 3", "undefined undefined undefined", "A ReferenceError"],
+      answer: 0,
+      why: "let creates a fresh binding per loop iteration, so each closure captures its own i: 0, 1, 2.",
+    },
+    translate: {
+      task: "Rewrite the breakIt loop using only var and an IIFE so each function returns its own number (0, 1, 2).",
+      hint: "Wrap each iteration in (function (j) { ... })(i); so j captures the current i.",
+    },
+    solutions: [
+      {
+        title: "The IIFE capture",
+        note: "Each call to the IIFE creates a fresh j binding. The returned function closes over that binding, not over i.",
+        code: `function build() {
+  var funcs = [];
+  for (var i = 0; i < 3; i = i + 1) {
+    funcs[i] = (function (j) {
+      return function () { return j; };
+    })(i);
+  }
+  return funcs;
+}
+
+var fns = build();
+console.log(fns[0]());
+console.log(fns[1]());
+console.log(fns[2]());`,
+      },
+      {
+        title: "A private counter with get and inc",
+        note: "count is not a property of the returned object. The only way in is through the functions that closed over it.",
+        code: `function makeCounter() {
+  var count = 0;
+  return {
+    inc: function () {
+      count = count + 1;
+      return count;
+    },
+    get: function () { return count; }
+  };
+}
+
+var a = makeCounter();
+var b = makeCounter();
+console.log(a.inc(), a.inc(), b.inc(), a.get());
+console.log(typeof a.count);`,
+      },
+    ],
+    checklist: [
+      "Remember var hoists as undefined",
+      "Only functions create a new scope",
+      "Use an IIFE to capture a loop value",
+      "let throws in the temporal dead zone before its line",
+      "Closures keep live bindings, not copies",
+    ],
+    realTalk:
+      "Hoisting is not the engine moving your code around. It is the environment record creating every var binding at function entry, before the first line runs. let does not hoist in the same way — it stays in the TDZ until its line executes.",
+    killsQs: ["Q1"],
+    quiz: [
+      {
+        q: "What is a hoisted var before its assignment?",
+        options: ["null", "undefined", "A ReferenceError", "The previous value"],
+        answer: 1,
+        why: "The binding exists from function entry but has not been assigned, so it reads as undefined.",
+      },
+      {
+        q: "What happens when you read let before its line?",
+        options: ["undefined", "null", "A ReferenceError (TDZ)", "The previous value"],
+        answer: 2,
+        why: "let lives in the temporal dead zone from the start of its block until the declaration runs.",
+      },
+      {
+        q: "Which construct creates a new variable scope with var?",
+        options: ["An if block", "A for loop", "A function call", "A return statement"],
+        answer: 2,
+        why: "With var, only a function creates a scope. Blocks do not.",
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: "Functions Are Objects + arguments",
+    goal: "A function is a callable object with properties, arguments and return semantics.",
+    tier: 0,
+    sugarReplaces: "arrow functions, rest parameters, default parameters",
+    longDesc:
+      "A function is an object with a special internal method that lets you call it. That is why you can attach properties to it, pass it around and store it. Inside every real function there is an arguments object containing the actual values passed. Function declarations hoist; function expressions only hoist their variable, as undefined. Arrow functions have none of this — no own this, no arguments, no prototype.",
     realCode: `function add(a, b) {
   return a + b;
 }
@@ -149,6 +354,7 @@ console.log(add.description);
 console.log(typeof add);
 console.log(showArgs("a", "b", "c"));
 console.log(multiply(3, 4));`,
+
     extraReal: `var Counter = function () {
   var fn = function () {
     fn.count = fn.count + 1;
@@ -162,6 +368,7 @@ var next = Counter();
 console.log(next());
 console.log(next());
 console.log(next.count);`,
+
     starter: `// Exercise: makeCounter
 // Return a function that increments its own count property on every call.
 
@@ -178,8 +385,28 @@ var c = makeCounter();
 console.log(c());
 console.log(c());
 console.log(c.count);`,
+
     exercise:
       "Create makeCounter() that returns a function storing its call count on itself as fn.count and incrementing it each call. Use a function declaration only.",
+    breakIt: `// The modern version — uses an arrow function.
+// Predict: what happens when we try to read counter.description?
+
+var counter = () => {
+  counter.count = (counter.count || 0) + 1;
+  return counter.count;
+};
+console.log(counter());
+console.log(counter.description);`,
+    predict: {
+      q: "What does the breakIt arrow version print for counter.description?",
+      options: ["undefined", "1", "A TypeError", "0"],
+      answer: 0,
+      why: "Arrow functions are still objects, so you can set properties on them. counter.description is undefined because it was never set.",
+    },
+    translate: {
+      task: "Rewrite the breakIt snippet using a function expression instead of an arrow, then attach a description property.",
+      hint: "var counter = function () { ... }; counter.description = \"counts calls\";",
+    },
     solutions: [
       {
         title: "Count stored on the function object",
@@ -229,6 +456,7 @@ console.log(toArray("a", "b").length);`,
     ],
     realTalk:
       "Arrow functions do not have their own this, arguments or prototype. A real function has all three. That is the difference the syntax was hiding.",
+    killsQs: [],
     quiz: [
       {
         q: "What does typeof function () {} return?",
@@ -251,12 +479,173 @@ console.log(toArray("a", "b").length);`,
     ],
   },
   {
-    id: 3,
-    title: "Objects & Prototypes — The Real Class",
-    goal: "Replace the class keyword with a constructor function and prototype methods.",
+    id: 4,
+    title: "this, call, apply, bind",
+    goal: "See that this is decided by the call site, then control it explicitly.",
+    tier: 0,
+    sugarReplaces: "arrow lexical this, hidden receiver tricks",
+    longDesc:
+      "this is not lexical in a real function. It is determined when the function is called: a method call uses the object before the dot, a plain call uses undefined in strict mode, and call, apply and bind let you set it yourself. call takes arguments one by one, apply takes an array-like, and bind returns a new function with this locked in.",
+    realCode: `function greet(greeting) {
+  return greeting + " " + this.name;
+}
+
+var person = { name: "Alex" };
+
+var r1 = greet.call(person, "Hello");
+var r2 = greet.apply(person, ["Hi"]);
+var bound = greet.bind(person);
+var r3 = bound("Hey");
+
+console.log(r1);
+console.log(r2);
+console.log(r3);
+
+function Counter() {
+  this.count = 0;
+  var self = this;
+  this.inc = function () {
+    self.count = self.count + 1;
+  };
+}
+var counter = new Counter();
+counter.inc();
+counter.inc();
+console.log(counter.count);`,
+
+    extraReal: `Function.prototype.myBind = function (ctx) {
+  var fn = this;
+  var preset = Array.prototype.slice.call(arguments, 1);
+  return function () {
+    var args = preset.concat(Array.prototype.slice.call(arguments));
+    return fn.apply(ctx, args);
+  };
+};
+
+function greet(greeting) {
+  return greeting + " " + this.name;
+}
+var bound = greet.myBind({ name: "Alex" }, "Hello");
+console.log(bound("!"));`,
+
+    starter: `// Exercise: myBind(fn, ctx, ...presetArgs)
+// Return a function that calls fn with ctx as this.
+// Use apply and the arguments object, never call the built-in bind.
+
+function myBind(fn, ctx) {
+  // your code here
+  return fn;
+}
+
+function greet(greeting, punct) {
+  return greeting + " " + this.name + punct;
+}
+
+var helloKai = myBind(greet, { name: "Kai" }, "Hello");
+console.log(helloKai("!"));
+console.log(helloKai("?"));`,
+
+    exercise:
+      "Implement bind manually as myBind(fn, ctx, ...preset). Return a function that calls fn.apply(ctx, args). Then borrow a method from one object to another with call.",
+    breakIt: `// The modern version — uses an arrow method and lexical this.
+// Predict: what does obj.say() print?
+
+var obj = {
+  name: "Nova",
+  say: () => {
+    return "Hi, " + this.name;
+  }
+};
+console.log(obj.say());`,
+    predict: {
+      q: "What does the breakIt arrow method print?",
+      options: ["Hi, Nova", "Hi, undefined", "Hi, [object Window]", "A TypeError"],
+      answer: 1,
+      why: "Arrow functions capture this lexically. At module level this is undefined (or the global in sloppy mode), so this.name is undefined.",
+    },
+    translate: {
+      task: "Rewrite the breakIt snippet using a regular function method so say uses obj as this via the call site.",
+      hint: "say: function () { return \"Hi, \" + this.name; }",
+    },
+    solutions: [
+      {
+        title: "myBind with preset arguments",
+        note: "arguments is array-like, so Array.prototype.slice.call is the real conversion. concat merges preset and call-time values.",
+        code: `function myBind(fn, ctx) {
+  var preset = Array.prototype.slice.call(arguments, 2);
+  return function () {
+    var args = preset.concat(Array.prototype.slice.call(arguments));
+    return fn.apply(ctx, args);
+  };
+}
+
+function greet(greeting, punct) {
+  return greeting + " " + this.name + punct;
+}
+
+var helloKai = myBind(greet, { name: "Kai" }, "Hello");
+console.log(helloKai("!"));
+console.log(helloKai("?"));
+console.log(typeof helloKai);`,
+      },
+      {
+        title: "Borrowing a method with call",
+        note: "speaker.speak is just a function. call lets a different object supply this without copying the method.",
+        code: `var speaker = {
+  name: "Nova",
+  speak: function (line) {
+    return this.name + ": " + line;
+  }
+};
+
+var quiet = { name: "Echo" };
+console.log(speaker.speak.call(quiet, "hello"));
+console.log(speaker.speak.apply(quiet, ["again"]));
+
+var detached = speaker.speak;
+console.log(typeof detached);
+console.log(detached.call({ name: "Borrowed" }, "works"));`,
+      },
+    ],
+    checklist: [
+      "this is set by how the function is called",
+      "call passes arguments one by one",
+      "apply passes an array-like second argument",
+      "bind returns a new function and does not call it",
+      "Store var self = this before a callback",
+    ],
+    realTalk:
+      "If a function is extracted from an object and called on its own, this is not the object. That is not a bug; it is the call site doing exactly what it was told.",
+    killsQs: ["Q33"],
+    quiz: [
+      {
+        q: "What decides this inside a normal function?",
+        options: ["Where the function was written", "How the function is called", "The function name", "The return value"],
+        answer: 1,
+        why: "A real function receives this from its call site. Only arrow functions capture this lexically.",
+      },
+      {
+        q: "What is the second argument of apply?",
+        options: ["A single value", "An array-like of arguments", "The this object", "A callback"],
+        answer: 1,
+        why: "apply(thisArg, argsArray) spreads the array-like into the parameter list.",
+      },
+      {
+        q: "What does bind return?",
+        options: ["The result of calling the function", "A new function with this fixed", "The this object", "undefined"],
+        answer: 1,
+        why: "bind returns a new function. The call happens later, when you invoke that new function.",
+      },
+    ],
+  },
+  {
+    id: 5,
+    title: "Objects & Prototype — The Real Class",
+    goal: "Replace the class keyword with a constructor function, prototype methods and prototype-chain walking.",
+    tier: 0,
     sugarReplaces: "class, extends, constructor, super",
     longDesc:
-      "A class is syntax sugar for a constructor function plus assignments on its prototype. new does four things: create an empty object, link it to the constructor's prototype, call the constructor with this set to that object, and return the object. Methods belong on the prototype so every instance shares one copy instead of allocating a new function per object.",
+      "A class is syntax sugar for a constructor function plus assignments on its prototype. new does four things: create an empty object, link it to the constructor's prototype, call the constructor with this set to that object, and return the object. Methods belong on the prototype so every instance shares one copy instead of allocating a new function per object. Every object has an internal [[Prototype]] link; property lookup walks that link until it finds the key or reaches null.",
     realCode: `function Dog(name) {
   this.name = name;
   this.tricks = [];
@@ -276,6 +665,7 @@ console.log(rex.bark());
 console.log(rex.learn("sit").learn("roll").tricks);
 console.log(rex.hasOwnProperty("name"));
 console.log(rex.hasOwnProperty("bark"));`,
+
     extraReal: `function Person(name) { this.name = name; }
 Person.prototype.sayHi = function () {
   return "Hi, " + this.name;
@@ -296,6 +686,7 @@ console.log(s.sayHi());
 console.log(s.study());
 console.log(s instanceof Person);
 console.log(s instanceof Student);`,
+
     starter: `// Exercise: build Cat with a meow method on the prototype.
 // new Cat("Tom").meow() should return "Tom says meow".
 
@@ -309,8 +700,30 @@ Cat.prototype.meow = function () {
 
 var tom = new Cat("Tom");
 console.log(tom.meow());`,
+
     exercise:
       "Build Cat(name) with meow() on the prototype. Then build Student(name, subject) that inherits from Person via Object.create and fixes its constructor.",
+    breakIt: `// The modern version — uses class and extends.
+// Predict: what does rex.bark() print, and where does bark live?
+
+class Dog {
+  constructor(name) { this.name = name; }
+  bark() { return "Woof " + this.name; }
+}
+
+var rex = new Dog("Rex");
+console.log(rex.bark());
+console.log(Object.getPrototypeOf(rex) === Dog.prototype);`,
+    predict: {
+      q: "What does the class version compile to at runtime?",
+      options: ["A real class object", "A constructor function plus prototype assignments", "A closure", "A built-in type"],
+      answer: 1,
+      why: "A class is syntax sugar. At runtime it is a constructor function with methods assigned to its prototype — exactly the code in realCode.",
+    },
+    translate: {
+      task: "Rewrite the breakIt class as a constructor function with Dog.prototype.bark = function () { ... };",
+      hint: "function Dog(name) { this.name = name; } Dog.prototype.bark = function () { return \"Woof \" + this.name; };",
+    },
     solutions: [
       {
         title: "Cat with a shared method",
@@ -371,6 +784,7 @@ console.log(s instanceof Person);`,
     ],
     realTalk:
       "Log any class instance and open its [[Prototype]]. A class compiles to exactly the constructor and prototype assignments in this lesson. There is no class object at runtime.",
+    killsQs: ["Q11", "Q12", "Q55"],
     quiz: [
       {
         q: "What does new Dog(\"Rex\") create first?",
@@ -393,278 +807,293 @@ console.log(s instanceof Person);`,
     ],
   },
   {
-    id: 4,
-    title: "this, call, apply, bind",
-    goal: "See that this is decided by the call site, then control it explicitly.",
-    sugarReplaces: "arrow lexical this, hidden receiver tricks",
-    longDesc:
-      "this is not lexical in a real function. It is determined when the function is called: a method call uses the object before the dot, a plain call uses undefined in strict mode, and call, apply and bind let you set it yourself. call takes arguments one by one, apply takes an array-like, and bind returns a new function with this locked in.",
-    realCode: `function greet(greeting) {
-  return greeting + " " + this.name;
-}
-
-var person = { name: "Alex" };
-
-var r1 = greet.call(person, "Hello");
-var r2 = greet.apply(person, ["Hi"]);
-var bound = greet.bind(person);
-var r3 = bound("Hey");
-
-console.log(r1);
-console.log(r2);
-console.log(r3);
-
-function Counter() {
-  this.count = 0;
-  var self = this;
-  this.inc = function () {
-    self.count = self.count + 1;
-  };
-}
-var counter = new Counter();
-counter.inc();
-counter.inc();
-console.log(counter.count);`,
-    extraReal: `Function.prototype.myBind = function (ctx) {
-  var fn = this;
-  var preset = Array.prototype.slice.call(arguments, 1);
-  return function () {
-    var args = preset.concat(Array.prototype.slice.call(arguments));
-    return fn.apply(ctx, args);
-  };
-};
-
-function greet(greeting) {
-  return greeting + " " + this.name;
-}
-var bound = greet.myBind({ name: "Alex" }, "Hello");
-console.log(bound("!"));`,
-    starter: `// Exercise: myBind(fn, ctx, ...presetArgs)
-// Return a function that calls fn with ctx as this.
-// Use apply and the arguments object, never call the built-in bind.
-
-function myBind(fn, ctx) {
-  // your code here
-  return fn;
-}
-
-function greet(greeting, punct) {
-  return greeting + " " + this.name + punct;
-}
-
-var helloKai = myBind(greet, { name: "Kai" }, "Hello");
-console.log(helloKai("!"));
-console.log(helloKai("?"));`,
-    exercise:
-      "Implement bind manually as myBind(fn, ctx, ...preset). Return a function that calls fn.apply(ctx, args). Then borrow a method from one object to another with call.",
-    solutions: [
-      {
-        title: "myBind with preset arguments",
-        note: "arguments is array-like, so Array.prototype.slice.call is the real conversion. concat merges preset and call-time values.",
-        code: `function myBind(fn, ctx) {
-  var preset = Array.prototype.slice.call(arguments, 2);
-  return function () {
-    var args = preset.concat(Array.prototype.slice.call(arguments));
-    return fn.apply(ctx, args);
-  };
-}
-
-function greet(greeting, punct) {
-  return greeting + " " + this.name + punct;
-}
-
-var helloKai = myBind(greet, { name: "Kai" }, "Hello");
-console.log(helloKai("!"));
-console.log(helloKai("?"));
-console.log(typeof helloKai);`,
-      },
-      {
-        title: "Borrowing a method with call",
-        note: "speaker.speak is just a function. call lets a different object supply this without copying the method.",
-        code: `var speaker = {
-  name: "Nova",
-  speak: function (line) {
-    return this.name + ": " + line;
-  }
-};
-
-var quiet = { name: "Echo" };
-console.log(speaker.speak.call(quiet, "hello"));
-console.log(speaker.speak.apply(quiet, ["again"]));
-
-var detached = speaker.speak;
-console.log(typeof detached);
-console.log(detached.call({ name: "Borrowed" }, "works"));`,
-      },
-    ],
-    checklist: [
-      "this is set by how the function is called",
-      "call passes arguments one by one",
-      "apply passes an array-like second argument",
-      "bind returns a new function and does not call it",
-      "Store var self = this before a callback",
-    ],
-    realTalk:
-      "If a function is extracted from an object and called on its own, this is not the object. That is not a bug; it is the call site doing exactly what it was told.",
-    quiz: [
-      {
-        q: "What decides this inside a normal function?",
-        options: ["Where the function was written", "How the function is called", "The function name", "The return value"],
-        answer: 1,
-        why: "A real function receives this from its call site. Only arrow functions capture this lexically.",
-      },
-      {
-        q: "What is the second argument of apply?",
-        options: ["A single value", "An array-like of arguments", "The this object", "A callback"],
-        answer: 1,
-        why: "apply(thisArg, argsArray) spreads the array-like into the parameter list.",
-      },
-      {
-        q: "What does bind return?",
-        options: ["The result of calling the function", "A new function with this fixed", "The this object", "undefined"],
-        answer: 1,
-        why: "bind returns a new function. The call happens later, when you invoke that new function.",
-      },
-    ],
-  },
-  {
-    id: 5,
-    title: "Scope, Hoisting & Closure",
-    goal: "See var hoisting, function scope, and closure factories without let.",
-    sugarReplaces: "let block scope, arrow closure sugar",
-    longDesc:
-      "var is function-scoped. The binding is created when the function starts, so reading it before the assignment gives undefined, not a ReferenceError. Only functions create a new scope. A closure is a function that keeps a live reference to the variables of the scope where it was created, even after that scope has returned.",
-    realCode: `var counter = function () {
-  var count = 0;
-  return function () {
-    count = count + 1;
-    return count;
-  };
-};
-
-var inc = counter();
-console.log(inc());
-console.log(inc());
-
-function buildFunctions() {
-  var funcs = [];
-  for (var i = 0; i < 3; i = i + 1) {
-    funcs[i] = (function (j) {
-      return function () { return j; };
-    })(i);
-  }
-  return funcs;
-}
-
-var fns = buildFunctions();
-console.log(fns[0](), fns[1](), fns[2]());`,
-    extraReal: `var Module = (function () {
-  var privateCount = 0;
-  return {
-    inc: function () {
-      privateCount = privateCount + 1;
-      return privateCount;
-    },
-    get: function () { return privateCount; }
-  };
-})();
-
-console.log(Module.inc());
-console.log(Module.inc());
-console.log(Module.get());
-console.log(typeof Module.privateCount);`,
-    starter: `// Exercise: fix the loop so each function keeps its own number.
-// Right now all three print 3.
-
-function build() {
-  var funcs = [];
-  for (var i = 0; i < 3; i = i + 1) {
-    funcs[i] = function () {
-      return i;
-    };
-  }
-  return funcs;
-}
-
-var fns = build();
-console.log(fns[0]());
-console.log(fns[1]());
-console.log(fns[2]());`,
-    exercise:
-      "Fix the classic for(var i) closure bug without let: create three functions that each return their own number. Capture the value with an IIFE.",
-    solutions: [
-      {
-        title: "The IIFE capture",
-        note: "Each call to the IIFE creates a fresh j binding. The returned function closes over that binding, not over i.",
-        code: `function build() {
-  var funcs = [];
-  for (var i = 0; i < 3; i = i + 1) {
-    funcs[i] = (function (j) {
-      return function () { return j; };
-    })(i);
-  }
-  return funcs;
-}
-
-var fns = build();
-console.log(fns[0]());
-console.log(fns[1]());
-console.log(fns[2]());`,
-      },
-      {
-        title: "A private counter with get and inc",
-        note: "count is not a property of the returned object. The only way in is through the functions that closed over it.",
-        code: `function makeCounter() {
-  var count = 0;
-  return {
-    inc: function () {
-      count = count + 1;
-      return count;
-    },
-    get: function () { return count; }
-  };
-}
-
-var a = makeCounter();
-var b = makeCounter();
-console.log(a.inc(), a.inc(), b.inc(), a.get());
-console.log(typeof a.count);`,
-      },
-    ],
-    checklist: [
-      "Remember var hoists as undefined",
-      "Only functions create a new scope",
-      "Use an IIFE to capture a loop value",
-      "Closures keep live bindings, not copies",
-      "Keep private state out of the returned object",
-    ],
-    realTalk:
-      "Hoisting is not the engine moving your code around. It is the environment record creating every var binding at function entry, before the first line runs.",
-    quiz: [
-      {
-        q: "What is a hoisted var before its assignment?",
-        options: ["null", "undefined", "A ReferenceError", "The previous value"],
-        answer: 1,
-        why: "The binding exists from function entry but has not been assigned, so it reads as undefined.",
-      },
-      {
-        q: "Which construct creates a new variable scope?",
-        options: ["An if block", "A for loop", "A function call", "A return statement"],
-        answer: 2,
-        why: "With var, only a function creates a scope. Blocks do not.",
-      },
-      {
-        q: "What does a closure capture?",
-        options: ["A copy of the values", "A live reference to the outer bindings", "Only global variables", "Nothing after return"],
-        answer: 1,
-        why: "The inner function keeps the environment record alive, so later writes are visible.",
-      },
-    ],
-  },
-  {
     id: 6,
+    title: "Property Descriptors — defineProperty",
+    goal: "Control property flags: writable, enumerable, configurable.",
+    tier: 1,
+    sugarReplaces: "obj.age = 21 (sugar for defineProperty with all flags true)",
+    longDesc:
+      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. Q61 fails because the default is enumerable:false.",
+    realCode: `var person = new Object();
+person.name = "Lydia";
+
+Object.defineProperty(person, "age", {
+  value: 21,
+  writable: false,
+  enumerable: false,
+  configurable: false
+});
+
+console.log(person.name);
+console.log(person.age);
+
+var descriptor = Object.getOwnPropertyDescriptor(person, "age");
+console.log(descriptor.value);
+console.log(descriptor.writable);
+console.log(descriptor.enumerable);
+console.log(descriptor.configurable);
+
+console.log(Object.keys(person));
+console.log(person.hasOwnProperty("age"));
+console.log(person.propertyIsEnumerable("age"));`,
+
+    extraReal: `var person2 = new Object();
+person2.name = "Lydia";
+Object.defineProperty(person2, "age", {
+  value: 21,
+  writable: true,
+  enumerable: true,
+  configurable: true
+});
+console.log(Object.keys(person2));`,
+
+    starter: `// Exercise: Make Object.keys return both properties.
+// Define age with enumerable: true so Object.keys sees it.
+
+var person = new Object();
+person.name = "Lydia";
+
+// your defineProperty call here
+
+console.log(Object.keys(person).length); // should be 2`,
+
+    exercise:
+      "Use Object.defineProperty to add an age property to person with enumerable: true so Object.keys(person) returns [\"name\", \"age\"]. Without enumerable: true it defaults to false and disappears from Object.keys.",
+    breakIt: `// The modern version — uses normal assignment, which hides the defaults.
+// Predict: what does Object.keys(person) return?
+
+var person = new Object();
+person.name = "Lydia";
+person.age = 21;
+
+console.log(Object.keys(person));
+
+// Now define a property the long way, forgetting enumerable:
+var obj = new Object();
+obj.foo = 1;
+Object.defineProperty(obj, "bar", { value: 2 });
+console.log(Object.keys(obj));`,
+    predict: {
+      q: "What are the two Object.keys outputs in breakIt?",
+      options: [
+        "[\"name\", \"age\"] then [\"foo\"]",
+        "[\"name\", \"age\"] then [\"foo\", \"bar\"]",
+        "[\"name\"] then [\"foo\", \"bar\"]",
+        "[\"name\", \"age\"] then [\"bar\"]",
+      ],
+      answer: 0,
+      why: "Normal assignment sets enumerable:true, so both name and age appear. defineProperty without enumerable defaults to false, so bar is invisible to Object.keys — only foo shows.",
+    },
+    translate: {
+      task: "Rewrite the defineProperty(obj, \"bar\", { value: 2 }) call so bar is enumerable and shows in Object.keys.",
+      hint: "Add enumerable: true to the descriptor object.",
+    },
+    solutions: [
+      {
+        title: "Both properties visible",
+        note: "With enumerable: true, Object.keys lists the defineProperty-created property alongside the normally assigned one.",
+        code: `var person = new Object();
+person.name = "Lydia";
+
+Object.defineProperty(person, "age", {
+  value: 21,
+  writable: true,
+  enumerable: true,
+  configurable: true
+});
+
+console.log(Object.keys(person).length); // 2
+console.log(Object.keys(person)); // ["name", "age"]`,
+
+      },
+      {
+        title: "Read-only property",
+        note: "With writable: false, assignment in sloppy mode does nothing and the value stays put.",
+        code: `var config = new Object();
+config.version = 1;
+
+Object.defineProperty(config, "version", {
+  value: 2,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
+
+config.version = 3;
+console.log(config.version);
+console.log(Object.keys(config));
+
+delete config.version;
+console.log(config.version);`,
+      },
+    ],
+    checklist: [
+      "Use Object.defineProperty to set flags explicitly",
+      "Remember missing flags default to false",
+      "Use Object.getOwnPropertyDescriptor to inspect",
+      "Object.keys only lists enumerable own properties",
+      "Normal assignment is sugar for all three flags true",
+    ],
+    realTalk:
+      "obj.age = 21 is not magic. It is Object.defineProperty(obj, \"age\", { value: 21, writable: true, enumerable: true, configurable: true }) written in short form. The long form is what gives you control — and the default for every missing flag is false.",
+    killsQs: ["Q61"],
+    quiz: [
+      {
+        q: "What does Object.keys return for a property defined with enumerable: false?",
+        options: ["The property name", "Nothing for that property", "A syntax error", "undefined"],
+        answer: 1,
+        why: "Object.keys only returns enumerable own properties. A non-enumerable property is invisible to it.",
+      },
+      {
+        q: "What happens when you omit writable in defineProperty?",
+        options: ["It defaults to true", "It defaults to false", "It throws an error", "It copies from the prototype"],
+        answer: 1,
+        why: "Every missing descriptor flag defaults to false, including writable.",
+      },
+    ],
+  },
+  {
+    id: 7,
+    title: "Coercion & Equality",
+    goal: "Understand +, == vs ===, and how Object keys always become strings.",
+    tier: 0,
+    sugarReplaces: "== vs ===, implicit coercion, template coercion",
+    longDesc:
+      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". These hidden coercions are behind Q4, Q15, Q35 and Q48.",
+    realCode: `var a = 5;
+var b = "5";
+
+console.log(a == b);   // true — == coerces "5" to 5
+console.log(a === b);  // false — === compares type and value
+console.log(a + b);    // "55" — string concatenation
+console.log(b + a);    // "55"
+console.log(1 + true); // 2 — true coerces to 1
+console.log("10" - 5); // 5 — subtraction coerces to number
+
+var obj = {};
+var key = { name: "secret" };
+obj[key] = 123;
+console.log(obj["[object Object]"]); // 123 — the object key became a string`,
+
+    extraReal: `function same(x, y) {
+  if (x === y) { return "strict equal"; }
+  if (x == y) { return "loose equal"; }
+  return "not equal";
+}
+
+console.log(same(1, 1));
+console.log(same(1, "1"));
+console.log(same(null, undefined));
+console.log(same(0, false));`,
+
+    starter: `// Exercise: classify(value1, value2)
+// Return "strict" if === is true, "loose" if only == is true, else "none".
+// Use only === and == — no other comparisons.
+
+function classify(value1, value2) {
+  // your code here
+  return "none";
+}
+
+console.log(classify(5, "5"));
+console.log(classify(5, 5));
+console.log(classify(null, undefined));
+console.log(classify(0, false));`,
+
+    exercise:
+      "Write classify(v1, v2) that returns \"strict\" when v1 === v2, \"loose\" when v1 == v2 (but not ===), and \"none\" otherwise. Use only == and === comparisons.",
+    breakIt: `// The modern version — uses == and template coercion.
+// Predict: what does each line print?
+
+var a = [];
+var b = [];
+console.log(a == b);   // ?
+console.log(a === b);  // ?
+console.log([] == ![]);// ?
+console.log(\`\${[]}\`);   // ?`,
+
+    predict: {
+      q: "What does the breakIt code print?",
+      options: [
+        "false false true \"\"",
+        "true true true \"[]\"",
+        "false false false \"\"",
+        "false false true \"\"",
+      ],
+      answer: 0,
+      why: "[] == [] is false (different references), [] === [] is false, [] == ![] is true (both coerce to 0), and \`\${[]}\` is \"\" because an empty array coerces to the empty string.",
+    },
+    translate: {
+      task: "Rewrite the breakIt comparisons using only === and explicit conversions (String(), Number()). Replace the template literal with concatenation.",
+      hint: "String([]) is \"\", so use String([]) + \"\" or just concatenate.",
+    },
+    solutions: [
+      {
+        title: "Strict vs loose classifier",
+        note: "null == undefined is true but null === undefined is false — the classic loose-equality trap.",
+        code: `function classify(value1, value2) {
+  if (value1 === value2) { return "strict"; }
+  if (value1 == value2) { return "loose"; }
+  return "none";
+}
+
+console.log(classify(5, "5"));
+console.log(classify(5, 5));
+console.log(classify(null, undefined));
+console.log(classify(0, false));`,
+
+      },
+      {
+        title: "Object keys are strings",
+        note: "Any object used as a key is converted via ToPrimitive, which for a plain object means String(obj) — \"[object Object]\".",
+        code: `var obj = {};
+var key = { name: "secret" };
+obj[key] = 123;
+console.log(obj["[object Object]"]); // 123
+console.log(Object.keys(obj)); // ["[object Object]"]
+
+var obj2 = {};
+obj2[42] = "answer";
+console.log(obj2["42"]); // "answer" — number keys become strings too`,
+
+      },
+    ],
+    checklist: [
+      "Use === instead of == to avoid coercion",
+      "Remember + coerces to string when either side is a string",
+      "Object keys are always strings (or Symbols)",
+      "[] == ![] is true — both sides coerce to 0",
+      "A number key like obj[42] is stored as obj[\"42\"]",
+    ],
+    realTalk:
+      "Coercion is not a bug — it is the spec. The bug is forgetting it happens. === removes the guesswork, and knowing that object keys become strings explains why a[b] = 123 never uses b as the key.",
+    killsQs: ["Q4", "Q15", "Q35", "Q48"],
+    quiz: [
+      {
+        q: "What does 5 == \"5\" return?",
+        options: ["true", "false", "undefined", "A syntax error"],
+        answer: 0,
+        why: "== coerces the string \"5\" to the number 5 before comparing, so the result is true.",
+      },
+      {
+        q: "What does 5 === \"5\" return?",
+        options: ["true", "false", "undefined", "A syntax error"],
+        answer: 1,
+        why: "=== does not coerce. Number and string are different types, so the result is false.",
+      },
+      {
+        q: "What key does obj[{ name: \"x\" }] = 1 store under?",
+        options: ["\"[object Object]\"", "\"name\"", "42", "The object itself"],
+        answer: 0,
+        why: "Object keys are strings. The object key is converted to \"[object Object]\" via ToPrimitive.",
+      },
+    ],
+  },
+  {
+    id: 8,
     title: "Arrays Without Magic",
     goal: "Write the loops that map, filter and reduce hide.",
+    tier: 0,
     sugarReplaces: ".map .filter .find .reduce, spread [...]",
     longDesc:
       "Array methods are loops with a callback. When you write the loop yourself you can see the allocation, the index, the early return and the accumulator. Writing arr[arr.length] = value is the real push. Returning a new array instead of mutating the input is a decision you make explicitly, not something a method does for you.",
@@ -690,6 +1119,7 @@ function manualPush(array, value) {
 manualPush(doubled, 10);
 console.log(doubled);
 console.log(filtered);`,
+
     extraReal: `function map(array, fn) {
   var out = [];
   for (var i = 0; i < array.length; i = i + 1) {
@@ -702,6 +1132,7 @@ var names = ["ada", "grace", "alan"];
 console.log(map(names, function (name, index) {
   return index + ":" + name;
 }));`,
+
     starter: `// Exercise: implement map, filter and reduce with for loops only.
 // Do not call the built-in array methods.
 
@@ -726,8 +1157,34 @@ function reduce(array, fn, initial) {
 console.log(map([1, 2, 3], function (x) { return x * 2; }));
 console.log(filter([1, 2, 3, 4], function (x) { return x > 2; }));
 console.log(reduce([1, 2, 3], function (acc, x) { return acc + x; }, 0));`,
+
     exercise:
       "Implement map, filter and reduce from scratch using only for(;;) and var. Pass value, index and the original array to the callbacks. Do not call the built-in higher-order methods.",
+    breakIt: `// The modern version — uses array methods and spread.
+// Predict: what does doubled print?
+
+var arr = [1, 2, 3, 4];
+var doubled = arr.map(function (x) { return x * 2; });
+var big = arr.filter(function (x) { return x > 2; });
+var copied = [...arr];
+console.log(doubled);
+console.log(big);
+console.log(copied);`,
+    predict: {
+      q: "What does the breakIt code print for doubled, big and copied?",
+      options: [
+        "[2, 4, 6, 8] then [3, 4] then [1, 2, 3, 4]",
+        "[2, 4, 6, 8] then [1, 2] then [1, 2, 3, 4]",
+        "[1, 2, 3, 4] then [3, 4] then [1, 2, 3, 4]",
+        "[2, 4, 6, 8] then [3, 4] then [4, 3, 2, 1]",
+      ],
+      answer: 0,
+      why: "map doubles each element, filter keeps those greater than 2, and spread copies the array in order.",
+    },
+    translate: {
+      task: "Rewrite the breakIt snippet using only for loops and manual array building (array[array.length] = value). Do not use map, filter or spread.",
+      hint: "Allocate var out = [] and append with out[out.length] = ... inside a for loop.",
+    },
     solutions: [
       {
         title: "map, filter and reduce",
@@ -761,6 +1218,7 @@ function reduce(array, fn, initial) {
 console.log(map([1, 2, 3], function (x) { return x * 2; }));
 console.log(filter([1, 2, 3, 4], function (x) { return x > 2; }));
 console.log(reduce([1, 2, 3, 4], function (acc, x) { return acc + x; }, 0));`,
+
       },
       {
         title: "Manual slice and indexOf",
@@ -795,6 +1253,7 @@ console.log(indexOf(["a", "b", "c"], "z"));`,
     ],
     realTalk:
       "Every array method you have used is the loop in this lesson plus a callback. Knowing the loop means you can reason about allocation and early exit instead of guessing.",
+    killsQs: [],
     quiz: [
       {
         q: "What does map return?",
@@ -817,12 +1276,279 @@ console.log(indexOf(["a", "b", "c"], "z"));`,
     ],
   },
   {
-    id: 7,
+    id: 9,
+    title: "Global Pollution & Strict Mode",
+    goal: "See how accidental globals are created, and how \"use strict\" fails fast.",
+    tier: 1,
+    sugarReplaces: "implicit global assignment, non-strict delete",
+    longDesc:
+      "In sloppy mode, assigning to an undeclared identifier creates a property on the global object (window.y = 10). A typo like greetign = {} silently creates a global instead of throwing. delete on a plain property works in sloppy mode but throws in strict mode when the property is non-configurable. \"use strict\" at the top of a file or function makes these mistakes throw immediately instead of silently corrupting the global object.",
+    realCode: `'use strict';
+
+var greetign = {}; // typo: intended greeting
+console.log(typeof greetign);
+
+// In strict mode, this would throw:
+// y = 10; // ReferenceError: Cannot assign to undeclared variable y
+
+var obj = { x: 1 };
+delete obj.x; // OK — deleting own property
+console.log(obj.x); // undefined
+
+// In strict mode, deleting a non-configurable property throws:
+// Object.defineProperty(obj, "y", { value: 2, configurable: false });
+// delete obj.y; // TypeError`,
+
+    extraReal: `function sloppy() {
+  z = 10; // creates window.z in sloppy mode
+  return z;
+}
+
+function strict() {
+  'use strict';
+  // z = 10; // ReferenceError — fails fast instead of polluting globals
+  return 0;
+}
+
+console.log(sloppy());
+console.log(typeof window.z);
+console.log(strict());`,
+
+    starter: `// Exercise: write a strict-mode function that rejects accidental globals.
+// It should assign to a declared variable only, and throw if given an undeclared target.
+
+function safeSet(name, value) {
+  'use strict';
+  // your code here: assign to a declared variable, not a global
+  return value;
+}
+
+var target;
+safeSet("target", 42);
+console.log(target);`,
+
+    exercise:
+      "Write safeSet that runs under 'use strict' and only assigns to declared variables. Show that an undeclared assignment would throw a ReferenceError instead of creating window.x.",
+    breakIt: `// The sloppy version — no 'use strict'.
+// Predict: what does window.y equal after this runs?
+
+function pollute() {
+  y = 10; // no var, no let — creates window.y in sloppy mode
+  return y;
+}
+
+pollute();
+console.log(window.y);
+console.log(typeof y);`,
+    predict: {
+      q: "What does the breakIt sloppy code print?",
+      options: ["10 then \"number\"", "undefined then \"undefined\"", "A ReferenceError", "10 then \"undefined\""],
+      answer: 0,
+      why: "In sloppy mode, y = 10 creates window.y. Both window.y and the bare y refer to the same global, so both print 10 / \"number\".",
+    },
+    translate: {
+      task: "Rewrite the breakIt function with 'use strict' and declare y with var so the assignment is intentional and local.",
+      hint: "'use strict; function pollute() { var y = 10; return y; }",
+    },
+    solutions: [
+      {
+        title: "Strict mode rejects accidental globals",
+        note: "With 'use strict', assigning to an undeclared identifier throws ReferenceError instead of silently creating a global.",
+        code: `'use strict';
+
+function safeSet(name, value) {
+  // name is a string key; we only assign to declared variables below.
+  var target;
+  target = value;
+  return target;
+}
+
+var result = safeSet("target", 42);
+console.log(result);
+
+// This would throw in strict mode:
+// undeclared = 99; // ReferenceError`,
+
+      },
+      {
+        title: "Strict mode and delete",
+        note: "In strict mode, delete on a non-configurable property throws; in sloppy mode it silently returns false.",
+        code: `'use strict';
+
+var obj = { x: 1 };
+console.log(delete obj.x); // true
+console.log(obj.x); // undefined
+
+Object.defineProperty(obj, "y", { value: 2, configurable: false });
+// delete obj.y; // TypeError in strict mode — cannot delete non-configurable`,
+
+      },
+    ],
+    checklist: [
+      "Put \"use strict\" at the top of files and functions",
+      "Never assign to an undeclared identifier",
+      "Declare every binding with var before assigning",
+      "delete fails in strict mode on non-configurable properties",
+      "Strict mode turns silent globals into loud ReferenceErrors",
+    ],
+    realTalk:
+      "A typo like greetign = {} does not fail — it creates a global and your real greeting stays undefined. \"use strict\" makes the engine fail fast so you catch the mistake at the first line, not three screens later.",
+    killsQs: ["Q9", "Q54", "Q58"],
+    quiz: [
+      {
+        q: "What does y = 10 do in sloppy mode without var?",
+        options: ["Throws an error", "Creates window.y", "Creates a local variable", "Does nothing"],
+        answer: 1,
+        why: "In sloppy mode, assigning to an undeclared identifier creates a property on the global object.",
+      },
+      {
+        q: "What does \"use strict\" do to undeclared assignments?",
+        options: ["Allows them", "Throws a ReferenceError", "Ignores them", "Creates a local variable"],
+        answer: 1,
+        why: "Strict mode forbids implicit globals — the assignment throws immediately.",
+      },
+      {
+        q: "What happens when you delete a non-configurable property in strict mode?",
+        options: ["Returns true", "Returns false", "Throws a TypeError", "Does nothing"],
+        answer: 2,
+        why: "Strict mode makes delete throw on non-configurable properties instead of silently failing.",
+      },
+    ],
+  },
+  {
+    id: 10,
+    title: "Event Loop — Stack, WebAPI, Queue",
+    goal: "Understand why setTimeout in a for(var) loop prints 3 3 3, and why First Third Second is the right order.",
+    tier: 0,
+    sugarReplaces: "setTimeout, promise microtasks (concept only)",
+    longDesc:
+      "JavaScript is single-threaded. There is a call stack, Web APIs (timers, DOM events, fetch) that run outside the engine, and a task queue. When setTimeout fires, its callback does not run immediately — it goes to the queue and waits until the stack is empty. var in a for loop is function-scoped, so by the time the timer callback runs, the loop has finished and i is 3. The queue order explains Q2 (3 3 3) and Q30 (First Third Second).",
+    realCode: `console.log("First");
+
+setTimeout(function () {
+  console.log("Second");
+}, 0);
+
+console.log("Third");`,
+
+    extraReal: `for (var i = 0; i < 3; i = i + 1) {
+  setTimeout(function () {
+    console.log("i = " + i);
+  }, 0);
+}
+
+// After the stack clears, all three callbacks read the same i: 3
+// Prints:
+// i = 3
+// i = 3
+// i = 3`,
+
+    starter: `// Exercise: predict the order, then explain it.
+// These three statements run in what order?
+
+console.log("A");
+setTimeout(function () { console.log("B"); }, 0);
+console.log("C");
+
+// Write your predicted order below:
+// 1. ?
+// 2. ?
+// 3. ?`,
+
+    exercise:
+      "Predict the output order of the starter code. Then wrap a setTimeout in a for(var i) loop and explain why all three callbacks print the same i.",
+    breakIt: `// The modern version — uses setTimeout with var, just like Q2.
+// Predict: what prints, in what order?
+
+for (var i = 0; i < 3; i = i + 1) {
+  setTimeout(function () {
+    console.log(i);
+  }, 0);
+}
+console.log("done");`,
+    predict: {
+      q: "What does the breakIt code print and in what order?",
+      options: [
+        "done then 0 1 2",
+        "0 1 2 then done",
+        "done then 3 3 3",
+        "3 3 3 then done",
+      ],
+      answer: 2,
+      why: "\"done\" prints first (synchronous code runs before timers). All three callbacks share the same var i, which is 3 after the loop finishes, so they all print 3.",
+    },
+    translate: {
+      task: "Rewrite the breakIt loop so each callback prints its own number (0, 1, 2) using only var and an IIFE.",
+      hint: "Capture i in a per-iteration binding: (function (j) { setTimeout(function () { console.log(j); }, 0); })(i);",
+    },
+    solutions: [
+      {
+        title: "Event loop order",
+        note: "Synchronous code runs first, then macrotasks (timers) from the queue once the stack is empty.",
+        code: `console.log("First");
+
+setTimeout(function () {
+  console.log("Second");
+}, 0);
+
+console.log("Third");`,
+
+      },
+      {
+        title: "setTimeout in for(var) — capture with IIFE",
+        note: "Each IIFE call creates a fresh j binding, so each timer closure reads its own number instead of the shared i.",
+        code: `for (var i = 0; i < 3; i = i + 1) {
+  (function (j) {
+    setTimeout(function () {
+      console.log("i = " + j);
+    }, 0);
+  })(i);
+}
+
+console.log("done");
+// Prints: done, then i = 0, i = 1, i = 2`,
+
+      },
+    ],
+    checklist: [
+      "JavaScript is single-threaded — one call stack",
+      "setTimeout callbacks go to the task queue, not the stack",
+      "The queue drains only when the stack is empty",
+      "var in a for loop is one binding shared by all iterations",
+      "Capture loop values with an IIFE when using timers",
+    ],
+    realTalk:
+      "The timer does not \"fire after 0ms\". It fires when the stack is empty and the queue turns it into a task. By then the loop is long finished and var i is already 3. Q30's First Third Second is the same principle: synchronous first, queued second.",
+    killsQs: ["Q2", "Q30"],
+    quiz: [
+      {
+        q: "What prints first: console.log before or after setTimeout?",
+        options: ["setTimeout callback first", "Synchronous console.log first", "They print together", "Random order"],
+        answer: 1,
+        why: "Synchronous code always runs before queued timer callbacks.",
+      },
+      {
+        q: "Why do all three setTimeout callbacks in for(var i) print 3?",
+        options: ["Each captures its own i", "var i is one shared binding, finished at 3", "setTimeout delays them differently", "The engine optimizes them away"],
+        answer: 1,
+        why: "var is function-scoped. All three closures read the same i, which is 3 when the loop ends.",
+      },
+      {
+        q: "When does a setTimeout(..., 0) callback run?",
+        options: ["Immediately", "After 0ms exactly", "After the stack empties", "Never"],
+        answer: 2,
+        why: "The callback is queued and runs when the call stack is empty — not at a precise time.",
+      },
+    ],
+  },
+  {
+    id: 11,
     title: "Async Without Sugar",
     goal: "Use callbacks first, then raw Promises, with no async or await.",
+    tier: 0,
     sugarReplaces: "async/await, implicit promise wrapping",
     longDesc:
-      "Asynchronous code is a callback that runs later. A Promise is an object that holds a state and a list of callbacks; the executor function runs immediately with resolve and reject. then returns a new promise, which is what makes chaining work. catch is just then with a null success handler.",
+      "Asynchronous code is a callback that runs later. A Promise is an object that holds a state and a list of callbacks; the executor function runs immediately with resolve and reject. then returns a new promise, which is what makes chaining work. catch is just then with a null success handler. async/await hides all of this behind syntactic sugar.",
     realCode: `function fetchData(callback) {
   setTimeout(function () {
     callback(null, { data: "hello" });
@@ -848,6 +1574,7 @@ p.then(function (value) {
 }).catch(function (e) {
   console.log("fail", e);
 });`,
+
     extraReal: `function delay(ms) {
   return new Promise(function (resolve) {
     setTimeout(function () { resolve(ms); }, ms);
@@ -863,6 +1590,7 @@ delay(30).then(function (ms) {
 }).then(function (value) {
   console.log(value);
 });`,
+
     starter: `// Exercise: promisify a callback-style function.
 // read(name, callback) calls callback(err, value).
 
@@ -886,8 +1614,37 @@ var readPromise = promisify(read);
 readPromise("theme").then(function (value) {
   console.log(value);
 });`,
+
     exercise:
       "Build promisify: it takes an (arg, callback) function and returns a function that returns a Promise. Then chain two Promises without async/await.",
+    breakIt: `// The modern version — uses async/await.
+// Predict: what order do the messages print?
+
+async function main() {
+  console.log("start");
+  await delay(30);
+  console.log("middle");
+  await delay(20);
+  console.log("end");
+}
+
+function delay(ms) {
+  return new Promise(function (resolve) {
+    setTimeout(function () { resolve(ms); }, ms);
+  });
+}
+
+main();`,
+    predict: {
+      q: "What order does the breakIt async version print?",
+      options: ["start, middle, end", "start, end, middle", "middle, start, end", "end, middle, start"],
+      answer: 0,
+      why: "async/await pauses at each await, so the messages print in sequence: start, middle, end.",
+    },
+    translate: {
+      task: "Rewrite the breakIt async function using only new Promise and .then chains — no async, no await.",
+      hint: "function main() { return delay(30).then(function () { console.log(\"middle\"); return delay(20); }).then(function () { console.log(\"end\"); }); }",
+    },
     solutions: [
       {
         title: "promisify",
@@ -921,6 +1678,7 @@ readPromise("theme").then(function (value) {
 }).catch(function (err) {
   console.log("caught: " + err.message);
 });`,
+
       },
       {
         title: "Chain two promises",
@@ -940,6 +1698,7 @@ delay(30).then(function (ms) {
 }).then(function (value) {
   console.log(value);
 });`,
+
       },
     ],
     checklist: [
@@ -950,7 +1709,8 @@ delay(30).then(function (ms) {
       "Never use async or await in this course",
     ],
     realTalk:
-      "A promise is not magic and it is not a thread. It is an object with a state (pending, fulfilled, rejected) and a list of reactions that run as microtasks.",
+      "A promise is not magic and it is not a thread. It is an object with a state (pending, fulfilled, rejected) and a list of reactions that run as microtasks. async/await is just a different spelling of .then chains.",
+    killsQs: [],
     quiz: [
       {
         q: "What does then return?",
@@ -973,449 +1733,206 @@ delay(30).then(function (ms) {
     ],
   },
   {
-    id: 8,
-    title: "Prototype Chain Deep Dive",
-    goal: "Walk the chain by hand, distinguish own from inherited, and build three levels.",
-    sugarReplaces: "class extends, super, instanceof sugar",
+    id: 12,
+    title: "Generators & Iterators — Manual State Machines",
+    goal: "See that function* hides a state machine, yield suspends execution, and .next() returns { value, done }.",
+    tier: 0,
+    sugarReplaces: "function*, yield, .next(), for...of iterator protocol",
     longDesc:
-      "Every object has an internal [[Prototype]] link. Property lookup walks that link until it finds the key or reaches null. Object.create(proto) makes a new object with exactly that link. hasOwnProperty asks whether the key is on the object itself, and Object.getPrototypeOf moves one step up the chain.",
-    realCode: `var animal = {
-  speak: function () { return "sound"; }
-};
-
-var dog = Object.create(animal);
-dog.bark = function () { return "woof"; };
-
-console.log(dog.bark());
-console.log(dog.speak());
-console.log(dog.hasOwnProperty("bark"));
-console.log(dog.hasOwnProperty("speak"));
-
-function walkChain(obj) {
-  var current = obj;
-  while (current !== null) {
-    console.log(Object.keys(current));
-    current = Object.getPrototypeOf(current);
-  }
-}
-
-walkChain(dog);`,
-    extraReal: `function isInstance(obj, Ctor) {
-  var proto = Ctor.prototype;
-  var current = Object.getPrototypeOf(obj);
-  while (current !== null) {
-    if (current === proto) { return true; }
-    current = Object.getPrototypeOf(current);
-  }
-  return false;
-}
-
-function Dog() {}
-var rex = new Dog();
-console.log(isInstance(rex, Dog));
-console.log(isInstance(rex, Object));
-console.log(isInstance({}, Dog));`,
-    starter: `// Exercise: implement instanceof manually.
-// Walk Object.getPrototypeOf(obj) and compare with Ctor.prototype.
-
-function isInstance(obj, Ctor) {
-  // your code here
-  return false;
-}
-
-function Dog() {}
-var rex = new Dog();
-
-console.log(isInstance(rex, Dog));
-console.log(isInstance(rex, Object));
-console.log(isInstance({}, Dog));`,
-    exercise:
-      "Implement isinstance(obj, Constructor) by walking the prototype chain and comparing === Constructor.prototype. Then build a three-level inheritance chain with Object.create.",
-    solutions: [
-      {
-        title: "isInstance by walking the chain",
-        note: "The loop ends at null, which is the one value with no prototype.",
-        code: `function isInstance(obj, Ctor) {
-  var proto = Ctor.prototype;
-  var current = Object.getPrototypeOf(obj);
-  while (current !== null) {
-    if (current === proto) { return true; }
-    current = Object.getPrototypeOf(current);
-  }
-  return false;
-}
-
-function Dog() {}
-function Cat() {}
-var rex = new Dog();
-
-console.log(isInstance(rex, Dog));
-console.log(isInstance(rex, Object));
-console.log(isInstance(rex, Cat));
-console.log(isInstance({}, Dog));`,
-      },
-      {
-        title: "Three levels with Object.create",
-        note: "dog -> animal -> living -> Object.prototype -> null. Each hasOwnProperty check only sees its own level.",
-        code: `var living = {
-  breathe: function () { return "breathe"; }
-};
-
-var animal = Object.create(living);
-animal.speak = function () { return "sound"; };
-
-var dog = Object.create(animal);
-dog.bark = function () { return "woof"; };
-
-console.log(dog.bark());
-console.log(dog.speak());
-console.log(dog.breathe());
-console.log(dog.hasOwnProperty("bark"));
-console.log(dog.hasOwnProperty("breathe"));
-console.log(Object.getPrototypeOf(dog) === animal);
-console.log(Object.getPrototypeOf(animal) === living);
-console.log(Object.getPrototypeOf(living) === Object.prototype);
-console.log(Object.getPrototypeOf(Object.prototype) === null);`,
-      },
-    ],
-    checklist: [
-      "Use Object.create(proto) to link without calling a constructor",
-      "Use hasOwnProperty to separate own from inherited",
-      "Walk with Object.getPrototypeOf one level at a time",
-      "Remember the chain ends at null",
-      "Repair constructor after replacing a prototype",
-    ],
-    realTalk:
-      "Object.prototype is the last object in almost every chain, and its own prototype is null. That null is why reading missing properties gives undefined instead of looping forever.",
-    quiz: [
-      {
-        q: "What is the prototype of Object.create(null)?",
-        options: ["Object.prototype", "null", "undefined", "An empty object"],
-        answer: 1,
-        why: "Object.create(null) makes a dictionary object with no prototype at all.",
-      },
-      {
-        q: "What does hasOwnProperty check?",
-        options: ["The whole chain", "Only the object itself", "Only the prototype", "Only enumerable keys"],
-        answer: 1,
-        why: "It returns true only for properties defined directly on the receiver.",
-      },
-      {
-        q: "How does a prototype chain end?",
-        options: ["At Object.prototype", "At a function", "At null", "At undefined"],
-        answer: 2,
-        why: "Object.getPrototypeOf(Object.prototype) is null, and looking up a property there stops.",
-      },
-    ],
-  },
-  {
-    id: 9,
-    title: "Property Descriptors — defineProperty",
-    goal: "Control property flags: writable, enumerable, configurable.",
-    sugarReplaces: "obj.age = 21 (sugar for defineProperty with all flags true)",
-    longDesc:
-      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined.",
-    realCode: `var person = new Object();
-person.name = "Lydia";
-
-Object.defineProperty(person, "age", {
-  value: 21,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-console.log(person.name);
-console.log(person.age);
-
-var descriptor = Object.getOwnPropertyDescriptor(person, "age");
-console.log(descriptor.value);
-console.log(descriptor.writable);
-console.log(descriptor.enumerable);
-console.log(descriptor.configurable);
-
-console.log(Object.keys(person));
-console.log(person.hasOwnProperty("age"));
-console.log(person.propertyIsEnumerable("age"));`,
-    extraReal: `var person2 = new Object();
-person2.name = "Lydia";
-Object.defineProperty(person2, "age", {
-  value: 21,
-  writable: true,
-  enumerable: true,
-  configurable: true
-});
-console.log(Object.keys(person2));`,
-    starter: `// Exercise: define a non-enumerable age property.
-// Object.keys(person) should return only ["name"].
-// person.age should still be readable as 21.
-
-var person = new Object();
-person.name = "Lydia";
-
-// your defineProperty call here
-
-console.log(Object.keys(person));
-console.log(person.age);`,
-    exercise:
-      "Use Object.defineProperty to add a non-enumerable age property to person. Object.keys should return only [\"name\"], while person.age still reads as 21.",
-    solutions: [
-      {
-        title: "Non-enumerable age",
-        note: "With enumerable: false, Object.keys skips the property but direct access still works.",
-        code: `var person = new Object();
-person.name = "Lydia";
-
-Object.defineProperty(person, "age", {
-  value: 21,
-  writable: true,
-  enumerable: false,
-  configurable: true
-});
-
-console.log(Object.keys(person));
-console.log(person.age);
-console.log(person.propertyIsEnumerable("age"));`,
-      },
-      {
-        title: "Read-only property",
-        note: "With writable: false, assignment in sloppy mode does nothing and the value stays put.",
-        code: `var config = new Object();
-config.version = 1;
-
-Object.defineProperty(config, "version", {
-  value: 2,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-config.version = 3;
-console.log(config.version);
-console.log(Object.keys(config));
-
-delete config.version;
-console.log(config.version);`,
-      },
-    ],
-    checklist: [
-      "Use Object.defineProperty to set flags explicitly",
-      "Remember missing flags default to false",
-      "Use Object.getOwnPropertyDescriptor to inspect",
-      "Object.keys only lists enumerable own properties",
-      "Normal assignment is sugar for all three flags true",
-    ],
-    realTalk:
-      "obj.age = 21 is not magic. It is Object.defineProperty(obj, \"age\", { value: 21, writable: true, enumerable: true, configurable: true }) written in short form. The long form is what gives you control.",
-    quiz: [
-      {
-        q: "What does Object.keys return for a property defined with enumerable: false?",
-        options: ["The property name", "Nothing for that property", "A syntax error", "undefined"],
-        answer: 1,
-        why: "Object.keys only returns enumerable own properties. A non-enumerable property is invisible to it.",
-      },
-      {
-        q: "What happens when you omit writable in defineProperty?",
-        options: ["It defaults to true", "It defaults to false", "It throws an error", "It copies from the prototype"],
-        answer: 1,
-        why: "Every missing descriptor flag defaults to false, including writable.",
-      },
-    ],
-  },
-  {
-    id: 10,
-    title: "Modules Without import",
-    goal: "Build private state and a public API with the IIFE module pattern.",
-    sugarReplaces: "import / export, ES modules",
-    longDesc:
-      "Before import and export, a module was an immediately invoked function expression that returned an object. Variables declared inside the function are private because nothing outside can name them. The returned object is the public surface. One global per module, no bundler required, and the closure keeps the state alive.",
-    realCode: `var Calculator = (function () {
-  var privateVar = 0;
-  var privateFn = function (x) {
-    return x * 2;
-  };
+      "A generator function is syntax sugar for a closure-based state machine. function* does not run its body when called; it returns an iterator object. Calling .next() on that object runs the body up to the next yield, then suspends and returns { value, done }. The state (which yield to resume from, all local variables) lives inside the closure between calls. for...of is just a loop that calls .next() until done is true. All of this can be written by hand with var, function, and an object that has a next method.",
+    realCode: `function makeCounter() {
+  var state = "start";
+  var value = 0;
   return {
-    add: function (a, b) {
-      privateVar = privateVar + 1;
-      return a + b;
-    },
-    double: function (x) {
-      return privateFn(x);
-    },
-    getCalls: function () {
-      return privateVar;
-    }
-  };
-})();
-
-console.log(Calculator.add(2, 3));
-console.log(Calculator.getCalls());
-console.log(Calculator.double(5));
-
-var Store = (function () {
-  var state = {};
-  return {
-    set: function (key, value) { state[key] = value; },
-    get: function (key) { return state[key]; }
-  };
-})();
-
-Store.set("theme", "dark");
-console.log(Store.get("theme"));`,
-    extraReal: `var CounterModule = (function () {
-  var count = 0;
-  function change(val) { count = count + val; }
-  return {
-    inc: function () { change(1); },
-    dec: function () { change(-1); },
-    value: function () { return count; }
-  };
-})();
-
-CounterModule.inc();
-CounterModule.inc();
-CounterModule.dec();
-console.log(CounterModule.value());
-console.log(typeof CounterModule.count);`,
-    starter: `// Exercise: build an EventBus module with private listeners.
-// Expose on, off and emit. Do not expose the listeners object.
-
-var EventBus = (function () {
-  var listeners = {};
-
-  return {
-    on: function (event, fn) {
-      // add fn to listeners[event]
-      return this;
-    },
-    off: function (event, fn) {
-      // remove fn
-      return this;
-    },
-    emit: function (event, data) {
-      // call every listener for event
-    }
-  };
-})();
-
-EventBus.on("data", function (value) {
-  console.log("got " + value);
-});
-EventBus.emit("data", "hello");`,
-    exercise:
-      "Create a module EventBus with a private listeners array, exposing on(event, fn), off(event, fn) and emit(event, data). Use an IIFE and a closure.",
-    solutions: [
-      {
-        title: "EventBus as an IIFE module",
-        note: "listeners is unreachable from outside. The only mutations happen through the three methods that closed over it.",
-        code: `var EventBus = (function () {
-  var listeners = {};
-
-  function listFor(event) {
-    if (typeof listeners[event] !== "object" || listeners[event] === null) {
-      listeners[event] = [];
-    }
-    return listeners[event];
-  }
-
-  return {
-    on: function (event, fn) {
-      var list = listFor(event);
-      list[list.length] = fn;
-      return this;
-    },
-    off: function (event, fn) {
-      var list = listFor(event);
-      var next = [];
-      for (var i = 0; i < list.length; i = i + 1) {
-        if (list[i] !== fn) { next[next.length] = list[i]; }
+    next: function () {
+      if (state === "start") {
+        state = "yielded";
+        return { value: 0, done: false };
       }
-      listeners[event] = next;
-      return this;
-    },
-    emit: function (event, data) {
-      var list = listFor(event);
-      for (var i = 0; i < list.length; i = i + 1) {
-        list[i](data);
+      if (state === "yielded") {
+        state = "done";
+        return { value: 1, done: false };
       }
-      return list.length;
+      return { value: undefined, done: true };
     }
   };
-})();
-
-function onData(value) {
-  console.log("got " + value);
 }
 
-EventBus.on("data", onData);
-EventBus.emit("data", "hello");
-EventBus.off("data", onData);
-EventBus.emit("data", "ignored");
-console.log(typeof EventBus.listeners);`,
-      },
-      {
-        title: "A private key/value store",
-        note: "state is cloned out through keys() rather than handed to the caller, so the private object stays private.",
-        code: `var Store = (function () {
-  var state = {};
+var it = makeCounter();
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());`,
+
+    extraReal: `function idGenerator() {
+  var state = "start";
+  var n = 0;
   return {
-    set: function (key, value) {
-      state[key] = value;
-      return value;
-    },
-    get: function (key) {
-      return state[key];
-    },
-    keys: function () {
-      return Object.keys(state);
+    next: function () {
+      if (state === "start") {
+        state = "running";
+        return { value: n, done: false };
+      }
+      n = n + 1;
+      return { value: n, done: false };
     }
   };
-})();
+}
 
-Store.set("theme", "dark");
-Store.set("lang", "js");
-console.log(Store.get("theme"));
-console.log(Store.keys());
-console.log(typeof Store.state);`,
+var ids = idGenerator();
+console.log(ids.next());
+console.log(ids.next());
+console.log(ids.next());`,
+
+    starter: `// Exercise: build a manual generator for 0, 1, 2.
+// It should return { value, done } from next() and stop after 2.
+
+function makeThree() {
+  // your state machine here
+  return {
+    next: function () {
+      return { value: undefined, done: true };
+    }
+  };
+}
+
+var it = makeThree();
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());`,
+
+    exercise:
+      "Build makeThree() that returns an iterator yielding 0, 1, 2 then done. Use only var, function, and a closure-based state machine. Do not use function* or yield.",
+    breakIt: `// The modern version — uses function* and yield.
+// Predict: what does each .next() return?
+
+function* ids() {
+  var n = 0;
+  while (true) {
+    yield n;
+    n = n + 1;
+  }
+}
+
+var it = ids();
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());`,
+
+    predict: {
+      q: "What does the breakIt generator print?",
+      options: [
+        "{ value: 0, done: false } then { value: 1, done: false } then { value: 2, done: false }",
+        "0 then 1 then 2",
+        "{ value: 0 } then { value: 1 } then { value: 2 }",
+        "A syntax error",
+      ],
+      answer: 0,
+      why: ".next() always returns an object { value, done }. A running generator yields values with done: false; it never returns the bare number.",
+    },
+    translate: {
+      task: "Rewrite the breakIt generator as a manual state machine: a function that returns an object with a next() method returning { value, done }.",
+      hint: "Track state in a var (e.g. \"start\", \"running\", \"done\") and switch on it inside next().",
+    },
+    solutions: [
+      {
+        title: "Manual generator for 0, 1, 2",
+        note: "The state variable lives in the closure between .next() calls, exactly like a generator's suspended frame.",
+        code: `function makeThree() {
+  var state = "start";
+  var value = 0;
+  return {
+    next: function () {
+      if (state === "start") {
+        state = "running";
+        return { value: 0, done: false };
+      }
+      if (state === "running" && value === 0) {
+        value = 1;
+        return { value: 1, done: false };
+      }
+      if (state === "running" && value === 1) {
+        value = 2;
+        return { value: 2, done: false };
+      }
+      state = "done";
+      return { value: undefined, done: true };
+    }
+  };
+}
+
+var it = makeThree();
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());
+console.log(it.next());`,
+
+      },
+      {
+        title: "Manual id generator (infinite)",
+        note: "A while(true) generator is just a state machine that never reaches done.",
+        code: `function idGenerator() {
+  var state = "start";
+  var n = 0;
+  return {
+    next: function () {
+      if (state === "start") {
+        state = "running";
+      }
+      var current = n;
+      n = n + 1;
+      return { value: current, done: false };
+    }
+  };
+}
+
+var ids = idGenerator();
+console.log(ids.next());
+console.log(ids.next());
+console.log(ids.next());`,
+
       },
     ],
     checklist: [
-      "Wrap the module in (function () { ... })()",
-      "Keep private state in the closure",
-      "Return only the public API object",
-      "Do not expose the state object itself",
-      "Assign the module to one global var",
+      "function* returns an iterator, it does not run the body yet",
+      ".next() runs the body up to the next yield, then suspends",
+      ".next() always returns { value, done }",
+      "for...of calls .next() until done is true",
+      "All generator state can be written by hand with a closure and a state variable",
     ],
     realTalk:
-      "An IIFE module has no import resolution, no live bindings and no tree shaking. It is also still the clearest way to see what a module actually is: a function scope plus a returned object.",
+      "Generators look like magic, but they are just a compiler trick: the engine turns function* into a state machine and stores your locals on that machine. Writing it by hand with a closure and a switch shows there is nothing hidden — just variables and an if chain.",
+    killsQs: [],
     quiz: [
       {
-        q: "Why does the IIFE pattern keep state private?",
-        options: ["The variables are frozen", "Only the returned object is reachable outside", "The code is minified", "The engine hides var"],
+        q: "What does .next() return from a generator iterator?",
+        options: ["The yielded value directly", "{ value, done }", "A promise", "undefined"],
         answer: 1,
-        why: "The variables live in the IIFE's function scope. Outside code can only use what the returned object exposes.",
+        why: "The iterator protocol always returns an object { value, done }, never the bare value.",
       },
       {
-        q: "What should a module return?",
-        options: ["All of its variables", "A public API object", "The function itself", "undefined"],
+        q: "When does a generator function body start running?",
+        options: ["When the function is called", "When .next() is first called", "When for...of starts", "Immediately on definition"],
         answer: 1,
-        why: "The returned object is the public surface. Everything not on it stays private.",
+        why: "Calling a generator function only creates the iterator. The body runs on the first .next().",
       },
       {
-        q: "Can outside code read a private closure variable?",
-        options: ["Yes, with window", "Yes, with Object.keys", "No, only through exposed functions", "Only in strict mode"],
-        answer: 2,
-        why: "Closure bindings are not properties of any reachable object.",
+        q: "What does done: true mean?",
+        options: ["The generator threw an error", "The generator has no more values", "The generator is paused", "The generator is infinite"],
+        answer: 1,
+        why: "done: true signals the end of iteration; value is typically undefined then.",
       },
     ],
   },
   {
-    id: 11,
-    title: "Building Real Things",
-    goal: "Build an EventEmitter with prototype methods and no class keyword.",
-    sugarReplaces: "class EventEmitter, extends, arrow handlers",
+    id: 13,
+    title: "Building Real Things — EventEmitter, Manual Promise, IIFE Module",
+    goal: "Build an EventEmitter with prototype methods, a Promise from scratch, and an IIFE module — all without class or import.",
+    tier: 0,
+    sugarReplaces: "class EventEmitter, extends, async/await, import/export",
     longDesc:
-      "This is the core of Node's EventEmitter, written with the primitives from the whole course. The constructor owns the storage, methods live on the prototype, emit forwards arguments with apply, and off rebuilds the listener array instead of splicing in place. The once wrapper removes itself before calling the real listener.",
+      "This is the capstone. The EventEmitter is the core of Node's EventEmitter written with the primitives from the whole course: constructor owns the storage, methods live on the prototype, emit forwards arguments with apply, and off rebuilds the listener array. A manual Promise shows the executor/resolve/reject machinery without async/await. The IIFE module shows private state with a public API — the pattern import/export compiles to.",
     realCode: `function EventEmitter() {
   this.events = {};
 }
@@ -1433,9 +1950,7 @@ EventEmitter.prototype.off = function (event, listener) {
   var listeners = this.events[event];
   var next = [];
   for (var i = 0; i < listeners.length; i = i + 1) {
-    if (listeners[i] !== listener) {
-      next[next.length] = listeners[i];
-    }
+    if (listeners[i] !== listener) { next[next.length] = listeners[i]; }
   }
   this.events[event] = next;
   return this;
@@ -1454,6 +1969,7 @@ EventEmitter.prototype.emit = function (event) {
 var ee = new EventEmitter();
 ee.on("data", function (x) { console.log(x); });
 ee.emit("data", "hello");`,
+
     extraReal: `EventEmitter.prototype.once = function (event, listener) {
   var self = this;
   var wrapper = function () {
@@ -1470,6 +1986,7 @@ ee.once("ready", function (value) {
 });
 ee.emit("ready", 1);
 ee.emit("ready", 2);`,
+
     starter: `// Exercise: add once(event, fn) to EventEmitter.
 // The listener runs exactly once, then removes itself.
 
@@ -1517,8 +2034,35 @@ ee.once("ready", function (value) {
 });
 ee.emit("ready", 1);
 ee.emit("ready", 2);`,
+
     exercise:
-      "Extend EventEmitter with once(event, fn) that removes itself after the first call. Use prototypes and a closure wrapper, then build the DOM helper in the final project.",
+      "Extend EventEmitter with once(event, fn) that removes itself after the first call. Use prototypes and a closure wrapper.",
+    breakIt: `// The modern version — uses class, async/await and import syntax.
+// Predict: what does this print, and why is the manual version clearer?
+
+class Bus extends EventTarget {
+  async emitAsync(event, data) {
+    await new Promise(r => setTimeout(r, 10));
+    this.dispatchEvent(new CustomEvent(event, { detail: data }));
+  }
+}
+
+import { Bus } from "./bus.js";`,
+    predict: {
+      q: "What is wrong with the breakIt version for this course?",
+      options: [
+        "It uses class, async/await and import — all Tier 2 sugar",
+        "It prints nothing",
+        "It throws a syntax error",
+        "It uses var incorrectly",
+      ],
+      answer: 0,
+      why: "class, async/await and import are Tier 2 sugar. The course version builds the same thing with prototypes, Promises and IIFEs.",
+    },
+    translate: {
+      task: "Describe how you would rewrite the breakIt class Bus using EventEmitter prototypes, new Promise and an IIFE module.",
+      hint: "function Bus() { EventEmitter.call(this); } Bus.prototype = Object.create(EventEmitter.prototype);",
+    },
     solutions: [
       {
         title: "once with a self-removing wrapper",
@@ -1541,45 +2085,72 @@ ee.emit("ready", 1);
 ee.emit("ready", 2);
 ee.emit("ready", 3);
 console.log(ee.events.ready.length);`,
+
       },
       {
-        title: "A tiny assertion harness",
-        note: "Writing checks by hand is how you prove an emitter works before you trust it in a larger program.",
-        code: `function assert(label, actual, expected) {
-  if (actual === expected) {
-    console.log("ok   " + label);
-  } else {
-    console.log("FAIL " + label + ": " + actual + " !== " + expected);
+        title: "Manual Promise from scratch",
+        note: "A Promise is an object with a state and a reaction list. The executor runs immediately; resolve/reject change state and queue reactions.",
+        code: `function ManualPromise(executor) {
+  var self = this;
+  self.state = "pending";
+  self.value = undefined;
+  self.reactions = [];
+
+  function resolve(value) {
+    if (self.state !== "pending") return;
+    self.state = "fulfilled";
+    self.value = value;
+    runReactions();
   }
+
+  function reject(reason) {
+    if (self.state !== "pending") return;
+    self.state = "rejected";
+    self.value = reason;
+    runReactions();
+  }
+
+  function runReactions() {
+    for (var i = 0; i < self.reactions.length; i = i + 1) {
+      var reaction = self.reactions[i];
+      if (self.state === "fulfilled") {
+        reaction.onFulfilled(self.value);
+      } else if (self.state === "rejected") {
+        reaction.onRejected(self.value);
+      }
+    }
+  }
+
+  this.then = function (onFulfilled, onRejected) {
+    return new ManualPromise(function (resolve, reject) {
+      if (self.state === "fulfilled") {
+        setTimeout(function () { runHandler(onFulfilled, resolve, reject, self.value); }, 0);
+      } else if (self.state === "rejected") {
+        setTimeout(function () { runHandler(onRejected, resolve, reject, self.value); }, 0);
+      } else {
+        self.reactions[self.reactions.length] = { onFulfilled: onFulfilled, onRejected: onRejected, resolve: resolve, reject: reject };
+      }
+    });
+  };
+
+  function runHandler(handler, resolve, reject, value) {
+    var result;
+    try {
+      result = handler(value);
+      resolve(result);
+    } catch (err) {
+      reject(err);
+    }
+  }
+
+  executor(resolve, reject);
 }
 
-function EventEmitter() { this.events = {}; }
-EventEmitter.prototype.on = function (event, fn) {
-  if (typeof this.events[event] !== "object") { this.events[event] = []; }
-  this.events[event][this.events[event].length] = fn;
-  return this;
-};
-EventEmitter.prototype.emit = function (event) {
-  var args = Array.prototype.slice.call(arguments, 1);
-  var list = this.events[event];
-  if (typeof list !== "object") { return false; }
-  for (var i = 0; i < list.length; i = i + 1) { list[i].apply(this, args); }
-  return true;
-};
+var p = new ManualPromise(function (resolve) {
+  setTimeout(function () { resolve("manual"); }, 20);
+});
+p.then(function (v) { console.log("got " + v); });`,
 
-var ee = new EventEmitter();
-var seen = "";
-ee.on("x", function (value) { seen = value; });
-assert("emit returns true", ee.emit("x", "yes"), true);
-assert("listener received value", seen, "yes");
-assert("unknown event returns false", ee.emit("nope"), false);
-assert("two listeners", (function () {
-  var count = 0;
-  ee.on("y", function () { count = count + 1; });
-  ee.on("y", function () { count = count + 1; });
-  ee.emit("y");
-  return count;
-})(), 2);`,
       },
     ],
     checklist: [
@@ -1588,9 +2159,11 @@ assert("two listeners", (function () {
       "Forward emit arguments with apply",
       "Rebuild the listener array in off",
       "Register the wrapper, not the original, in once",
+      "Build a Promise with executor, resolve, reject and reaction list",
     ],
     realTalk:
-      "Node's EventEmitter has more methods and a few more edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener.",
+      "Node's EventEmitter has more methods and edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener. A Promise is the same machinery — state, reactions, resolve/reject — without the async keyword.",
+    killsQs: [],
     quiz: [
       {
         q: "How does emit forward extra arguments?",
@@ -1616,7 +2189,7 @@ assert("two listeners", (function () {
 
 export const LESSON_MAP = (function () {
   var map = {};
-  for (var i = 0; i < LESSONS.length; i = i + 1) {
+  for (var i = 0; i < LESSONS.length; i += 1) {
     map[LESSONS[i].id] = LESSONS[i];
   }
   return map;

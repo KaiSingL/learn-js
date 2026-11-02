@@ -5,6 +5,7 @@ export const PRIMARY_NAV = [
 
 export const TAIL_NAV = [
   { path: "/cheatsheet", label: "Cheatsheet", num: "03" },
-  { path: "/project", label: "Project", num: "04" },
-  { path: "/playground", label: "Playground", num: "05" },
+  { path: "/project", label: "Final project", num: "04" },
+  { path: "/lab", label: "De-sugar Lab", num: "05" },
+  { path: "/playground", label: "Playground", num: "06" },
 ];

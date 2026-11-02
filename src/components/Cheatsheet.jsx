@@ -2,10 +2,11 @@ import { useState } from "react";
 import {
   CHEATSHEET,
   CHEATSHEET_CATEGORIES,
+  CHEATSHEET_DEFAULTS,
   filterCheatsheet,
 } from "../data/cheatsheet.js";
 import Icon from "./Icon.jsx";
-import { PageHeader } from "./PageHeader.jsx";
+import { PageHeader, Pill } from "./PageHeader.jsx";
 
 export default function Cheatsheet({ onPlayground }) {
   const [query, setQuery] = useState("");
@@ -79,10 +80,11 @@ export default function Cheatsheet({ onPlayground }) {
       </div>
 
       <div className="hidden overflow-hidden rounded-card border border-line bg-card lg:block">
-        <div className="mono grid h-11 grid-cols-[1.05fr_1.35fr_1fr_44px] items-center border-b border-line bg-card2 px-5 text-[10px] uppercase tracking-[0.14em] text-muted">
+        <div className="mono grid h-11 grid-cols-[1.1fr_1.35fr_1fr_1.1fr_44px] items-center border-b border-line bg-card2 px-5 text-[10px] uppercase tracking-[0.14em] text-muted">
           <div>Sugar — what you see</div>
           <div>Real code — what runs</div>
           <div>Why it matters</div>
+          <div>Hidden default that bites you</div>
           <div />
         </div>
         <div className="divide-y divide-line/60">
@@ -90,7 +92,7 @@ export default function Cheatsheet({ onPlayground }) {
             return (
               <div
                 key={row.sugar + index}
-                className="grid grid-cols-[1.05fr_1.35fr_1fr_44px] items-start px-5 py-3 transition-colors hover:bg-card2/60"
+                className="grid grid-cols-[1.1fr_1.35fr_1fr_1.1fr_44px] items-start px-5 py-3 transition-colors hover:bg-card2/60"
               >
                 <div className="mono break-all pr-4 text-[12px] leading-[1.55] text-accent/90">
                   {row.sugar}
@@ -99,6 +101,9 @@ export default function Cheatsheet({ onPlayground }) {
                   {row.real}
                 </div>
                 <div className="pr-3 text-[12px] leading-[1.55] text-muted">{row.why}</div>
+                <div className="pr-3 text-[12px] leading-[1.55] text-muted/70">
+                  {row.defaults ? row.defaults : "—"}
+                </div>
                 <button
                   type="button"
                   onClick={function () {
@@ -146,9 +151,15 @@ export default function Cheatsheet({ onPlayground }) {
               </div>
               <div className="mono mb-3 break-all text-[12px] leading-[1.5] text-accent">{row.sugar}</div>
               <div className="mono mb-1 text-[10px] uppercase tracking-wide text-muted">Real</div>
-              <div className="mono mb-3 break-all rounded-md border border-line bg-card2 p-2 text-[11.5px] leading-[1.55] text-paper">
+              <div className="mono mb-1 break-all rounded-md border border-line bg-card2 p-2 text-[11.5px] leading-[1.55] text-paper">
                 {row.real}
               </div>
+              {row.defaults ? (
+                <>
+                  <div className="mono mb-1 text-[10px] uppercase tracking-wide text-muted">Hidden default</div>
+                  <div className="mb-3 text-[11.5px] leading-[1.5] text-muted">{row.defaults}</div>
+                </>
+              ) : null}
               <div className="text-[12px] leading-[1.5] text-muted">{row.why}</div>
               <button
                 type="button"
@@ -168,6 +179,29 @@ export default function Cheatsheet({ onPlayground }) {
             <p className="mono text-[12px] text-muted">No mappings match that filter.</p>
           </div>
         ) : null}
+      </div>
+
+      {/* Hidden defaults table */}
+      <div className="mt-10 overflow-hidden rounded-card border border-line bg-card">
+        <div className="flex h-11 items-center justify-between border-b border-line bg-card2 px-4">
+          <span className="mono text-[10px] uppercase tracking-[0.14em] text-muted">Hidden defaults that bite</span>
+          <span className="mono text-[10px] text-muted">{CHEATSHEET_DEFAULTS.length} features</span>
+        </div>
+        <div className="divide-y divide-line/60">
+          {CHEATSHEET_DEFAULTS.map(function (item, index) {
+            return (
+              <div key={item.feature + index} className="px-5 py-4 transition-colors hover:bg-card2/60">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="mono text-[12px] text-paper">{item.feature}</span>
+                  <span className="mono text-[10px] uppercase tracking-wide text-accent/70">
+                    default: {item.default}
+                  </span>
+                </div>
+                <p className="mono text-[12px] leading-[1.55] text-muted">{item.bite}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mono mt-4 text-center text-[11px] text-muted">

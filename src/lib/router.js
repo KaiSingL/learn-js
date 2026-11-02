@@ -7,6 +7,7 @@ const VALID_PATHS = {
   "/lesson": true,
   "/cheatsheet": true,
   "/project": true,
+  "/lab": true,
   "/playground": true,
 };
 

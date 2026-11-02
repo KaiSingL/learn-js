@@ -229,9 +229,19 @@ export function lintSource(source) {
 export function summarize(violations) {
   let errors = 0;
   let advice = 0;
+  let notes = 0;
   for (let i = 0; i < violations.length; i += 1) {
-    if (violations[i].severity === "advice") advice += 1;
-    else errors += 1;
+    const severity = violations[i].severity;
+    if (severity === "error") errors += 1;
+    else if (severity === "advice") advice += 1;
+    else if (severity === "note") notes += 1;
   }
-  return { errors, advice, total: errors + advice };
+  return { errors, advice, notes, total: violations.length };
+}
+
+export function hasErrors(violations) {
+  for (let i = 0; i < violations.length; i += 1) {
+    if (violations[i].severity === "error") return true;
+  }
+  return false;
 }

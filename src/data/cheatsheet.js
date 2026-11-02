@@ -174,6 +174,89 @@ export const CHEATSHEET = [
     real: "var count = 0;",
     why: "Only var shows function scoping and hoisting as the engine does it.",
     cat: "declaration",
+    defaults: "let and const throw in the temporal dead zone before their line; var hoists as undefined",
+  },
+  {
+    sugar: "Object.defineProperty(obj, \"age\", { value: 21 })",
+    real: 'var ageDescriptor = Object.getOwnPropertyDescriptor(obj, "age");',
+    why: "defineProperty lets you set writable, enumerable and configurable explicitly.",
+    cat: "object",
+    defaults: "Every missing flag defaults to false — including enumerable:false, which hides the property from Object.keys",
+  },
+  {
+    sugar: "Object.create(proto)",
+    real: "var child = Object.create(parent);",
+    why: "Links directly to a prototype without running a constructor.",
+    cat: "prototype",
+    defaults: "The new object's [[Prototype]] is exactly proto — no constructor runs, no this binding",
+  },
+  {
+    sugar: '"use strict"',
+    real: "'use strict'; var x = 1;",
+    why: "Strict mode turns silent mistakes into loud errors.",
+    cat: "declaration",
+    defaults: "Undeclared assignment throws ReferenceError instead of creating a global; delete throws on non-configurable properties",
+  },
+  {
+    sugar: "arguments",
+    real: "var args = arguments;",
+    why: "The real argument list inside every function.",
+    cat: "function",
+    defaults: "Array-like: it has length and indexes, but no map/filter/forEach — use Array.prototype.slice.call",
+  },
+  {
+    sugar: "setTimeout(fn, 0)",
+    real: "setTimeout(function () { fn(); }, 0);",
+    why: "A timer callback is a task, not an immediate call.",
+    cat: "async",
+    defaults: "The callback runs after the call stack empties — not at exactly 0ms",
+  },
+  {
+    sugar: "obj.key = value",
+    real: "obj.key = value;",
+    why: "Normal assignment is sugar for defineProperty with all flags true.",
+    cat: "object",
+    defaults: "Equivalent to { value, writable: true, enumerable: true, configurable: true }",
+  },
+  {
+    sugar: "a == b",
+    real: "if (a === b) {}",
+    why: "Strict equality avoids hidden coercion.",
+    cat: "operator",
+    defaults: "Loose == coerces both sides — \"5\" == 5 is true, [] == ![] is true",
+  },
+];
+
+export const CHEATSHEET_DEFAULTS = [
+  {
+    feature: "Object.defineProperty",
+    default: "enumerable: false, writable: false, configurable: false",
+    bite: "A non-enumerable property vanishes from Object.keys and for-in; a non-writable one silently ignores assignment.",
+  },
+  {
+    feature: "let / const",
+    default: "temporal dead zone (TDZ)",
+    bite: "Reading before the declaration line throws ReferenceError; var gives undefined instead.",
+  },
+  {
+    feature: "var",
+    default: "hoisted as undefined",
+    bite: "Reading a var before its assignment gives undefined, not an error, which hides initialization-order bugs.",
+  },
+  {
+    feature: "setTimeout / timers",
+    default: "macrotask queue",
+    bite: "The callback runs only after the call stack empties, so setTimeout in a for(var) loop shares the final i.",
+  },
+  {
+    feature: "obj[key] = value",
+    default: "key becomes a string",
+    bite: "Any non-string key is coerced — an object key becomes \"[object Object]\", a number key becomes \"42\".",
+  },
+  {
+    feature: "arguments",
+    default: "array-like, not Array",
+    bite: "It has length and numeric indexes but no array methods — use Array.prototype.slice.call to convert.",
   },
 ];
 

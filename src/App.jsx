@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Cheatsheet from "./components/Cheatsheet.jsx";
 import Footer from "./components/Footer.jsx";
+import Lab from "./components/Lab.jsx";
 import Lessons from "./components/Lessons.jsx";
 import MobileNav from "./components/MobileNav.jsx";
 import Overview from "./components/Overview.jsx";
@@ -19,6 +20,7 @@ const TITLES = {
   "/lessons": "Lessons · Real JS",
   "/cheatsheet": "Cheatsheet · Real JS",
   "/project": "Final project · Real JS",
+  "/lab": "De-sugar Lab · Real JS",
   "/playground": "Playground · Real JS",
 };
 
@@ -109,6 +111,9 @@ export default function App() {
     }
     if (route.path === "/cheatsheet") {
       return <Cheatsheet onPlayground={openInPlayground} />;
+    }
+    if (route.path === "/lab") {
+      return <Lab onPlayground={openInPlayground} />;
     }
     if (route.path === "/project") {
       return <Project progress={progress} onPlayground={openInPlayground} />;

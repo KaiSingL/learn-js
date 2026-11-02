@@ -58,6 +58,9 @@ export default function Playground({ route, request }) {
     return lintSource(code);
   }, [code]);
   const summary = summarize(violations);
+  const errorViolations = violations.filter(function (v) { return v.severity === "error"; });
+  const noteViolations = violations.filter(function (v) { return v.severity === "note"; });
+  const canRun = errorViolations.length === 0;
   const lineCount = code.split("\n").length;
   const preset = getPreset(presetId);
   const note = preset ? preset.note : label;
@@ -166,6 +169,19 @@ export default function Playground({ route, request }) {
     if (status === "running") {
       stop();
       setStatus("idle");
+      return;
+    }
+
+    if (!canRun) {
+      setLogs(function (prev) {
+        return prev.concat([
+          {
+            kind: "error",
+            text:
+              "Blocked by Tier 2 sugar: fix the errors above before running. Use function, not arrow; var, not let/const; for(;;), not for...of.",
+          },
+        ]);
+      });
       return;
     }
 
@@ -354,9 +370,9 @@ export default function Playground({ route, request }) {
             <Icon name="copy" size={13} />
             Copy
           </button>
-          <button type="button" onClick={run} className="btn btn-accent h-10 px-4" aria-label={status === "running" ? "Stop code" : "Run code"}>
+          <button type="button" onClick={run} className={"btn " + (canRun ? "btn-accent" : "") + " h-10 px-4" + (!canRun ? " opacity-50" : "")} aria-label={status === "running" ? "Stop code" : "Run code"} disabled={!canRun}>
             <Icon name={status === "running" ? "close" : "play"} size={13} />
-            {status === "running" ? "Stop" : "Run"}
+            {status === "running" ? "Stop" : canRun ? "Run" : "Blocked — fix errors"}
           </button>
         </div>
       </div>
@@ -410,9 +426,9 @@ export default function Playground({ route, request }) {
             <div className="flex items-center justify-between border-t border-line bg-card px-4 py-2">
               <span className="mono text-[10px] text-muted">var / function / prototype / for(;;)</span>
               <span className="mono text-[10px] text-muted">
-                {summary.errors === 0 && summary.advice === 0
+                {summary.errors === 0 && summary.notes === 0 && summary.advice === 0
                   ? "clean"
-                  : summary.errors + " errors · " + summary.advice + " advice"}
+                  : summary.errors + " errors · " + summary.notes + " notes · " + summary.advice + " advice"}
               </span>
             </div>
           </div>
@@ -421,10 +437,13 @@ export default function Playground({ route, request }) {
             <div className="flex h-10 items-center justify-between border-b border-line bg-card2 px-4">
               <span className="mono text-[10px] uppercase tracking-[0.14em] text-muted">Rule check</span>
               <div className="flex items-center gap-2">
-                {summary.errors === 0 ? (
+                {summary.errors === 0 && summary.notes === 0 ? (
                   <Pill tone="good">no errors</Pill>
                 ) : (
-                  <Pill tone="danger">{summary.errors} errors</Pill>
+                  <>
+                    {summary.errors > 0 ? <Pill tone="danger">{summary.errors} errors</Pill> : null}
+                    {summary.notes > 0 ? <Pill tone="accent">{summary.notes} notes</Pill> : null}
+                  </>
                 )}
                 {summary.advice > 0 ? <Pill tone="accent">{summary.advice} advice</Pill> : null}
               </div>
@@ -440,6 +459,7 @@ export default function Playground({ route, request }) {
             ) : (
               <div className="max-h-[220px] overflow-y-auto">
                 {violations.slice(0, 40).map(function (violation, index) {
+                  const isNote = violation.severity === "note";
                   return (
                     <button
                       key={violation.index + ":" + violation.ruleId + ":" + index}
@@ -457,11 +477,14 @@ export default function Playground({ route, request }) {
                           <span
                             className={
                               "mono text-[11px] " +
-                              (violation.severity === "advice" ? "text-accent" : "text-danger")
+                              (isNote ? "text-accent" : violation.severity === "advice" ? "text-accent" : "text-danger")
                             }
                           >
                             {violation.label}
                           </span>
+                          {isNote ? (
+                            <span className="mono text-[10px] text-muted/60">tier 1 · note</span>
+                          ) : null}
                           <span className="mono truncate text-[10px] text-muted">{violation.found}</span>
                         </span>
                         <span className="mono mt-1 block text-[10px] leading-[1.5] text-muted">

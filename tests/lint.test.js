@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { lintSource, summarize } from "../src/lib/lint.js";
+import { lintSource, summarize, hasErrors } from "../src/lib/lint.js";
 
 function ids(source) {
   return lintSource(source).map(function (item) {
@@ -95,6 +95,38 @@ describe("lintSource: forbidden syntax", function () {
 
   test("detects the exponent operator", function () {
     expect(has("var x = a ** b;", "exponent")).toBe(true);
+  });
+});
+
+describe("lintSource: tiers", function () {
+  test("tier 2 sugar reports as error", function () {
+    const violations = lintSource("var a = (x) => x + 1;");
+    const arrow = violations.find(function (v) { return v.ruleId === "arrow"; });
+    expect(arrow).toBeDefined();
+    expect(arrow.severity).toBe("error");
+  });
+
+  test("tier 1 let/const reports as note, not error", function () {
+    const violations = lintSource("let x = 1;\nconst y = 2;");
+    const notes = violations.filter(function (v) { return v.severity === "note"; });
+    expect(notes.length).toBe(2);
+    expect(notes.every(function (v) { return v.ruleId === "declaration"; })).toBe(true);
+    expect(violations.some(function (v) { return v.severity === "error"; })).toBe(false);
+  });
+
+  test("summarize counts notes separately", function () {
+    const violations = lintSource("let x = 1;\nvar a = () => 2;");
+    const totals = summarize(violations);
+    expect(totals.errors).toBe(1);
+    expect(totals.notes).toBe(1);
+    expect(totals.total).toBe(2);
+  });
+
+  test("hasErrors returns true only for error severity", function () {
+    const noteOnly = lintSource("let x = 1;");
+    expect(hasErrors(noteOnly)).toBe(false);
+    const errorOnly = lintSource("var a = () => 1;");
+    expect(hasErrors(errorOnly)).toBe(true);
   });
 });
 

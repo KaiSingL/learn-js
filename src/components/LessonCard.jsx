@@ -53,10 +53,21 @@ export default function LessonCard({
               <span className="mono rounded-full border border-line bg-card2 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-muted">
                 {lesson.sugarReplaces}
               </span>
+              {lesson.tier === 1 ? (
+                <span className="mono inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-accent">
+                  tier 1
+                </span>
+              ) : null}
               {done ? (
                 <span className="mono inline-flex items-center gap-1 rounded-full border border-good/30 bg-good/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-good">
                   <Icon name="check" size={10} />
                   complete
+                </span>
+              ) : null}
+              {lesson.killsQs && lesson.killsQs.length > 0 ? (
+                <span className="mono inline-flex items-center gap-1 rounded-full border border-danger/30 bg-danger/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-danger">
+                  <Icon name="warning" size={10} />
+                  kills {lesson.killsQs.join(", ")}
                 </span>
               ) : null}
             </span>
@@ -193,6 +204,21 @@ export default function LessonCard({
                   {lesson.sugarReplaces}
                 </div>
               </div>
+
+              {lesson.killsQs && lesson.killsQs.length > 0 ? (
+                <div className="mt-4 rounded-panel border border-danger/30 bg-danger/[0.05] p-3">
+                  <div className="flex items-start gap-2 mb-2">
+                    <Icon name="warning" size={13} className="mt-0.5 shrink-0 text-danger" />
+                    <span className="mono text-[10px] font-bold uppercase tracking-wide text-danger">
+                      canyoustill.com
+                    </span>
+                  </div>
+                  <p className="mono text-[11px] leading-[1.5] text-muted">
+                    This lesson kills <span className="text-paper">{lesson.killsQs.join(", ")}</span> — the exact
+                    questions where this topic catches people.
+                  </p>
+                </div>
+              ) : null}
 
               <div>
                 <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
