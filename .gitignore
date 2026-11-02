@@ -5,7 +5,6 @@ node_modules/
 dist/
 *.html
 !index.html
-!courses.html
 
 # Hashed asset copies published next to courses.html (regenerated each build)
 icon-*.png
