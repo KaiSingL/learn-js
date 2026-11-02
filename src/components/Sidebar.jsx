@@ -41,9 +41,7 @@ export default function Sidebar({ route, progress, onOpenPalette }) {
         className="flex h-16 shrink-0 items-center gap-3 border-b border-line px-6"
         aria-label="Real JS home"
       >
-        <span className="mono flex h-[28px] w-[28px] items-center justify-center bg-accent text-[14px] font-black leading-none text-black">
-          R
-        </span>
+        <img src="./icon.png" alt="" className="h-[28px] w-[28px] rounded-[6px]" />
         <span>
           <span className="block text-[14px] font-bold leading-none tracking-[0.14em]">REAL.JS</span>
           <span className="mono mt-[3px] block text-[10px] tracking-[0.16em] text-muted">

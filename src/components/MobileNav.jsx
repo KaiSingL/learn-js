@@ -41,9 +41,7 @@ export default function MobileNav({ open, onOpen, onClose, route, progress, onOp
         style={{ paddingTop: "var(--safe-top)" }}
       >
         <a href="#/" className="flex items-center gap-2.5" aria-label="Real JS home">
-          <span className="mono flex h-[26px] w-[26px] items-center justify-center bg-accent text-[13px] font-black text-black">
-            R
-          </span>
+          <img src="./icon.png" alt="" className="h-[26px] w-[26px] rounded-[6px]" />
           <span className="text-[13px] font-bold tracking-[0.14em]">REAL.JS</span>
           <span className="mono rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">v2</span>
         </a>

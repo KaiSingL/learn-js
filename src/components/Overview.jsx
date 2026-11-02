@@ -32,6 +32,12 @@ export default function Overview({ progress }) {
           Course 00 — Overview
         </div>
 
+        <img
+          src="./icon.png"
+          alt="Real JS icon"
+          className="mb-5 h-14 w-14 rounded-xl lg:h-16 lg:w-16"
+        />
+
         <h1 className="max-w-[16ch] text-[38px] font-bold leading-[0.95] tracking-[-0.03em] lg:text-[58px]">
           JavaScript
           <br />
