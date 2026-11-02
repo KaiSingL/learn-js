@@ -18,7 +18,7 @@ const server = Bun.serve({
 });
 
 const base = "http://127.0.0.1:" + server.port + "/";
-const fileUrl = pathToFileURL(join(root, "courses.html")).href;
+const fileUrl = pathToFileURL(join(root, "dist", "index.html")).href;
 const shots = join(root, "screenshots");
 mkdirSync(shots, { recursive: true });
 

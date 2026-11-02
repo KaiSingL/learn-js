@@ -3,15 +3,6 @@ node_modules/
 
 # Build output
 dist/
-*.html
-!index.html
-
-# Asset copies published next to courses.html by scripts/publish.js (regenerated each build)
-/icon.png
-/site.webmanifest
-
-# Archive
-archive/
 
 # Screenshots / dev artifacts
 screenshots/

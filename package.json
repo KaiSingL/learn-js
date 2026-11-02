@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && bun scripts/publish.js",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "bun test",
     "test:watch": "bun test --watch"
