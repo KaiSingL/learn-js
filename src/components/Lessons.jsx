@@ -49,7 +49,7 @@ export default function Lessons({ route, progress, onPlayground, onNavigate }) {
   return (
     <div>
       <PageHeader
-        eyebrow="Section 02 — Twelve lessons"
+        eyebrow={"Section 02 — " + LESSONS.length + " lessons"}
         title="Learn the real form"
         subtitle="Every lesson has the code, the sugar it replaces, a checklist, a knowledge check and at least one runnable solution."
         aside={

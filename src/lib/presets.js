@@ -78,6 +78,50 @@ console.log(doubled);
 console.log(big);`,
   },
   {
+    id: "example-copy",
+    label: "Shallow and deep copy",
+    note: "= shares the shell; a shallow copy replaces it; deep copy clones every branch.",
+    code: `var original = { name: "Ada", tags: ["dev", "js"] };
+
+// = shares the shell — both names point to the same object
+var alias = original;
+alias.name = "Grace";
+console.log(alias.name, original.name);
+
+// Shallow copy — new shell, same branches inside
+var shallow = new Object();
+var keys = Object.keys(original);
+for (var i = 0; i < keys.length; i = i + 1) {
+  shallow[keys[i]] = original[keys[i]];
+}
+console.log(shallow.tags === original.tags);
+
+// Deep copy — new shell, new branches, fully disconnected
+function deepCopy(value) {
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    var copy = [];
+    for (var i = 0; i < value.length; i = i + 1) {
+      copy[copy.length] = deepCopy(value[i]);
+    }
+    return copy;
+  }
+  var copy = new Object();
+  var objKeys = Object.keys(value);
+  for (var i = 0; i < objKeys.length; i = i + 1) {
+    copy[objKeys[i]] = deepCopy(value[objKeys[i]]);
+  }
+  return copy;
+}
+
+var deep = deepCopy(original);
+deep.tags[deep.tags.length] = "new";
+console.log(deep.tags);
+console.log(original.tags);`,
+  },
+  {
     id: "example-dom",
     label: "DOM without a library",
     note: "Switch to Preview to see it build a small counter.",

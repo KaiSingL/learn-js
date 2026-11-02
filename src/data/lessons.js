@@ -1,4 +1,4 @@
-// The twelve lessons. Code fields are plain strings so they can be linted,
+// The lessons. Code fields are plain strings so they can be linted,
 // highlighted, copied and loaded into the playground without transformation.
 //
 // Each lesson follows the "break" pedagogy:
