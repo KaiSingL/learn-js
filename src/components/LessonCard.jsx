@@ -100,8 +100,8 @@ export default function LessonCard({
           id={"lesson-body-" + lesson.id}
           className="anim-fade-in border-t border-line bg-card2/40"
         >
-          <div className="grid lg:grid-cols-[1.12fr_0.88fr]">
-            <div className="space-y-5 p-5 lg:p-6">
+          <div className="grid min-w-0 lg:grid-cols-[1.12fr_0.88fr]">
+            <div className="min-w-0 space-y-5 p-5 lg:p-6">
               <div>
                 <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">Goal</div>
                 <p className="text-[13px] leading-[1.7] text-paper/80">{lesson.longDesc}</p>
@@ -195,12 +195,12 @@ export default function LessonCard({
               </div>
             </div>
 
-            <div className="space-y-4 border-t border-line bg-card/40 p-5 lg:border-l lg:border-t-0 lg:p-6">
+            <div className="min-w-0 space-y-4 border-t border-line bg-card/40 p-5 lg:border-l lg:border-t-0 lg:p-6">
               <div>
                 <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
                   Sugar it replaces
                 </div>
-                <div className="mono rounded-md border border-line bg-ink px-3 py-2 text-[11.5px] leading-[1.55] text-muted">
+                <div className="mono break-words rounded-md border border-line bg-ink px-3 py-2 text-[11.5px] leading-[1.55] text-muted">
                   {lesson.sugarReplaces}
                 </div>
               </div>
