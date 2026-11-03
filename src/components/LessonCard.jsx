@@ -98,7 +98,7 @@ export default function LessonCard({
       ) : (
         <div
           id={"lesson-body-" + lesson.id}
-          className="border-t border-line bg-card2/40"
+          className="anim-fade-in border-t border-line bg-card2/40"
         >
           <div className="grid lg:grid-cols-[1.12fr_0.88fr]">
             <div className="space-y-5 p-5 lg:p-6">

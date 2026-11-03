@@ -77,7 +77,12 @@ export default function Overview({ progress }) {
         <div className="mt-4 max-w-[600px] rounded-panel border border-line bg-card p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <div className="mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <div
+                className={
+                  "mono text-[10px] uppercase tracking-[0.12em] text-muted" +
+                  (done === LESSONS.length ? " anim-settle" : "")
+                }
+              >
                 {done === 0
                   ? "Start at the beginning"
                   : done === LESSONS.length

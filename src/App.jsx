@@ -125,7 +125,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-ink text-paper antialiased">
+    <div className="min-h-dvh bg-ink text-paper antialiased">
       <button
         type="button"
         onClick={focusMain}

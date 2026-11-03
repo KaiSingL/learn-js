@@ -154,7 +154,7 @@ export default function Project({ progress, onPlayground }) {
               </button>
 
               {open ? (
-                <div id={"project-body-" + step.id} className="border-t border-line bg-card2/40 p-5">
+                <div id={"project-body-" + step.id} className="anim-fade-in border-t border-line bg-card2/40 p-5">
                   <p className="mb-4 text-[12.5px] leading-[1.65] text-muted">{step.note}</p>
 
                   <CodeBlock

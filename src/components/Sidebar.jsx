@@ -35,7 +35,7 @@ export default function Sidebar({ route, progress, onOpenPalette }) {
   const activeLesson = route.path === "/lesson" ? Number(route.param) : null;
 
   return (
-    <aside className="fixed left-0 top-0 z-20 hidden h-screen w-[280px] flex-col border-r border-line bg-ink lg:flex">
+    <aside className="fixed left-0 top-0 z-20 hidden h-dvh w-[280px] flex-col border-r border-line bg-ink lg:flex">
       <a
         href="#/"
         className="flex h-16 shrink-0 items-center gap-3 border-b border-line px-6"

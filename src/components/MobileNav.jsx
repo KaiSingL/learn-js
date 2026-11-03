@@ -64,12 +64,12 @@ export default function MobileNav({ open, onOpen, onClose, route, progress, onOp
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Course navigation">
           <button
             type="button"
-            className="absolute inset-0 bg-ink/90 backdrop-blur-[2px]"
+            className="no-press anim-fade-in absolute inset-0 bg-ink/90 backdrop-blur-[2px]"
             aria-label="Close menu"
             onClick={onClose}
           />
           <div
-            className="relative flex h-full flex-col overflow-y-auto border-r border-line bg-ink pb-10"
+            className="anim-slide-in-left relative flex h-full flex-col overflow-y-auto border-r border-line bg-ink pb-[calc(2.5rem_+_env(safe-area-inset-bottom,0px))]"
             style={{ paddingTop: "var(--safe-top)" }}
           >
             <div className="flex h-14 items-center justify-between border-b border-line px-4">
