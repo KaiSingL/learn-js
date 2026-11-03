@@ -813,7 +813,7 @@ console.log(s instanceof Person);`,
     tier: 1,
     sugarReplaces: "obj.age = 21 (sugar for defineProperty with all flags true)",
     longDesc:
-      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. Q61 fails because the default is enumerable:false.",
+      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. Q61 fails because the default is enumerable:false. Descriptors come in two shapes: data descriptors carry value and writable; accessor descriptors carry get and set — the machinery behind getters and setters.",
     realCode: `var person = new Object();
 person.name = "Lydia";
 
@@ -845,7 +845,22 @@ Object.defineProperty(person2, "age", {
   enumerable: true,
   configurable: true
 });
-console.log(Object.keys(person2));`,
+console.log(Object.keys(person2));
+
+// Accessor descriptors — get/set is the machinery behind the property syntax
+var account = new Object();
+account.balance = 100;
+Object.defineProperty(account, "cents", {
+  get: function () {
+    return Math.round(this.balance * 100);
+  },
+  set: function (value) {
+    this.balance = value / 100;
+  }
+});
+account.cents = 250;
+console.log(account.balance); // 2.5
+console.log(account.cents); // 250`,
 
     starter: `// Exercise: Make Object.keys return both properties.
 // Define age with enumerable: true so Object.keys sees it.
@@ -933,6 +948,7 @@ console.log(config.version);`,
       "Use Object.getOwnPropertyDescriptor to inspect",
       "Object.keys only lists enumerable own properties",
       "Normal assignment is sugar for all three flags true",
+      "Accessors use get and set instead of value and writable",
     ],
     realTalk:
       "obj.age = 21 is not magic. It is Object.defineProperty(obj, \"age\", { value: 21, writable: true, enumerable: true, configurable: true }) written in short form. The long form is what gives you control — and the default for every missing flag is false.",
@@ -950,6 +966,12 @@ console.log(config.version);`,
         answer: 1,
         why: "Every missing descriptor flag defaults to false, including writable.",
       },
+      {
+        q: "What does an accessor descriptor carry instead of value and writable?",
+        options: ["get and set", "read and write", "open and closed", "has and gives"],
+        answer: 0,
+        why: "Accessor properties are defined with get and set functions; a single descriptor cannot mix them with value and writable.",
+      },
     ],
   },
   {
@@ -959,7 +981,7 @@ console.log(config.version);`,
     tier: 0,
     sugarReplaces: "== vs ===, implicit coercion, template coercion",
     longDesc:
-      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". These hidden coercions are behind Q4, Q15, Q35 and Q48.",
+      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". These hidden coercions are behind Q4, Q15, Q35 and Q48. The mechanism is ToPrimitive: with a number hint the engine calls valueOf first; with a string hint it calls toString first.",
     realCode: `var a = 5;
 var b = "5";
 
@@ -984,7 +1006,24 @@ console.log(obj["[object Object]"]); // 123 — the object key became a string`,
 console.log(same(1, 1));
 console.log(same(1, "1"));
 console.log(same(null, undefined));
-console.log(same(0, false));`,
+console.log(same(0, false));
+
+// ToPrimitive: the default hint (+) calls valueOf first; String() hints string, so toString first
+var wallet = {
+  dollars: 2,
+  valueOf: function () {
+    return this.dollars;
+  },
+  toString: function () {
+    return this.dollars + " dollars";
+  }
+};
+console.log(wallet + 1); // 3 — valueOf already returned a primitive
+console.log(wallet + ""); // "2" — same reason
+console.log(String(wallet)); // "2 dollars" — string hint, toString runs
+
+var plain = new Object();
+console.log("" + plain); // "[object Object]" — valueOf returns the object, so toString runs instead`,
 
     starter: `// Exercise: classify(value1, value2)
 // Return "strict" if === is true, "loose" if only == is true, else "none".
@@ -1064,6 +1103,7 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
       "Object keys are always strings (or Symbols)",
       "[] == ![] is true — both sides coerce to 0",
       "A number key like obj[42] is stored as obj[\"42\"]",
+      "ToPrimitive calls valueOf first for +, toString for string contexts",
     ],
     realTalk:
       "Coercion is not a bug — it is the spec. The bug is forgetting it happens. === removes the guesswork, and knowing that object keys become strings explains why a[b] = 123 never uses b as the key.",
@@ -1086,6 +1126,12 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
         options: ["\"[object Object]\"", "\"name\"", "42", "The object itself"],
         answer: 0,
         why: "Object keys are strings. The object key is converted to \"[object Object]\" via ToPrimitive.",
+      },
+      {
+        q: "What does wallet + \"\" return when wallet.valueOf() returns 2?",
+        options: ["\"2\"", "\"[object Object]\"", "\"2 dollars\"", "2"],
+        answer: 0,
+        why: "The + operator uses the default hint, which tries valueOf first. It returns the primitive 2, so the concatenation gives \"2\".",
       },
     ],
   },
@@ -1739,7 +1785,7 @@ delay(30).then(function (ms) {
     tier: 0,
     sugarReplaces: "function*, yield, .next(), for...of iterator protocol",
     longDesc:
-      "A generator function is syntax sugar for a closure-based state machine. function* does not run its body when called; it returns an iterator object. Calling .next() on that object runs the body up to the next yield, then suspends and returns { value, done }. The state (which yield to resume from, all local variables) lives inside the closure between calls. for...of is just a loop that calls .next() until done is true. All of this can be written by hand with var, function, and an object that has a next method.",
+      "A generator function is syntax sugar for a closure-based state machine. function* does not run its body when called; it returns an iterator object. Calling .next() on that object runs the body up to the next yield, then suspends and returns { value, done }. The state (which yield to resume from, all local variables) lives inside the closure between calls. for...of is just a loop that calls .next() until done is true. All of this can be written by hand with var, function, and an object that has a next method. The protocol even has a name: Symbol.iterator. Attach that key — a function returning the iterator — and for...of can consume your object.",
     realCode: `function makeCounter() {
   var state = "start";
   var value = 0;
@@ -1762,7 +1808,13 @@ var it = makeCounter();
 console.log(it.next());
 console.log(it.next());
 console.log(it.next());
-console.log(it.next());`,
+console.log(it.next());
+
+// Symbol.iterator is the well-known key loops look for — attach it and the object is iterable
+it[Symbol.iterator] = function () {
+  return this;
+};
+console.log(typeof it[Symbol.iterator]); // "function"`,
 
     extraReal: `function idGenerator() {
   var state = "start";
@@ -1900,6 +1952,7 @@ console.log(ids.next());`,
       ".next() always returns { value, done }",
       "for...of calls .next() until done is true",
       "All generator state can be written by hand with a closure and a state variable",
+      "Symbol.iterator is the well-known key that for...of looks up",
     ],
     realTalk:
       "Generators look like magic, but they are just a compiler trick: the engine turns function* into a state machine and stores your locals on that machine. Writing it by hand with a closure and a switch shows there is nothing hidden — just variables and an if chain.",
@@ -1923,6 +1976,12 @@ console.log(ids.next());`,
         answer: 1,
         why: "done: true signals the end of iteration; value is typically undefined then.",
       },
+      {
+        q: "Which property makes an object consumable by for...of?",
+        options: ["next", "done", "Symbol.iterator", "for"],
+        answer: 2,
+        why: "for...of looks up the well-known Symbol.iterator key and calls it to get an iterator — the object with a next method you built by hand.",
+      },
     ],
   },
   {
@@ -1932,7 +1991,7 @@ console.log(ids.next());`,
     tier: 0,
     sugarReplaces: "class EventEmitter, extends, async/await, import/export",
     longDesc:
-      "This is the capstone. The EventEmitter is the core of Node's EventEmitter written with the primitives from the whole course: constructor owns the storage, methods live on the prototype, emit forwards arguments with apply, and off rebuilds the listener array. A manual Promise shows the executor/resolve/reject machinery without async/await. The IIFE module shows private state with a public API — the pattern import/export compiles to.",
+      "This is the capstone. The EventEmitter is the core of Node's EventEmitter written with the primitives from the whole course: constructor owns the storage, methods live on the prototype, emit forwards arguments with apply, and off rebuilds the listener array. A manual Promise shows the executor/resolve/reject machinery without async/await. The IIFE module shows private state with a public API — the pattern import/export compiles to. Its Manual Promise leans on throw, try, catch and finally — the error machinery every real library uses.",
     realCode: `function EventEmitter() {
   this.events = {};
 }
@@ -2152,6 +2211,45 @@ var p = new ManualPromise(function (resolve) {
 p.then(function (v) { console.log("got " + v); });`,
 
       },
+      {
+        title: "try/catch/finally and custom errors",
+        note: "A constructor inheriting from Error.prototype gives typed errors without class syntax; finally runs no matter what.",
+        code: `function ValidationError(message) {
+  this.name = "ValidationError";
+  this.message = message;
+}
+ValidationError.prototype = Object.create(Error.prototype);
+
+function parseAge(raw) {
+  var value = Number(raw);
+  if (value !== value) {
+    throw new ValidationError("not a number: " + raw);
+  }
+  if (value < 0) {
+    throw new RangeError("age cannot be negative: " + value);
+  }
+  return value;
+}
+
+function readAge(raw) {
+  try {
+    console.log("parsed " + parseAge(raw));
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      console.log("bad input: " + err.message);
+    } else {
+      console.log(err.name + ": " + err.message);
+    }
+  } finally {
+    console.log("finished with " + raw);
+  }
+}
+
+readAge("42");
+readAge("abc");
+readAge("-3");`,
+
+      },
     ],
     checklist: [
       "Let the constructor own the storage",
@@ -2160,6 +2258,7 @@ p.then(function (v) { console.log("got " + v); });`,
       "Rebuild the listener array in off",
       "Register the wrapper, not the original, in once",
       "Build a Promise with executor, resolve, reject and reaction list",
+      "throw fails fast, catch recovers, finally always runs",
     ],
     realTalk:
       "Node's EventEmitter has more methods and edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener. A Promise is the same machinery — state, reactions, resolve/reject — without the async keyword.",
@@ -2183,6 +2282,12 @@ p.then(function (v) { console.log("got " + v); });`,
         answer: 1,
         why: "The wrapper has a reference to the emitter and to itself, so it can off(event, wrapper) before the real call.",
       },
+      {
+        q: "Which block runs no matter how the try block exits?",
+        options: ["catch", "finally", "throw", "then"],
+        answer: 1,
+        why: "finally always runs — on success, on a caught error, and even while a return is in flight.",
+      },
     ],
   },
   {
@@ -2192,7 +2297,7 @@ p.then(function (v) { console.log("got " + v); });`,
     tier: 0,
     sugarReplaces: "let b = a, {...a}, structuredClone(a)",
     longDesc:
-      "Assigning an object does not copy it — both variables point to the same shell. A shallow copy builds a new shell but copies the references inside, so nested arrays and objects are still shared. A deep copy builds a new shell and recursively clones every nested plain object and array, so nothing is shared. The shell analogy makes it permanent: = is two names for one shell, {...a} is a new shell with the same branches inside, and structuredClone is a new shell with brand-new branches.",
+      "Assigning an object does not copy it — both variables point to the same shell. A shallow copy builds a new shell but copies the references inside, so nested arrays and objects are still shared. A deep copy builds a new shell and recursively clones every nested plain object and array, so nothing is shared. The shell analogy makes it permanent: = is two names for one shell, {...a} is a new shell with the same branches inside, and structuredClone is a new shell with brand-new branches. The popular shortcut JSON.parse(JSON.stringify(value)) is not a deep copy — it drops undefined and function values, turns Dates into strings, and throws on circular references.",
     realCode: `var original = { name: "Ada", tags: ["dev", "js"] };\n\n// = shares the shell — both names point to the same object\nvar alias = original;\nalias.name = "Grace";\nconsole.log(original.name); // "Grace" — same shell, changed through either name\n\n// Shallow copy — new shell, same branches inside\nvar shallow = new Object();\nvar keys = Object.keys(original);\nfor (var i = 0; i < keys.length; i = i + 1) {\n  var key = keys[i];\n  shallow[key] = original[key];\n}\nshallow.name = "Alan";\nconsole.log(original.name); // "Grace" — top-level copy, original untouched\nconsole.log(shallow.tags === original.tags); // true — nested array still shared\nshallow.tags[shallow.tags.length] = "copy";\nconsole.log(original.tags); // ["dev", "js", "copy"] — shared branch mutated\n\n// Deep copy — new shell, new branches, fully disconnected\nfunction deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var j = 0; j < value.length; j = j + 1) {\n      copy[copy.length] = deepCopy(value[j]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var objKeys = Object.keys(value);\n  for (var k = 0; k < objKeys.length; k = k + 1) {\n    var objKey = objKeys[k];\n    copy[objKey] = deepCopy(value[objKey]);\n  }\n  return copy;\n}\n\nvar deep = deepCopy(original);\ndeep.name = "Deep";\ndeep.tags[deep.tags.length] = "deep";\nconsole.log(original.name); // "Grace" — disconnected\nconsole.log(original.tags); // ["dev", "js", "copy"] — deep copy did not touch original`,
     extraReal: `function deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var i = 0; i < value.length; i = i + 1) {\n      copy[copy.length] = deepCopy(value[i]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var keys = Object.keys(value);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = deepCopy(value[keys[i]]);\n  }\n  return copy;\n}\n\nvar nested = { a: 1, b: { c: 2, d: [3, 4] } };\nvar cloned = deepCopy(nested);\ncloned.b.c = 99;\ncloned.b.d[cloned.b.d.length] = 5;\nconsole.log(nested.b.c); // 2 — untouched\nconsole.log(nested.b.d); // [3, 4] — untouched`,
     starter: `// Exercise: write deepCopy(obj)\n// It should clone plain objects and arrays recursively.\n// Primitives are returned as-is.\n\nfunction deepCopy(value) {\n  // your recursive copy here\n  return value;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // should still be 2`,
@@ -2225,6 +2330,31 @@ p.then(function (v) { console.log("got " + v); });`,
         note: "The function calls itself for nested objects and arrays, so every branch is brand-new and nothing is shared.",
         code: `function deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var i = 0; i < value.length; i = i + 1) {\n      copy[copy.length] = deepCopy(value[i]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var keys = Object.keys(value);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = deepCopy(value[keys[i]]);\n  }\n  return copy;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // 2 — fully disconnected`,
       },
+      {
+        title: "Why JSON is not a deep copy",
+        note: "JSON.stringify drops undefined and function values, stringifies Dates, and throws on circular references — the hand-rolled copy keeps the shape.",
+        code: `var source = {
+  when: new Date("2024-01-01"),
+  note: undefined,
+  run: function () {}
+};
+
+var jsonCopy = JSON.parse(JSON.stringify(source));
+console.log(Object.keys(jsonCopy)); // ["when"] — note and run silently dropped
+console.log(jsonCopy.when); // "2024-01-01T00:00:00.000Z" — a string, not a Date
+
+var loop = new Object();
+loop.self = loop;
+try {
+  JSON.stringify(loop);
+} catch (err) {
+  console.log(err.message); // circular structure error
+}
+
+var safe = deepCopy(source);
+console.log(Object.keys(safe)); // ["when", "note", "run"] — every key survives
+console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it callable`,
+      },
     ],
     checklist: [
       "= with an object shares the shell — two names, one object",
@@ -2232,6 +2362,7 @@ p.then(function (v) { console.log("got " + v); });`,
       "Deep copy recurses into every nested object and array",
       "Object.keys lists own enumerable keys for manual copying",
       "structuredClone is the built-in deep copy — know what it replaces",
+      "JSON.parse(JSON.stringify()) drops keys and mangles types — not a deep copy",
     ],
     realTalk:
       "The shell analogy never fails. = is two labels on one shell. {...a} paints a new shell but stuffs the same branches inside. structuredClone builds a new shell and new branches. Once you see the shell, you stop confusing \"copy the variable\" with \"copy the thing.\".",
@@ -2269,6 +2400,12 @@ p.then(function (v) { console.log("got " + v); });`,
         ],
         answer: 0,
         why: "structuredClone recurses into every nested plain object and array, producing a fully disconnected copy.",
+      },
+      {
+        q: "What does JSON.parse(JSON.stringify(obj)) do to a Date property?",
+        options: ["Keeps it a Date", "Turns it into an ISO string", "Drops the key", "Throws on any Date"],
+        answer: 1,
+        why: "Dates stringify to ISO strings and parsing never rebuilds them — the copy silently changes the type.",
       },
     ],
   },

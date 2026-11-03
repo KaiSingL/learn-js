@@ -59,7 +59,7 @@ export const CHEATSHEET = [
   },
   {
     sugar: "structuredClone(obj)",
-    real: "function deepCopy(value) { if (value === null || typeof value !== \"object\") { return value; } if (Array.isArray(value)) { var copy = []; for (var i = 0; i < value.length; i = i + 1) { copy[copy.length] = deepCopy(value[i]); } return copy; } var copy = new Object(); var keys = Object.keys(value); for (var i = 0; i < keys.length; i = i + 1) { copy[keys[i]] = deepCopy(value[keys[i]]); } return copy; }",
+    real: "var copy = deepCopy(obj); // hand-rolled recursion — lesson 14",
     why: "structuredClone is the built-in recursive deep copy.",
     cat: "object",
     defaults: "Deep: every nested object and array is brand-new, so nothing is shared with the original",
