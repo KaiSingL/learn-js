@@ -2,7 +2,7 @@
   "name": "Learn JS — JavaScript Without the Magic",
   "short_name": "Learn JS",
   "description": "Learn JavaScript by reading only what the engine executes: var, function, prototype, for(;;), this and callbacks. No arrow functions, no classes, no async/await shortcuts.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0E0E10",
   "theme_color": "#0E0E10",
