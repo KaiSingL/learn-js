@@ -25,16 +25,16 @@ var e = null;
 var f;
 
 if (typeof a === "number") {
-  console.log("number");
+  console.log("number"); // -> number
 }
 if (f === undefined) {
-  console.log("missing - explicit check");
+  console.log("missing - explicit check"); // -> missing - explicit check
 }
 if (e === null) {
-  console.log("null is intentional empty");
+  console.log("null is intentional empty"); // -> null is intentional empty
 }
 var isString = typeof b === "string" || b instanceof String;
-console.log(a, b, c.length, isString);
+console.log(a, b, c.length, isString); // -> 5 { 0: "h", 1: "e", 2: "l", 3: "l", 4: "o" } 0 true
 
 // Reference vs value: two objects with the same contents are not equal.
 var obj1 = { x: 1 };
@@ -51,10 +51,10 @@ console.log(same === obj1);   // true — same reference, assigned by reference`
   return typeof value;
 }
 
-console.log(check(undefined));
-console.log(check(null));
-console.log(check(NaN));
-console.log(check(42));`,
+console.log(check(undefined)); // -> undefined
+console.log(check(null)); // -> null
+console.log(check(NaN)); // -> NaN
+console.log(check(42)); // -> number`,
 
     starter: `// Exercise: isFalsy(value)
 // Return true only for false, 0, "", null, undefined and NaN.
@@ -113,7 +113,7 @@ console.log(user.name);`,
 
 var samples = [false, 0, "", null, undefined, NaN, true, 1, "a", {}, []];
 for (var i = 0; i < samples.length; i = i + 1) {
-  console.log(String(samples[i]) + " -> " + isFalsy(samples[i]));
+  console.log(String(samples[i]) + " -> " + isFalsy(samples[i])); // -> false -> true / 0 -> true /  -> true ...
 }`,
       },
       {
@@ -127,11 +127,11 @@ for (var i = 0; i < samples.length; i = i + 1) {
   return typeof value;
 }
 
-console.log(describe(undefined));
-console.log(describe(null));
-console.log(describe(NaN));
-console.log(describe(new String("hi")));
-console.log(describe("hi"));`,
+console.log(describe(undefined)); // -> undefined
+console.log(describe(null)); // -> null
+console.log(describe(NaN)); // -> NaN
+console.log(describe(new String("hi"))); // -> object
+console.log(describe("hi")); // -> string`,
       },
     ],
     checklist: [
@@ -182,8 +182,8 @@ console.log(describe("hi"));`,
 };
 
 var inc = counter();
-console.log(inc());
-console.log(inc());
+console.log(inc()); // -> 1
+console.log(inc()); // -> 2
 
 function buildFunctions() {
   var funcs = [];
@@ -196,13 +196,13 @@ function buildFunctions() {
 }
 
 var fns = buildFunctions();
-console.log(fns[0](), fns[1](), fns[2]());`,
+console.log(fns[0](), fns[1](), fns[2]()); // -> 0 1 2`,
 
     extraReal: `var early;
 console.log(early); // undefined — hoisted, not assigned
 
 var later = 99;
-console.log(later);
+console.log(later); // -> 99
 
 // let version — uncomment to see the TDZ throw:
 // console.log(earlyLet); // ReferenceError: Cannot access 'earlyLet' before initialization
@@ -269,9 +269,9 @@ console.log(fns[2]());`,
 }
 
 var fns = build();
-console.log(fns[0]());
-console.log(fns[1]());
-console.log(fns[2]());`,
+console.log(fns[0]()); // -> 0
+console.log(fns[1]()); // -> 1
+console.log(fns[2]()); // -> 2`,
       },
       {
         title: "A private counter with get and inc",
@@ -289,8 +289,8 @@ console.log(fns[2]());`,
 
 var a = makeCounter();
 var b = makeCounter();
-console.log(a.inc(), a.inc(), b.inc(), a.get());
-console.log(typeof a.count);`,
+console.log(a.inc(), a.inc(), b.inc(), a.get()); // -> 1 2 1 2
+console.log(typeof a.count); // -> undefined`,
       },
     ],
     checklist: [
@@ -350,10 +350,10 @@ function showArgs() {
 }
 
 add.description = "adds two numbers";
-console.log(add.description);
-console.log(typeof add);
-console.log(showArgs("a", "b", "c"));
-console.log(multiply(3, 4));`,
+console.log(add.description); // -> adds two numbers
+console.log(typeof add); // -> function
+console.log(showArgs("a", "b", "c")); // -> a b c 
+console.log(multiply(3, 4)); // -> 12`,
 
     extraReal: `var Counter = function () {
   var fn = function () {
@@ -365,9 +365,9 @@ console.log(multiply(3, 4));`,
 };
 
 var next = Counter();
-console.log(next());
-console.log(next());
-console.log(next.count);`,
+console.log(next()); // -> 1
+console.log(next()); // -> 2
+console.log(next.count); // -> 2`,
 
     starter: `// Exercise: makeCounter
 // Return a function that increments its own count property on every call.
@@ -421,11 +421,11 @@ console.log(counter.description);`,
 }
 
 var c = makeCounter();
-console.log(c());
-console.log(c());
-console.log(c.count);
+console.log(c()); // -> 1
+console.log(c()); // -> 2
+console.log(c.count); // -> 2
 c.count = 100;
-console.log(c());`,
+console.log(c()); // -> 101`,
       },
       {
         title: "Read every argument with arguments",
@@ -438,13 +438,13 @@ console.log(c());`,
   return total;
 }
 
-console.log(sum(1, 2, 3, 4));
-console.log(sum());
+console.log(sum(1, 2, 3, 4)); // -> 10
+console.log(sum()); // -> 0
 
 var toArray = function () {
   return Array.prototype.slice.call(arguments);
 };
-console.log(toArray("a", "b").length);`,
+console.log(toArray("a", "b").length); // -> 2`,
       },
     ],
     checklist: [
@@ -497,9 +497,9 @@ var r2 = greet.apply(person, ["Hi"]);
 var bound = greet.bind(person);
 var r3 = bound("Hey");
 
-console.log(r1);
-console.log(r2);
-console.log(r3);
+console.log(r1); // -> Hello Alex
+console.log(r2); // -> Hi Alex
+console.log(r3); // -> Hey Alex
 
 function Counter() {
   this.count = 0;
@@ -511,7 +511,7 @@ function Counter() {
 var counter = new Counter();
 counter.inc();
 counter.inc();
-console.log(counter.count);`,
+console.log(counter.count); // -> 2`,
 
     extraReal: `Function.prototype.myBind = function (ctx) {
   var fn = this;
@@ -526,7 +526,7 @@ function greet(greeting) {
   return greeting + " " + this.name;
 }
 var bound = greet.myBind({ name: "Alex" }, "Hello");
-console.log(bound("!"));`,
+console.log(bound("!")); // -> Hello Alex`,
 
     starter: `// Exercise: myBind(fn, ctx, ...presetArgs)
 // Return a function that calls fn with ctx as this.
@@ -584,9 +584,9 @@ function greet(greeting, punct) {
 }
 
 var helloKai = myBind(greet, { name: "Kai" }, "Hello");
-console.log(helloKai("!"));
-console.log(helloKai("?"));
-console.log(typeof helloKai);`,
+console.log(helloKai("!")); // -> Hello Kai
+console.log(helloKai("?")); // -> Hello Kai
+console.log(typeof helloKai); // -> function`,
       },
       {
         title: "Borrowing a method with call",
@@ -599,12 +599,12 @@ console.log(typeof helloKai);`,
 };
 
 var quiet = { name: "Echo" };
-console.log(speaker.speak.call(quiet, "hello"));
-console.log(speaker.speak.apply(quiet, ["again"]));
+console.log(speaker.speak.call(quiet, "hello")); // -> Echo: hello
+console.log(speaker.speak.apply(quiet, ["again"])); // -> Echo: again
 
 var detached = speaker.speak;
-console.log(typeof detached);
-console.log(detached.call({ name: "Borrowed" }, "works"));`,
+console.log(typeof detached); // -> function
+console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works`,
       },
     ],
     checklist: [
@@ -661,10 +661,10 @@ Dog.prototype.learn = function (trick) {
 };
 
 var rex = new Dog("Rex");
-console.log(rex.bark());
-console.log(rex.learn("sit").learn("roll").tricks);
-console.log(rex.hasOwnProperty("name"));
-console.log(rex.hasOwnProperty("bark"));`,
+console.log(rex.bark()); // -> Woof Rex
+console.log(rex.learn("sit").learn("roll").tricks); // -> ["sit", "roll"]
+console.log(rex.hasOwnProperty("name")); // -> true
+console.log(rex.hasOwnProperty("bark")); // -> false`,
 
     extraReal: `function Person(name) { this.name = name; }
 Person.prototype.sayHi = function () {
@@ -682,10 +682,10 @@ Student.prototype.study = function () {
 };
 
 var s = new Student("Mira", "math");
-console.log(s.sayHi());
-console.log(s.study());
-console.log(s instanceof Person);
-console.log(s instanceof Student);`,
+console.log(s.sayHi()); // -> Hi, Mira
+console.log(s.study()); // -> Mira studies math
+console.log(s instanceof Person); // -> true
+console.log(s instanceof Student); // -> true`,
 
     starter: `// Exercise: build Cat with a meow method on the prototype.
 // new Cat("Tom").meow() should return "Tom says meow".
@@ -743,11 +743,11 @@ Cat.prototype.loseLife = function () {
 };
 
 var tom = new Cat("Tom");
-console.log(tom.meow());
-console.log(tom.lives);
-console.log(tom.loseLife());
-console.log(tom.hasOwnProperty("meow"));
-console.log(Cat.prototype.hasOwnProperty("meow"));`,
+console.log(tom.meow()); // -> Tom says meow
+console.log(tom.lives); // -> 9
+console.log(tom.loseLife()); // -> 8
+console.log(tom.hasOwnProperty("meow")); // -> false
+console.log(Cat.prototype.hasOwnProperty("meow")); // -> true`,
       },
       {
         title: "Manual inheritance",
@@ -769,10 +769,10 @@ Student.prototype.study = function () {
 };
 
 var s = new Student("Mira", "math");
-console.log(s.sayHi());
-console.log(s.study());
-console.log(s.constructor === Student);
-console.log(s instanceof Person);`,
+console.log(s.sayHi()); // -> Hi, Mira
+console.log(s.study()); // -> Mira studies math
+console.log(s.constructor === Student); // -> true
+console.log(s instanceof Person); // -> true`,
       },
     ],
     checklist: [
@@ -824,18 +824,18 @@ Object.defineProperty(person, "age", {
   configurable: false
 });
 
-console.log(person.name);
-console.log(person.age);
+console.log(person.name); // -> Lydia
+console.log(person.age); // -> 21
 
 var descriptor = Object.getOwnPropertyDescriptor(person, "age");
-console.log(descriptor.value);
-console.log(descriptor.writable);
-console.log(descriptor.enumerable);
-console.log(descriptor.configurable);
+console.log(descriptor.value); // -> 21
+console.log(descriptor.writable); // -> false
+console.log(descriptor.enumerable); // -> false
+console.log(descriptor.configurable); // -> false
 
-console.log(Object.keys(person));
-console.log(person.hasOwnProperty("age"));
-console.log(person.propertyIsEnumerable("age"));`,
+console.log(Object.keys(person)); // -> ["name"]
+console.log(person.hasOwnProperty("age")); // -> true
+console.log(person.propertyIsEnumerable("age")); // -> false`,
 
     extraReal: `var person2 = new Object();
 person2.name = "Lydia";
@@ -845,7 +845,7 @@ Object.defineProperty(person2, "age", {
   enumerable: true,
   configurable: true
 });
-console.log(Object.keys(person2));
+console.log(Object.keys(person2)); // -> ["name", "age"]
 
 // Accessor descriptors — get/set is the machinery behind the property syntax
 var account = new Object();
@@ -935,11 +935,11 @@ Object.defineProperty(config, "version", {
 });
 
 config.version = 3;
-console.log(config.version);
-console.log(Object.keys(config));
+console.log(config.version); // -> 2
+console.log(Object.keys(config)); // -> ["version"]
 
 delete config.version;
-console.log(config.version);`,
+console.log(config.version); // -> 2`,
       },
     ],
     checklist: [
@@ -1003,10 +1003,10 @@ console.log(obj["[object Object]"]); // 123 — the object key became a string`,
   return "not equal";
 }
 
-console.log(same(1, 1));
-console.log(same(1, "1"));
-console.log(same(null, undefined));
-console.log(same(0, false));
+console.log(same(1, 1)); // -> strict equal
+console.log(same(1, "1")); // -> loose equal
+console.log(same(null, undefined)); // -> loose equal
+console.log(same(0, false)); // -> loose equal
 
 // ToPrimitive: the default hint (+) calls valueOf first; String() hints string, so toString first
 var wallet = {
@@ -1076,10 +1076,10 @@ console.log(\`\${[]}\`);   // ?`,
   return "none";
 }
 
-console.log(classify(5, "5"));
-console.log(classify(5, 5));
-console.log(classify(null, undefined));
-console.log(classify(0, false));`,
+console.log(classify(5, "5")); // -> loose
+console.log(classify(5, 5)); // -> strict
+console.log(classify(null, undefined)); // -> loose
+console.log(classify(0, false)); // -> loose`,
 
       },
       {
@@ -1163,8 +1163,8 @@ function manualPush(array, value) {
 }
 
 manualPush(doubled, 10);
-console.log(doubled);
-console.log(filtered);`,
+console.log(doubled); // -> [2, 4, 6, 8, 10]
+console.log(filtered); // -> [3, 4]`,
 
     extraReal: `function map(array, fn) {
   var out = [];
@@ -1261,9 +1261,9 @@ function reduce(array, fn, initial) {
   return acc;
 }
 
-console.log(map([1, 2, 3], function (x) { return x * 2; }));
-console.log(filter([1, 2, 3, 4], function (x) { return x > 2; }));
-console.log(reduce([1, 2, 3, 4], function (acc, x) { return acc + x; }, 0));`,
+console.log(map([1, 2, 3], function (x) { return x * 2; })); // -> [2, 4, 6]
+console.log(filter([1, 2, 3, 4], function (x) { return x > 2; })); // -> [3, 4]
+console.log(reduce([1, 2, 3, 4], function (acc, x) { return acc + x; }, 0)); // -> 10`,
 
       },
       {
@@ -1285,9 +1285,9 @@ function indexOf(array, value) {
   return -1;
 }
 
-console.log(slice([1, 2, 3, 4, 5], 1, 4));
-console.log(indexOf(["a", "b", "c"], "b"));
-console.log(indexOf(["a", "b", "c"], "z"));`,
+console.log(slice([1, 2, 3, 4, 5], 1, 4)); // -> [2, 3, 4]
+console.log(indexOf(["a", "b", "c"], "b")); // -> 1
+console.log(indexOf(["a", "b", "c"], "z")); // -> -1`,
       },
     ],
     checklist: [
@@ -1332,7 +1332,7 @@ console.log(indexOf(["a", "b", "c"], "z"));`,
     realCode: `'use strict';
 
 var greetign = {}; // typo: intended greeting
-console.log(typeof greetign);
+console.log(typeof greetign); // -> object
 
 // In strict mode, this would throw:
 // y = 10; // ReferenceError: Cannot assign to undeclared variable y
@@ -1356,9 +1356,9 @@ function strict() {
   return 0;
 }
 
-console.log(sloppy());
-console.log(typeof window.z);
-console.log(strict());`,
+console.log(sloppy()); // -> 10
+console.log(typeof window.z); // -> number
+console.log(strict()); // -> 0`,
 
     starter: `// Exercise: write a strict-mode function that rejects accidental globals.
 // It should assign to a declared variable only, and throw if given an undeclared target.
@@ -1410,7 +1410,7 @@ function safeSet(name, value) {
 }
 
 var result = safeSet("target", 42);
-console.log(result);
+console.log(result); // -> 42
 
 // This would throw in strict mode:
 // undeclared = 99; // ReferenceError`,
@@ -1469,17 +1469,17 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
     sugarReplaces: "setTimeout, promise microtasks (concept only)",
     longDesc:
       "JavaScript is single-threaded. There is a call stack, Web APIs (timers, DOM events, fetch) that run outside the engine, and a task queue. When setTimeout fires, its callback does not run immediately — it goes to the queue and waits until the stack is empty. var in a for loop is function-scoped, so by the time the timer callback runs, the loop has finished and i is 3. The queue order explains Q2 (3 3 3) and Q30 (First Third Second).",
-    realCode: `console.log("First");
+    realCode: `console.log("First"); // -> First
 
 setTimeout(function () {
-  console.log("Second");
+  console.log("Second"); // -> Second
 }, 0);
 
-console.log("Third");`,
+console.log("Third"); // -> Third`,
 
     extraReal: `for (var i = 0; i < 3; i = i + 1) {
   setTimeout(function () {
-    console.log("i = " + i);
+    console.log("i = " + i); // -> i = 3 (x3) ...
   }, 0);
 }
 
@@ -1531,13 +1531,13 @@ console.log("done");`,
       {
         title: "Event loop order",
         note: "Synchronous code runs first, then macrotasks (timers) from the queue once the stack is empty.",
-        code: `console.log("First");
+        code: `console.log("First"); // -> First
 
 setTimeout(function () {
-  console.log("Second");
+  console.log("Second"); // -> Second
 }, 0);
 
-console.log("Third");`,
+console.log("Third"); // -> Third`,
 
       },
       {
@@ -1546,12 +1546,12 @@ console.log("Third");`,
         code: `for (var i = 0; i < 3; i = i + 1) {
   (function (j) {
     setTimeout(function () {
-      console.log("i = " + j);
+      console.log("i = " + j); // -> i = 0 / i = 1 / i = 2
     }, 0);
   })(i);
 }
 
-console.log("done");
+console.log("done"); // -> done
 // Prints: done, then i = 0, i = 1, i = 2`,
 
       },
@@ -1603,7 +1603,7 @@ console.log("done");
 
 fetchData(function (err, result) {
   if (err) { console.log("error"); return; }
-  console.log(result.data);
+  console.log(result.data); // -> hello
 });
 
 var p = new Promise(function (resolve, reject) {
@@ -1613,10 +1613,10 @@ var p = new Promise(function (resolve, reject) {
 });
 
 p.then(function (value) {
-  console.log(value);
+  console.log(value); // -> done
   return value + "!";
 }).then(function (v2) {
-  console.log(v2);
+  console.log(v2); // -> done!
 }).catch(function (e) {
   console.log("fail", e);
 });`,
@@ -1628,13 +1628,13 @@ p.then(function (value) {
 }
 
 delay(30).then(function (ms) {
-  console.log("waited " + ms);
+  console.log("waited " + ms); // -> waited 30
   return delay(20);
 }).then(function (ms) {
-  console.log("then " + ms);
+  console.log("then " + ms); // -> then 20
   return "finished";
 }).then(function (value) {
-  console.log(value);
+  console.log(value); // -> finished
 });`,
 
     starter: `// Exercise: promisify a callback-style function.
@@ -1717,12 +1717,12 @@ function read(name, callback) {
 
 var readPromise = promisify(read);
 readPromise("theme").then(function (value) {
-  console.log(value);
+  console.log(value); // -> theme=on
   return readPromise("missing");
 }).then(function (value) {
   console.log(value);
 }).catch(function (err) {
-  console.log("caught: " + err.message);
+  console.log("caught: " + err.message); // -> caught: not found
 });`,
 
       },
@@ -1736,13 +1736,13 @@ readPromise("theme").then(function (value) {
 }
 
 delay(30).then(function (ms) {
-  console.log("first " + ms);
+  console.log("first " + ms); // -> first 30
   return delay(20);
 }).then(function (ms) {
-  console.log("second " + ms);
+  console.log("second " + ms); // -> second 20
   return "done";
 }).then(function (value) {
-  console.log(value);
+  console.log(value); // -> done
 });`,
 
       },
@@ -1805,10 +1805,10 @@ delay(30).then(function (ms) {
 }
 
 var it = makeCounter();
-console.log(it.next());
-console.log(it.next());
-console.log(it.next());
-console.log(it.next());
+console.log(it.next()); // -> { value: 0, done: false }
+console.log(it.next()); // -> { value: 1, done: false }
+console.log(it.next()); // -> { value: undefined, done: true }
+console.log(it.next()); // -> { value: undefined, done: true }
 
 // Symbol.iterator is the well-known key loops look for — attach it and the object is iterable
 it[Symbol.iterator] = function () {
@@ -1832,9 +1832,9 @@ console.log(typeof it[Symbol.iterator]); // "function"`,
 }
 
 var ids = idGenerator();
-console.log(ids.next());
-console.log(ids.next());
-console.log(ids.next());`,
+console.log(ids.next()); // -> { value: 0, done: false }
+console.log(ids.next()); // -> { value: 1, done: false }
+console.log(ids.next()); // -> { value: 2, done: false }`,
 
     starter: `// Exercise: build a manual generator for 0, 1, 2.
 // It should return { value, done } from next() and stop after 2.
@@ -1915,10 +1915,10 @@ console.log(it.next());`,
 }
 
 var it = makeThree();
-console.log(it.next());
-console.log(it.next());
-console.log(it.next());
-console.log(it.next());`,
+console.log(it.next()); // -> { value: 0, done: false }
+console.log(it.next()); // -> { value: 1, done: false }
+console.log(it.next()); // -> { value: 2, done: false }
+console.log(it.next()); // -> { value: undefined, done: true }`,
 
       },
       {
@@ -1940,9 +1940,9 @@ console.log(it.next());`,
 }
 
 var ids = idGenerator();
-console.log(ids.next());
-console.log(ids.next());
-console.log(ids.next());`,
+console.log(ids.next()); // -> { value: 0, done: false }
+console.log(ids.next()); // -> { value: 1, done: false }
+console.log(ids.next()); // -> { value: 2, done: false }`,
 
       },
     ],
@@ -2041,7 +2041,7 @@ ee.emit("data", "hello");`,
 
 var ee = new EventEmitter();
 ee.once("ready", function (value) {
-  console.log("once " + value);
+  console.log("once " + value); // -> once 1
 });
 ee.emit("ready", 1);
 ee.emit("ready", 2);`,
@@ -2138,12 +2138,12 @@ import { Bus } from "./bus.js";`,
 
 var ee = new EventEmitter();
 ee.once("ready", function (value) {
-  console.log("once " + value);
+  console.log("once " + value); // -> once 1
 });
 ee.emit("ready", 1);
 ee.emit("ready", 2);
 ee.emit("ready", 3);
-console.log(ee.events.ready.length);`,
+console.log(ee.events.ready.length); // -> 0`,
 
       },
       {
@@ -2233,15 +2233,15 @@ function parseAge(raw) {
 
 function readAge(raw) {
   try {
-    console.log("parsed " + parseAge(raw));
+    console.log("parsed " + parseAge(raw)); // -> parsed 42
   } catch (err) {
     if (err instanceof ValidationError) {
-      console.log("bad input: " + err.message);
+      console.log("bad input: " + err.message); // -> bad input: not a number: abc
     } else {
-      console.log(err.name + ": " + err.message);
+      console.log(err.name + ": " + err.message); // -> RangeError: age cannot be negative: -3
     }
   } finally {
-    console.log("finished with " + raw);
+    console.log("finished with " + raw); // -> finished with 42 / finished with abc / finished with -3
   }
 }
 
