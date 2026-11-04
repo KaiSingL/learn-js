@@ -249,3 +249,30 @@ button.no-press:active {
     font-size: 16px;
   }
 }
+
+/* Phone readability: lift non-code text one step at below lg.
+   Code blocks, playground/lab editors and keyboard panes keep their sizes
+   (selectors exclude pre/code/textarea and their descendants). */
+@media (max-width: 1023px) {
+  .text-\[10px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 11px;
+  }
+  .text-\[10\.5px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 11.5px;
+  }
+  .text-\[11px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 13px;
+  }
+  .text-\[11\.5px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 13.5px;
+  }
+  .text-\[12px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 14px;
+  }
+  .text-\[12\.5px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 14.5px;
+  }
+  .text-\[13px\]:not(:is(pre, code, textarea), :is(pre, code, textarea) *) {
+    font-size: 15px;
+  }
+}
