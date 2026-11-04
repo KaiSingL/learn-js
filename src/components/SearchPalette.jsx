@@ -6,8 +6,8 @@ import Icon from "./Icon.jsx";
 
 const PAGES = [
   { type: "page", label: "Overview", title: "Course overview", sub: "Purpose, rule #0 and the course map", path: "/" },
-  { type: "page", label: "Rules", title: "Allowed vs forbidden", sub: "The no-sugar ruleset", path: "/rules" },
-  { type: "page", label: "Lessons", title: "All ten lessons", sub: "Read, check and mark complete", path: "/lessons" },
+  { type: "page", label: "Rules", title: "Tier 0, Tier 1, Tier 2", sub: "The no-sugar ruleset", path: "/rules" },
+  { type: "page", label: "Lessons", title: "All " + LESSONS.length + " lessons", sub: "Read, check and mark complete", path: "/lessons" },
   { type: "page", label: "Cheatsheet", title: "Sugar → real", sub: "Every mapping with a reason", path: "/cheatsheet" },
   { type: "page", label: "Project", title: "Final project", sub: "EventEmitter and DOM helper", path: "/project" },
   { type: "page", label: "Playground", title: "Run real code", sub: "Editor, checker and isolated console", path: "/playground" },

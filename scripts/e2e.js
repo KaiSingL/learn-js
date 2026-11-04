@@ -2,6 +2,7 @@ import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { LESSONS } from "../src/data/lessons.js";
 
 const root = process.cwd();
 const html = await Bun.file(join(root, "dist", "index.html")).text();
@@ -56,7 +57,7 @@ try {
   check(await page.locator('link[rel="manifest"]').count() === 1, "web manifest present");
 
   await goto("#/rules");
-  check((await page.locator("h1").first().innerText()).indexOf("Allowed") !== -1, "rules route renders");
+  check((await page.locator("h1").first().innerText()).indexOf("Tier 0") !== -1, "rules route renders");
 
   await goto("#/lessons");
   check((await page.locator("h1").first().innerText()).indexOf("Learn the real form") !== -1, "lessons route renders");
@@ -65,7 +66,7 @@ try {
   await page.waitForTimeout(300);
   check(page.url().indexOf("lesson/5") !== -1, "lesson deep link keeps the hash");
   check((await page.locator("#lesson-5").count()) === 1, "lesson 5 card exists");
-  check((await page.locator("#lesson-5").innerText()).indexOf("Scope, Hoisting") !== -1, "lesson 5 is expanded");
+  check((await page.locator("#lesson-5").innerText()).indexOf("Objects & Prototype") !== -1, "lesson 5 is expanded");
 
   await goto("#/cheatsheet");
   check((await page.locator("h1").first().innerText()).indexOf("Sugar") !== -1, "cheatsheet route renders");
@@ -78,7 +79,7 @@ try {
   await page.waitForTimeout(300);
   check(page.url().indexOf("lesson/9") !== -1, "lesson 9 deep link keeps the hash");
   check((await page.locator("#lesson-9").count()) === 1, "lesson 9 card exists");
-  check((await page.locator("#lesson-9").innerText()).indexOf("Property Descriptors") !== -1, "lesson 9 is expanded");
+  check((await page.locator("#lesson-9").innerText()).indexOf("Strict Mode") !== -1, "lesson 9 is expanded");
 
   await page.goto(base + "#/playground", { waitUntil: "networkidle" });
   await page.waitForTimeout(300);
@@ -152,10 +153,10 @@ try {
   await page.waitForTimeout(400);
   check((await page.getByRole("button", { name: "Marked complete" }).count()) === 1, "completion survives reload");
   const asideText = await page.locator("aside").innerText();
-  check(asideText.indexOf("1 / 11") !== -1, "sidebar progress updates");
+  check(asideText.indexOf("1 / " + LESSONS.length) !== -1, "sidebar progress updates");
   await page.locator("aside").getByRole("button", { name: "Reset", exact: true }).click();
   await page.waitForTimeout(200);
-  check((await page.locator("aside").innerText()).indexOf("0 / 11") !== -1, "progress reset works");
+  check((await page.locator("aside").innerText()).indexOf("0 / " + LESSONS.length) !== -1, "progress reset works");
 
   console.log("\nSearch");
   await goto("");
@@ -166,7 +167,7 @@ try {
   await page.waitForTimeout(250);
   await page.keyboard.press("Enter");
   await page.waitForTimeout(400);
-  check(page.url().indexOf("#/lesson/5") !== -1, "search opens the right lesson", page.url());
+  check(page.url().indexOf("#/lesson/2") !== -1, "search opens the right lesson", page.url());
 
   console.log("\nScreenshots");
   await page.setViewportSize({ width: 1440, height: 1000 });
