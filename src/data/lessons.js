@@ -3,10 +3,9 @@
 //
 // Each lesson follows the "break" pedagogy:
 //   realCode     — Write Real: Tier 0/1 only, linter-clean
-//   breakIt      — Break It: the sugared canyoustill.com version that hides a default
+//   breakIt      — Break It: the sugared modern version that hides a default
 //   predict      — multiple choice: what does the sugared version print?
 //   translate    — Translate: de-sugar breakIt back to Tier 0/1 code
-//   killsQs      — canyoustill.com question IDs this lesson protects against
 
 export const LESSONS = [
   {
@@ -16,25 +15,34 @@ export const LESSONS = [
     tier: 0,
     sugarReplaces: "let / const, ??, truthy coercion",
     longDesc:
-      "Before let and const there was only var. Primitives are compared by value; objects are compared by reference. Two objects are never === even when they look identical. typeof is the only safe runtime introspection, and it has one famous bug: typeof null is \"object\". Always check === undefined explicitly instead of leaning on falsiness, because 0, \"\" and false are real values too.",
+      "Before let and const there was only var. Primitives are compared by value; objects are compared by reference. Two objects are never === even when they look identical. typeof is the only safe runtime introspection, and it has one famous bug: typeof null is \"object\". Always check === undefined explicitly instead of leaning on falsiness, because 0, \"\" and false are real values too. NaN is a number value produced by a failed number operation such as 0 / 0, and it is the only value not equal to itself, so test it with value !== value. == converts types before comparing and unwraps a wrapper object when the other side is a primitive — that is why \"\" == new String(\"\") is true — but when both sides are objects it compares references, so new String(\"\") == new String(\"\") is false.",
     realCode: `var a = 5;
-var b = new String("hello");
-var c = new Array();
-var d = new Object();
-var e = null;
-var f;
-
 if (typeof a === "number") {
   console.log("number"); // -> number
 }
-if (f === undefined) {
-  console.log("missing - explicit check"); // -> missing - explicit check
-}
+
+var b = new String("hello");
+var isString = typeof b === "string" || b instanceof String;
+
+var c = new Array();
+var d = new Object();
+
+var e = null;
 if (e === null) {
   console.log("null is intentional empty"); // -> null is intentional empty
 }
-var isString = typeof b === "string" || b instanceof String;
+
+var f;
+if (f === undefined) {
+  console.log("missing - explicit check"); // -> missing - explicit check
+}
+
 console.log(a, b, c.length, isString); // -> 5 { 0: "h", 1: "e", 2: "l", 3: "l", 4: "o" } 0 true
+
+// NaN is a number value produced by a failed number operation.
+var g = 0 / 0;
+console.log(typeof g); // -> number
+console.log(g === g);  // -> false — NaN is the only value not equal to itself
 
 // Reference vs value: two objects with the same contents are not equal.
 var obj1 = { x: 1 };
@@ -42,7 +50,14 @@ var obj2 = { x: 1 };
 console.log(obj1 === obj2);   // false — different objects, different references
 console.log(obj1 === obj1);   // true — same reference
 var same = obj1;
-console.log(same === obj1);   // true — same reference, assigned by reference`,
+console.log(same === obj1);   // true — same reference, assigned by reference
+
+// == and === disagree when one side is a wrapper object.
+var empty = new String("");
+console.log("" === "");               // true — primitives compare by value
+console.log("" == empty);             // true — one side is an object: == unwraps it to ""
+console.log(empty == new String("")); // false — both objects: references compared, no unwrapping
+console.log("" === empty);            // false — === never converts`,
 
     extraReal: `function check(value) {
   if (value === undefined) { return "undefined"; }
@@ -140,10 +155,10 @@ console.log(describe("hi")); // -> string`,
       "Check === null separately from undefined",
       "Use value !== value to detect NaN",
       "Remember objects compare by reference, not by contents",
+      "== unwraps a wrapper only when the other side is a primitive",
     ],
     realTalk:
       "typeof null returning \"object\" is a bug from 1995 that cannot be fixed without breaking the web. That is why every real codebase checks null explicitly. And two objects with identical contents are never === — only the same reference is equal.",
-    killsQs: ["Q6", "Q46", "Q51"],
     quiz: [
       {
         q: "What does typeof null return?",
@@ -163,6 +178,17 @@ console.log(describe("hi")); // -> string`,
         answer: 1,
         why: "Two separately created objects are different references, so they are never strictly equal.",
       },
+      {
+        q: "What is new String(\"\") == new String(\"\")?",
+        options: [
+          "true — both wrap an empty string",
+          "false — two objects are different references",
+          "true — == always converts objects to strings",
+          "A TypeError",
+        ],
+        answer: 1,
+        why: "== only converts when one side is a primitive. When both sides are objects it compares references, and two separately created wrappers are different objects.",
+      },
     ],
   },
   {
@@ -172,7 +198,7 @@ console.log(describe("hi")); // -> string`,
     tier: 1,
     sugarReplaces: "let block scope, arrow closure sugar",
     longDesc:
-      "var is function-scoped. The binding is created when the function starts, so reading it before the assignment gives undefined, not a ReferenceError. Only functions create a new scope. let and const are block-scoped, and they live in the temporal dead zone (TDZ) from the start of the block until their declaration runs — reading them early throws a ReferenceError. That is the difference Q1 tests.",
+      "var is function-scoped. The binding is created when the function starts, so reading it before the assignment gives undefined, not a ReferenceError. Only functions create a new scope. let and const are block-scoped, and they live in the temporal dead zone (TDZ) from the start of the block until their declaration runs — reading them early throws a ReferenceError. That is the difference between var and let.",
     realCode: `var counter = function () {
   var count = 0;
   return function () {
@@ -302,7 +328,6 @@ console.log(typeof a.count); // -> undefined`,
     ],
     realTalk:
       "Hoisting is not the engine moving your code around. It is the environment record creating every var binding at function entry, before the first line runs. let does not hoist in the same way — it stays in the TDZ until its line executes.",
-    killsQs: ["Q1"],
     quiz: [
       {
         q: "What is a hoisted var before its assignment?",
@@ -456,7 +481,6 @@ console.log(toArray("a", "b").length); // -> 2`,
     ],
     realTalk:
       "Arrow functions do not have their own this, arguments or prototype. A real function has all three. That is the difference the syntax was hiding.",
-    killsQs: [],
     quiz: [
       {
         q: "What does typeof function () {} return?",
@@ -616,7 +640,6 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
     ],
     realTalk:
       "If a function is extracted from an object and called on its own, this is not the object. That is not a bug; it is the call site doing exactly what it was told.",
-    killsQs: ["Q33"],
     quiz: [
       {
         q: "What decides this inside a normal function?",
@@ -784,7 +807,6 @@ console.log(s instanceof Person); // -> true`,
     ],
     realTalk:
       "Log any class instance and open its [[Prototype]]. A class compiles to exactly the constructor and prototype assignments in this lesson. There is no class object at runtime.",
-    killsQs: ["Q11", "Q12", "Q55"],
     quiz: [
       {
         q: "What does new Dog(\"Rex\") create first?",
@@ -813,7 +835,7 @@ console.log(s instanceof Person); // -> true`,
     tier: 1,
     sugarReplaces: "obj.age = 21 (sugar for defineProperty with all flags true)",
     longDesc:
-      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. Q61 fails because the default is enumerable:false. Descriptors come in two shapes: data descriptors carry value and writable; accessor descriptors carry get and set — the machinery behind getters and setters.",
+      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. The classic trap is that the default is enumerable:false. Descriptors come in two shapes: data descriptors carry value and writable; accessor descriptors carry get and set — the machinery behind getters and setters.",
     realCode: `var person = new Object();
 person.name = "Lydia";
 
@@ -952,7 +974,6 @@ console.log(config.version); // -> 2`,
     ],
     realTalk:
       "obj.age = 21 is not magic. It is Object.defineProperty(obj, \"age\", { value: 21, writable: true, enumerable: true, configurable: true }) written in short form. The long form is what gives you control — and the default for every missing flag is false.",
-    killsQs: ["Q61"],
     quiz: [
       {
         q: "What does Object.keys return for a property defined with enumerable: false?",
@@ -981,7 +1002,7 @@ console.log(config.version); // -> 2`,
     tier: 0,
     sugarReplaces: "== vs ===, implicit coercion, template coercion",
     longDesc:
-      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". These hidden coercions are behind Q4, Q15, Q35 and Q48. The mechanism is ToPrimitive: with a number hint the engine calls valueOf first; with a string hint it calls toString first.",
+      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". The mechanism is ToPrimitive: with a number hint the engine calls valueOf first; with a string hint it calls toString first.",
     realCode: `var a = 5;
 var b = "5";
 
@@ -1107,7 +1128,6 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
     ],
     realTalk:
       "Coercion is not a bug — it is the spec. The bug is forgetting it happens. === removes the guesswork, and knowing that object keys become strings explains why a[b] = 123 never uses b as the key.",
-    killsQs: ["Q4", "Q15", "Q35", "Q48"],
     quiz: [
       {
         q: "What does 5 == \"5\" return?",
@@ -1299,7 +1319,6 @@ console.log(indexOf(["a", "b", "c"], "z")); // -> -1`,
     ],
     realTalk:
       "Every array method you have used is the loop in this lesson plus a callback. Knowing the loop means you can reason about allocation and early exit instead of guessing.",
-    killsQs: [],
     quiz: [
       {
         q: "What does map return?",
@@ -1439,7 +1458,6 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
     ],
     realTalk:
       "A typo like greetign = {} does not fail — it creates a global and your real greeting stays undefined. \"use strict\" makes the engine fail fast so you catch the mistake at the first line, not three screens later.",
-    killsQs: ["Q9", "Q54", "Q58"],
     quiz: [
       {
         q: "What does y = 10 do in sloppy mode without var?",
@@ -1468,7 +1486,7 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
     tier: 0,
     sugarReplaces: "setTimeout, promise microtasks (concept only)",
     longDesc:
-      "JavaScript is single-threaded. There is a call stack, Web APIs (timers, DOM events, fetch) that run outside the engine, and a task queue. When setTimeout fires, its callback does not run immediately — it goes to the queue and waits until the stack is empty. var in a for loop is function-scoped, so by the time the timer callback runs, the loop has finished and i is 3. The queue order explains Q2 (3 3 3) and Q30 (First Third Second).",
+      "JavaScript is single-threaded. There is a call stack, Web APIs (timers, DOM events, fetch) that run outside the engine, and a task queue. When setTimeout fires, its callback does not run immediately — it goes to the queue and waits until the stack is empty. var in a for loop is function-scoped, so by the time the timer callback runs, the loop has finished and i is 3. The queue order explains why the classic loop prints 3 3 3, and why \"First Third Second\" logs in that order.",
     realCode: `console.log("First"); // -> First
 
 setTimeout(function () {
@@ -1503,7 +1521,7 @@ console.log("C");
 
     exercise:
       "Predict the output order of the starter code. Then wrap a setTimeout in a for(var i) loop and explain why all three callbacks print the same i.",
-    breakIt: `// The modern version — uses setTimeout with var, just like Q2.
+    breakIt: `// The modern version — uses setTimeout with var.
 // Predict: what prints, in what order?
 
 for (var i = 0; i < 3; i = i + 1) {
@@ -1564,8 +1582,7 @@ console.log("done"); // -> done
       "Capture loop values with an IIFE when using timers",
     ],
     realTalk:
-      "The timer does not \"fire after 0ms\". It fires when the stack is empty and the queue turns it into a task. By then the loop is long finished and var i is already 3. Q30's First Third Second is the same principle: synchronous first, queued second.",
-    killsQs: ["Q2", "Q30"],
+      "The timer does not \"fire after 0ms\". It fires when the stack is empty and the queue turns it into a task. By then the loop is long finished and var i is already 3. The same principle explains First Third Second: synchronous first, queued second.",
     quiz: [
       {
         q: "What prints first: console.log before or after setTimeout?",
@@ -1756,7 +1773,6 @@ delay(30).then(function (ms) {
     ],
     realTalk:
       "A promise is not magic and it is not a thread. It is an object with a state (pending, fulfilled, rejected) and a list of reactions that run as microtasks. async/await is just a different spelling of .then chains.",
-    killsQs: [],
     quiz: [
       {
         q: "What does then return?",
@@ -1956,7 +1972,6 @@ console.log(ids.next()); // -> { value: 2, done: false }`,
     ],
     realTalk:
       "Generators look like magic, but they are just a compiler trick: the engine turns function* into a state machine and stores your locals on that machine. Writing it by hand with a closure and a switch shows there is nothing hidden — just variables and an if chain.",
-    killsQs: [],
     quiz: [
       {
         q: "What does .next() return from a generator iterator?",
@@ -2262,7 +2277,6 @@ readAge("-3");`,
     ],
     realTalk:
       "Node's EventEmitter has more methods and edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener. A Promise is the same machinery — state, reactions, resolve/reject — without the async keyword.",
-    killsQs: [],
     quiz: [
       {
         q: "How does emit forward extra arguments?",
@@ -2366,7 +2380,6 @@ console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it ca
     ],
     realTalk:
       "The shell analogy never fails. = is two labels on one shell. {...a} paints a new shell but stuffs the same branches inside. structuredClone builds a new shell and new branches. Once you see the shell, you stop confusing \"copy the variable\" with \"copy the thing.\".",
-    killsQs: [],
     quiz: [
       {
         q: "What does let b = a do when a is an object?",

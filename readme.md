@@ -17,7 +17,7 @@ Rule #0: **If you cannot write it with `var` + `function` + `prototype`, you do 
 | Section | What it does |
 | --- | --- |
 | **Rules** | The three-tier ruleset, with the hidden default each Tier 1 feature carries |
-| **Lessons** | 14 lessons — every one has real code, a *Break It* snippet (the sugared version), a predict quiz, a translate exercise, and the interview questions it kills |
+| **Lessons** | 14 lessons — every one has real code, a *Break It* snippet (the sugared version), a predict quiz, a translate exercise, and runnable solutions |
 | **Cheatsheet** | Sugar → real mapping, plus a table of hidden defaults that bite |
 | **De-sugar Lab** | Paste modern sugar, get tier-tagged analysis and the Tier 0/1 equivalent |
 | **Playground** | Runs your code in a sandboxed worker/iframe; Tier 2 sugar blocks Run, Tier 1 runs fine with notes |

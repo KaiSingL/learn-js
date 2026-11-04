@@ -64,12 +64,6 @@ export default function LessonCard({
                   complete
                 </span>
               ) : null}
-              {lesson.killsQs && lesson.killsQs.length > 0 ? (
-                <span className="mono inline-flex items-center gap-1 rounded-full border border-danger/30 bg-danger/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-danger">
-                  <Icon name="warning" size={10} />
-                  kills {lesson.killsQs.join(", ")}
-                </span>
-              ) : null}
             </span>
             <span className="mt-1.5 block text-[12.5px] leading-[1.5] text-muted">{lesson.goal}</span>
           </span>
@@ -100,195 +94,167 @@ export default function LessonCard({
           id={"lesson-body-" + lesson.id}
           className="anim-fade-in border-t border-line bg-card2/40"
         >
-          <div className="grid min-w-0 lg:grid-cols-[1.12fr_0.88fr]">
-            <div className="min-w-0 space-y-5 p-5 lg:p-6">
-              <div>
-                <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">Goal</div>
-                <p className="text-[13px] leading-[1.7] text-paper/80">{lesson.longDesc}</p>
-              </div>
+          <div className="min-w-0 space-y-5 p-5 lg:p-6">
+            <div>
+              <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">Goal</div>
+              <p className="text-[13px] leading-[1.7] text-paper/80">{lesson.longDesc}</p>
+            </div>
 
-              <CodeBlock
-                label={"Real code — lesson " + lesson.id}
-                code={lesson.realCode}
-                onPlayground={onPlayground}
-              />
-              <CodeBlock
-                label="Extra real pattern"
-                code={lesson.extraReal}
-                onPlayground={onPlayground}
-              />
+            <CodeBlock
+              label={"Real code — lesson " + lesson.id}
+              code={lesson.realCode}
+              onPlayground={onPlayground}
+            />
+            <CodeBlock
+              label="Extra real pattern"
+              code={lesson.extraReal}
+              onPlayground={onPlayground}
+            />
 
-              <div className="rounded-panel border border-line bg-card p-4">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    <span className="mono text-[11px] font-semibold uppercase tracking-[0.12em]">
-                      Exercise
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={function () {
-                      setShowSolutions(function (value) {
-                        return !value;
-                      });
-                    }}
-                    className="mono text-[10px] uppercase tracking-wide text-accent transition-opacity hover:opacity-80"
-                    aria-expanded={showSolutions}
-                  >
-                    {showSolutions ? "Hide solution" : "Show solution"}
-                  </button>
+            <div className="rounded-panel border border-line bg-card p-4">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  <span className="mono text-[11px] font-semibold uppercase tracking-[0.12em]">
+                    Exercise
+                  </span>
                 </div>
-                <p className="mono text-[12px] leading-[1.65] text-paper/80">{lesson.exercise}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={function () {
+                    setShowSolutions(function (value) {
+                      return !value;
+                    });
+                  }}
+                  className="mono text-[10px] uppercase tracking-wide text-accent transition-opacity hover:opacity-80"
+                  aria-expanded={showSolutions}
+                >
+                  {showSolutions ? "Hide solution" : "Show solution"}
+                </button>
+              </div>
+              <p className="mono text-[12px] leading-[1.65] text-paper/80">{lesson.exercise}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={function () {
+                    onPlayground(lesson.starter, "Lesson " + lesson.id + " starter");
+                  }}
+                  className="btn h-8 px-3"
+                >
+                  <Icon name="play" size={11} />
+                  Load starter
+                </button>
+                {lesson.solutions[0] ? (
                   <button
                     type="button"
                     onClick={function () {
-                      onPlayground(lesson.starter, "Lesson " + lesson.id + " starter");
+                      onPlayground(
+                        lesson.solutions[0].code,
+                        "Lesson " + lesson.id + " solution"
+                      );
                     }}
                     className="btn h-8 px-3"
                   >
-                    <Icon name="play" size={11} />
-                    Load starter
+                    <Icon name="code" size={12} />
+                    Run solution
                   </button>
-                  {lesson.solutions[0] ? (
-                    <button
-                      type="button"
-                      onClick={function () {
-                        onPlayground(
-                          lesson.solutions[0].code,
-                          "Lesson " + lesson.id + " solution"
-                        );
-                      }}
-                      className="btn h-8 px-3"
-                    >
-                      <Icon name="code" size={12} />
-                      Run solution
-                    </button>
-                  ) : null}
-                </div>
-
-                {showSolutions ? (
-                  <div className="mt-4 space-y-3 border-t border-line pt-4">
-                    {lesson.solutions.map(function (solution, index) {
-                      return (
-                        <div key={solution.title}>
-                          <div className="flex items-center gap-2">
-                            <span className="mono text-[10px] uppercase tracking-wide text-accent">
-                              Solution {index + 1}
-                            </span>
-                            <span className="text-[11.5px] font-medium text-paper/90">
-                              {solution.title}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-[11.5px] leading-[1.6] text-muted">{solution.note}</p>
-                          <CodeBlock
-                            code={solution.code}
-                            label={"lesson " + lesson.id + " · solution " + (index + 1)}
-                            onPlayground={onPlayground}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
                 ) : null}
               </div>
-            </div>
 
-            <div className="min-w-0 space-y-4 border-t border-line bg-card/40 p-5 lg:border-l lg:border-t-0 lg:p-6">
-              <div>
-                <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
-                  Sugar it replaces
-                </div>
-                <div className="mono break-words rounded-md border border-line bg-ink px-3 py-2 text-[11.5px] leading-[1.55] text-muted">
-                  {lesson.sugarReplaces}
-                </div>
-              </div>
-
-              {lesson.killsQs && lesson.killsQs.length > 0 ? (
-                <div className="mt-4 rounded-panel border border-danger/30 bg-danger/[0.05] p-3">
-                  <div className="flex items-start gap-2 mb-2">
-                    <Icon name="warning" size={13} className="mt-0.5 shrink-0 text-danger" />
-                    <span className="mono text-[10px] font-bold uppercase tracking-wide text-danger">
-                      canyoustill.com
-                    </span>
-                  </div>
-                  <p className="mono text-[11px] leading-[1.5] text-muted">
-                    This lesson kills <span className="text-paper">{lesson.killsQs.join(", ")}</span> — the exact
-                    questions where this topic catches people.
-                  </p>
-                </div>
-              ) : null}
-
-              <div>
-                <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
-                  Engine checklist
-                </div>
-                <div className="space-y-1.5">
-                  {lesson.checklist.map(function (item) {
+              {showSolutions ? (
+                <div className="mt-4 space-y-3 border-t border-line pt-4">
+                  {lesson.solutions.map(function (solution, index) {
                     return (
-                      <div
-                        key={item}
-                        className="mono flex gap-2 text-[11px] leading-[1.45] text-muted"
-                      >
-                        <span className="text-good">✓</span>
-                        <span>{item}</span>
+                      <div key={solution.title}>
+                        <div className="flex items-center gap-2">
+                          <span className="mono text-[10px] uppercase tracking-wide text-accent">
+                            Solution {index + 1}
+                          </span>
+                          <span className="text-[11.5px] font-medium text-paper/90">
+                            {solution.title}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11.5px] leading-[1.6] text-muted">{solution.note}</p>
+                        <CodeBlock
+                          code={solution.code}
+                          label={"lesson " + lesson.id + " · solution " + (index + 1)}
+                          onPlayground={onPlayground}
+                        />
                       </div>
                     );
                   })}
                 </div>
+              ) : null}
+            </div>
+
+            <div>
+              <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
+                Rules to remember
               </div>
-
-              <div className="rounded-panel bg-accent p-3 text-black">
-                <div className="mono mb-1 text-[10px] font-bold uppercase tracking-wide opacity-60">
-                  Real talk
-                </div>
-                <p className="mono text-[11px] leading-[1.5]">{lesson.realTalk}</p>
+              <div className="space-y-1.5">
+                {lesson.checklist.map(function (item) {
+                  return (
+                    <div
+                      key={item}
+                      className="mono flex gap-2 text-[11px] leading-[1.45] text-muted"
+                    >
+                      <span className="text-good">✓</span>
+                      <span>{item}</span>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
 
-              <Quiz items={lesson.quiz} label={"Lesson " + lesson.id + " check"} />
+            <div className="rounded-panel bg-accent p-3 text-black">
+              <div className="mono mb-1 text-[10px] font-bold uppercase tracking-wide opacity-60">
+                Real talk
+              </div>
+              <p className="mono text-[11px] leading-[1.5]">{lesson.realTalk}</p>
+            </div>
 
+            <Quiz items={lesson.quiz} label={"Lesson " + lesson.id + " check"} />
+
+            <button
+              type="button"
+              onClick={function () {
+                progress.toggle(lesson.id);
+              }}
+              aria-pressed={done}
+              className={
+                "flex w-full items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[11px] font-medium transition-colors " +
+                (done
+                  ? "border-good/40 bg-good/10 text-good"
+                  : "border-line bg-card2 text-muted hover:text-paper")
+              }
+            >
+              <Icon name="check" size={13} />
+              {done ? "Marked complete" : "Mark lesson complete"}
+            </button>
+
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
+                disabled={isFirst}
                 onClick={function () {
-                  progress.toggle(lesson.id);
+                  onNavigate("/lesson/" + (lesson.id - 1));
                 }}
-                aria-pressed={done}
-                className={
-                  "flex w-full items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[11px] font-medium transition-colors " +
-                  (done
-                    ? "border-good/40 bg-good/10 text-good"
-                    : "border-line bg-card2 text-muted hover:text-paper")
-                }
+                className="mono flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-card2 text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-paper disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <Icon name="check" size={13} />
-                {done ? "Marked complete" : "Mark lesson complete"}
+                <Icon name="arrowLeft" size={12} />
+                Previous
               </button>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={isFirst}
-                  onClick={function () {
-                    onNavigate("/lesson/" + (lesson.id - 1));
-                  }}
-                  className="mono flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-card2 text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-paper disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Icon name="arrowLeft" size={12} />
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  disabled={isLast}
-                  onClick={function () {
-                    onNavigate("/lesson/" + (lesson.id + 1));
-                  }}
-                  className="mono flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-card2 text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-paper disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Next
-                  <Icon name="arrowRight" size={12} />
-                </button>
-              </div>
+              <button
+                type="button"
+                disabled={isLast}
+                onClick={function () {
+                  onNavigate("/lesson/" + (lesson.id + 1));
+                }}
+                className="mono flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-card2 text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-paper disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <Icon name="arrowRight" size={12} />
+              </button>
             </div>
           </div>
         </div>

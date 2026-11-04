@@ -46,7 +46,6 @@ describe("curriculum shape", function () {
       expect(lesson.predict.answer).toBeGreaterThanOrEqual(0);
       expect(lesson.predict.answer).toBeLessThan(lesson.predict.options.length);
       expect(lesson.translate.task.length).toBeGreaterThan(0);
-      expect(Array.isArray(lesson.killsQs)).toBe(true);
     }
   });
 
