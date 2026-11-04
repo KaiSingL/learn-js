@@ -43,7 +43,6 @@ export default function MobileNav({ open, onOpen, onClose, route, progress, onOp
         <a href="#/" className="flex items-center gap-2.5" aria-label="Learn JS home">
           <img src="./icon.png" alt="" className="h-[26px] w-[26px] rounded-[6px]" />
           <span className="text-[13px] font-bold tracking-[0.14em]">LEARN.JS</span>
-          <span className="mono rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">v2</span>
         </a>
         <button
           type="button"
