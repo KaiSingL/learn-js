@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CodeBlock from "./CodeBlock.jsx";
+import Concepts from "./Concepts.jsx";
 import Icon from "./Icon.jsx";
 import Quiz from "./Quiz.jsx";
 
@@ -15,7 +16,9 @@ export default function LessonCard({
 }) {
   const [showSolutions, setShowSolutions] = useState(false);
   const done = progress.isDone(lesson.id);
-  const firstLine = lesson.realCode.split("\n")[0];
+  const firstLine = lesson.concepts
+    ? lesson.concepts[0].heading
+    : lesson.realCode.split("\n")[0];
 
   return (
     <article
@@ -97,19 +100,27 @@ export default function LessonCard({
           <div className="min-w-0 space-y-5 p-5 lg:p-6">
             <div>
               <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">Goal</div>
-              <p className="text-[13px] leading-[1.7] text-paper/80">{lesson.longDesc}</p>
+              <p className="text-[13px] leading-[1.7] text-paper/80">
+                {lesson.concepts ? lesson.intro : lesson.longDesc}
+              </p>
             </div>
 
-            <CodeBlock
-              label={"Real code — lesson " + lesson.id}
-              code={lesson.realCode}
-              onPlayground={onPlayground}
-            />
-            <CodeBlock
-              label="Extra real pattern"
-              code={lesson.extraReal}
-              onPlayground={onPlayground}
-            />
+            {lesson.concepts ? (
+              <Concepts concepts={lesson.concepts} onPlayground={onPlayground} />
+            ) : (
+              <>
+                <CodeBlock
+                  label={"Real code — lesson " + lesson.id}
+                  code={lesson.realCode}
+                  onPlayground={onPlayground}
+                />
+                <CodeBlock
+                  label="Extra real pattern"
+                  code={lesson.extraReal}
+                  onPlayground={onPlayground}
+                />
+              </>
+            )}
 
             <div className="rounded-panel border border-line bg-card p-4">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

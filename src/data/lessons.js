@@ -1,11 +1,17 @@
 // The lessons. Code fields are plain strings so they can be linted,
 // highlighted, copied and loaded into the playground without transformation.
 //
-// Each lesson follows the "break" pedagogy:
-//   realCode     — Write Real: Tier 0/1 only, linter-clean
-//   breakIt      — Break It: the sugared modern version that hides a default
-//   predict      — multiple choice: what does the sugared version print?
-//   translate    — Translate: de-sugar breakIt back to Tier 0/1 code
+// Each lesson teaches through short interleaved segments ("concepts"):
+//   intro        — 1-3 sentences that frame the lesson's one big idea
+//   concepts[]   — one idea each: heading, short text, a purpose line that
+//                  says where to look, and a small self-contained snippet
+//   check        — optional inline prediction question on a concept
+//   tests        — quiz items name the concept heading they draw from, so
+//                  every question is answerable from taught content only
+//
+// Lessons not yet migrated still use the legacy shape (longDesc + realCode +
+// extraReal) and render exactly as before. Lesson 1 is the reference example
+// of the migrated shape.
 
 export const LESSONS = [
   {
@@ -14,62 +20,133 @@ export const LESSONS = [
     goal: "Understand primitives vs objects, reference equality, typeof, and explicit undefined checks.",
     tier: 0,
     sugarReplaces: "let / const, ??, truthy coercion",
-    longDesc:
-      "Before let and const there was only var. Primitives are compared by value; objects are compared by reference. Two objects are never === even when they look identical. typeof is the only safe runtime introspection, and it has one famous bug: typeof null is \"object\". Always check === undefined explicitly instead of leaning on falsiness, because 0, \"\" and false are real values too. NaN is a number value produced by a failed number operation such as 0 / 0, and it is the only value not equal to itself, so test it with value !== value. == converts types before comparing and unwraps a wrapper object when the other side is a primitive — that is why \"\" == new String(\"\") is true — but when both sides are objects it compares references, so new String(\"\") == new String(\"\") is false.",
-    realCode: `var a = 5;
-if (typeof a === "number") {
-  console.log("number"); // -> number
+    intro:
+      "A variable is a name bound to a value. Primitives — numbers, strings, booleans, null, undefined — are carried by the binding itself. Objects and arrays are reached through a reference. Every surprise in this course traces back to what = actually copies: the value, or the reference.",
+    concepts: [
+      {
+        heading: "var gives a name, = gives it a value",
+        text: "var declares a name; = stores a value under that name. The name is not the value — it points at whatever was last assigned, and re-assignment simply re-points it.",
+        purpose: "Watch the same name hold two values, one after the other.",
+        code: `var age = 25;
+console.log(age); // -> 25
+
+age = 26;
+console.log(age); // -> 26 — the same name, a new value
+
+var name = "Lydia";
+console.log(name); // -> Lydia — a name can hold any type`,
+      },
+      {
+        heading: "typeof reads the type — with one famous bug",
+        text: "typeof is the built-in way to ask what kind of value a name holds. It answers correctly for every primitive — but it has one bug from 1995 that cannot be fixed without breaking the web: typeof null returns \"object\".",
+        purpose: "Watch typeof answer for every primitive — and lie about null.",
+        code: `console.log(typeof 5);         // -> number
+console.log(typeof "hello");   // -> string
+console.log(typeof true);      // -> boolean
+console.log(typeof undefined); // -> undefined
+console.log(typeof { x: 1 });  // -> object
+
+console.log(typeof null);      // -> object — the bug. null is not an object`,
+        check: {
+          q: "What does typeof null return?",
+          options: ["\"null\"", "\"object\"", "\"undefined\"", "It throws an error"],
+          answer: 1,
+          why: "A historical bug: typeof null is \"object\". null is still a primitive, so test for it with === null, never with typeof.",
+        },
+      },
+      {
+        heading: "undefined and null are two kinds of nothing",
+        text: "undefined means \"never assigned\" — a declared name with no value yet. null means \"intentionally empty\" — a value you set on purpose. They are different values, so check each with ===, never with truthiness: 0, \"\" and false are real values too.",
+        purpose: "Watch the explicit === checks separate the two kinds of nothing.",
+        code: `var missing;
+if (missing === undefined) {
+  console.log("missing was never assigned"); // -> missing was never assigned
 }
 
-var b = new String("hello");
-var isString = typeof b === "string" || b instanceof String;
-
-var c = new Array();
-var d = new Object();
-
-var e = null;
-if (e === null) {
-  console.log("null is intentional empty"); // -> null is intentional empty
+var empty = null;
+if (empty === null) {
+  console.log("empty is intentionally nothing"); // -> empty is intentionally nothing
 }
 
-var f;
-if (f === undefined) {
-  console.log("missing - explicit check"); // -> missing - explicit check
-}
+if (empty !== undefined) {
+  console.log("null and undefined are different values"); // -> null and undefined are different values
+}`,
+      },
+      {
+        heading: "NaN is the number that is not equal to itself",
+        text: "NaN is what a failed number operation produces, like 0 / 0. Its type is still \"number\". It is the only value in JavaScript that is not equal to itself, so the reliable test is value !== value.",
+        purpose: "Watch NaN fail every equality check, even against itself.",
+        code: `var broken = 0 / 0;
+console.log(broken);            // -> NaN
+console.log(typeof broken);     // -> number — NaN is a number type
 
-console.log(a, b, c.length, isString); // -> 5 { 0: "h", 1: "e", 2: "l", 3: "l", 4: "o" } 0 true
+console.log(broken === NaN);    // -> false
+console.log(broken === broken); // -> false — the only value unequal to itself
 
-// NaN is a number value produced by a failed number operation.
-var g = 0 / 0;
-console.log(typeof g); // -> number
-console.log(g === g);  // -> false — NaN is the only value not equal to itself
+if (broken !== broken) {
+  console.log("this branch only runs for NaN"); // -> this branch only runs for NaN
+}`,
+      },
+      {
+        heading: "= copies the value for primitives",
+        text: "When the right side is a primitive, = stores a copy of that value under the new name. Two names, two independent boxes: changing one never touches the other.",
+        purpose: "Watch that re-pointing b never changes a.",
+        code: `var a = 5;
+var b = a; // copies the value 5 into a second box
+b = 10;    // rewrites only b's box
 
-// Reference vs value: two objects with the same contents are not equal.
-var obj1 = { x: 1 };
+console.log(a); // -> 5 — a is untouched
+console.log(b); // -> 10
+
+var text = "hi";
+var copy = text;
+copy = "bye";
+console.log(text); // -> hi — strings behave the same way`,
+        diagram: "value",
+        check: {
+          q: "var x = \"hi\"; var y = x; y = \"bye\"; What is x?",
+          options: ["\"hi\"", "\"bye\"", "undefined", "NaN"],
+          answer: 0,
+          why: "Strings are primitives. = copied the value, so y is an independent copy — re-pointing y never touches x.",
+        },
+      },
+      {
+        heading: "= copies the reference for objects and arrays",
+        text: "When the right side is an object or array, = does not copy the object — it copies the reference: the address where the object lives. Both names then point at the same object, so a change through either name is visible through both.",
+        purpose: "Watch one object change through its alias — and the original see it.",
+        code: `var user = { name: "Lydia" };
+var alias = user; // copies the reference — the address, not the object
+
+alias.name = "Changed";
+console.log(user.name);      // -> Changed — one object, changed through either name
+console.log(alias === user); // -> true — still one object behind two names
+
+var letters = ["a", "b"];
+var copy = letters; // arrays are objects: the same rule applies
+copy[copy.length] = "c";
+console.log(letters); // -> ["a", "b", "c"] — the original array grew too`,
+        diagram: "reference",
+        check: {
+          q: "var obj = { n: 1 }; var alias = obj; alias.n = 7; What is obj.n?",
+          options: ["1", "7", "undefined", "null"],
+          answer: 1,
+          why: "= copied the reference, so obj and alias are two names for one object. Setting alias.n changed that one object, and obj sees it.",
+        },
+      },
+      {
+        heading: "=== on objects compares references, not contents",
+        text: "=== on primitives compares values. On objects it compares references: two separately created objects are never equal, even when every property matches. Same reference, equal; different references, not equal — contents are irrelevant.",
+        purpose: "Watch identical contents fail === while a shared reference passes.",
+        code: `var obj1 = { x: 1 };
 var obj2 = { x: 1 };
-console.log(obj1 === obj2);   // false — different objects, different references
-console.log(obj1 === obj1);   // true — same reference
-var same = obj1;
-console.log(same === obj1);   // true — same reference, assigned by reference
 
-// == and === disagree when one side is a wrapper object.
-var empty = new String("");
-console.log("" === "");               // true — primitives compare by value
-console.log("" == empty);             // true — one side is an object: == unwraps it to ""
-console.log(empty == new String("")); // false — both objects: references compared, no unwrapping
-console.log("" === empty);            // false — === never converts`,
+console.log(obj1 === obj2);     // -> false — two objects, two references
+console.log(obj1.x === obj2.x); // -> true — the values inside DO compare by value
 
-    extraReal: `function check(value) {
-  if (value === undefined) { return "undefined"; }
-  if (value === null) { return "null"; }
-  if (typeof value === "number" && value !== value) { return "NaN"; }
-  return typeof value;
-}
-
-console.log(check(undefined)); // -> undefined
-console.log(check(null)); // -> null
-console.log(check(NaN)); // -> NaN
-console.log(check(42)); // -> number`,
+var alias = obj1;
+console.log(alias === obj1);    // -> true — the same single reference`,
+      },
+    ],
 
     starter: `// Exercise: isFalsy(value)
 // Return true only for false, 0, "", null, undefined and NaN.
@@ -87,31 +164,6 @@ for (var i = 0; i < samples.length; i = i + 1) {
 
     exercise:
       "Write isFalsy(v) that returns true only for false, 0, \"\", null, undefined and NaN. Use === and the self-check v !== v. Do not call Boolean().",
-    breakIt: `// The modern version — uses let, const and a template literal.
-// Predict: what does this print?
-
-let user = { name: "Lydia", age: 21 };
-const label = \`User: \${user.name} is \${user.age}\`;
-console.log(label);
-
-var copy = user;
-copy.name = "Changed";
-console.log(user.name);`,
-    predict: {
-      q: "What does the breakIt code print, and why does user.name change?",
-      options: [
-        "User: Lydia is 21, then Lydia",
-        "User: Lydia is 21, then Changed",
-        "User: undefined is undefined, then Changed",
-        "A syntax error because let is not allowed",
-      ],
-      answer: 1,
-      why: "The template prints User: Lydia is 21. Then copy and user refer to the same object, so changing copy.name changes user.name too — objects are compared and assigned by reference.",
-    },
-    translate: {
-      task: "Rewrite the breakIt snippet using only var, function, string concatenation and explicit comparisons. Replace the template literal and let/const.",
-      hint: "Use var user = { name: \"Lydia\", age: 21 }; and var label = \"User: \" + user.name + \" is \" + user.age;",
-    },
     solutions: [
       {
         title: "The six explicit checks",
@@ -133,7 +185,7 @@ for (var i = 0; i < samples.length; i = i + 1) {
       },
       {
         title: "A typeof classifier",
-        note: "Notice that the object wrapper created by new String is an object, not a primitive.",
+        note: "Every special value is checked with === before typeof gets a turn — truthiness would have misclassified 0 and \"\".",
         code: `function describe(value) {
   if (value === undefined) { return "undefined"; }
   if (value === null) { return "null"; }
@@ -145,7 +197,8 @@ for (var i = 0; i < samples.length; i = i + 1) {
 console.log(describe(undefined)); // -> undefined
 console.log(describe(null)); // -> null
 console.log(describe(NaN)); // -> NaN
-console.log(describe(new String("hi"))); // -> object
+console.log(describe([1, 2])); // -> array
+console.log(describe({ name: "Ada" })); // -> object
 console.log(describe("hi")); // -> string`,
       },
     ],
@@ -154,40 +207,50 @@ console.log(describe("hi")); // -> string`,
       "Check === undefined instead of relying on truthiness",
       "Check === null separately from undefined",
       "Use value !== value to detect NaN",
-      "Remember objects compare by reference, not by contents",
-      "== unwraps a wrapper only when the other side is a primitive",
+      "= copies the value for primitives — two independent names",
+      "= copies the reference for objects and arrays — two names, one object",
+      "Two objects with identical contents are never ===",
     ],
     realTalk:
-      "typeof null returning \"object\" is a bug from 1995 that cannot be fixed without breaking the web. That is why every real codebase checks null explicitly. And two objects with identical contents are never === — only the same reference is equal.",
+      "typeof null returning \"object\" is a bug from 1995 that cannot be fixed without breaking the web — every real codebase checks null explicitly. And = never copies an object: it copies the reference. Two names, one object; two objects, never ===.",
     quiz: [
       {
         q: "What does typeof null return?",
         options: ["\"null\"", "\"object\"", "\"undefined\"", "\"number\""],
         answer: 1,
         why: "It returns \"object\" because of a historical bug. null is still a primitive, so check it with === null.",
+        tests: "typeof reads the type — with one famous bug",
       },
       {
         q: "Which expression detects NaN?",
         options: ["value === NaN", "typeof value === \"NaN\"", "value !== value", "value === null"],
         answer: 2,
         why: "NaN is the only value not equal to itself, so value !== value is the reliable test.",
+        tests: "NaN is the number that is not equal to itself",
       },
       {
-        q: "What is { x: 1 } === { x: 1 }?",
-        options: ["true", "false", "undefined", "A syntax error"],
-        answer: 1,
-        why: "Two separately created objects are different references, so they are never strictly equal.",
-      },
-      {
-        q: "What is new String(\"\") == new String(\"\")?",
+        q: "var user = { name: \"Lydia\" }; var alias = user; alias.name = \"Changed\"; What is user.name?",
         options: [
-          "true — both wrap an empty string",
-          "false — two objects are different references",
-          "true — == always converts objects to strings",
+          "\"Lydia\" — alias received a copy of the object",
+          "\"Changed\" — both names reference the same object",
+          "undefined — user keeps its original value",
           "A TypeError",
         ],
         answer: 1,
-        why: "== only converts when one side is a primitive. When both sides are objects it compares references, and two separately created wrappers are different objects.",
+        why: "= with an object copies the reference. user and alias are two names for one object, so a change through either name is visible through both.",
+        tests: "= copies the reference for objects and arrays",
+      },
+      {
+        q: "What is { x: 1 } === { x: 1 }?",
+        options: [
+          "true — the contents match",
+          "false — two separately created objects are different references",
+          "undefined",
+          "A syntax error",
+        ],
+        answer: 1,
+        why: "=== on objects compares references, not contents. Two separately created objects are never strictly equal.",
+        tests: "=== on objects compares references, not contents",
       },
     ],
   },
@@ -254,32 +317,7 @@ console.log(fns[2]());`,
 
     exercise:
       "Fix the classic for(var i) closure bug without let: create three functions that each return their own number. Capture the value with an IIFE.",
-    breakIt: `// The modern version — uses let in the loop.
-// Predict: what does this print?
 
-function build() {
-  var funcs = [];
-  for (let i = 0; i < 3; i = i + 1) {
-    funcs[i] = function () { return i; };
-  }
-  return funcs;
-}
-
-var fns = build();
-console.log(fns[0]());
-console.log(fns[1]());
-console.log(fns[2]());`,
-
-    predict: {
-      q: "What does the breakIt (let) version print?",
-      options: ["0 1 2", "3 3 3", "undefined undefined undefined", "A ReferenceError"],
-      answer: 0,
-      why: "let creates a fresh binding per loop iteration, so each closure captures its own i: 0, 1, 2.",
-    },
-    translate: {
-      task: "Rewrite the breakIt loop using only var and an IIFE so each function returns its own number (0, 1, 2).",
-      hint: "Wrap each iteration in (function (j) { ... })(i); so j captures the current i.",
-    },
     solutions: [
       {
         title: "The IIFE capture",
@@ -413,25 +451,6 @@ console.log(c.count);`,
 
     exercise:
       "Create makeCounter() that returns a function storing its call count on itself as fn.count and incrementing it each call. Use a function declaration only.",
-    breakIt: `// The modern version — uses an arrow function.
-// Predict: what happens when we try to read counter.description?
-
-var counter = () => {
-  counter.count = (counter.count || 0) + 1;
-  return counter.count;
-};
-console.log(counter());
-console.log(counter.description);`,
-    predict: {
-      q: "What does the breakIt arrow version print for counter.description?",
-      options: ["undefined", "1", "A TypeError", "0"],
-      answer: 0,
-      why: "Arrow functions are still objects, so you can set properties on them. counter.description is undefined because it was never set.",
-    },
-    translate: {
-      task: "Rewrite the breakIt snippet using a function expression instead of an arrow, then attach a description property.",
-      hint: "var counter = function () { ... }; counter.description = \"counts calls\";",
-    },
     solutions: [
       {
         title: "Count stored on the function object",
@@ -571,26 +590,6 @@ console.log(helloKai("?"));`,
 
     exercise:
       "Implement bind manually as myBind(fn, ctx, ...preset). Return a function that calls fn.apply(ctx, args). Then borrow a method from one object to another with call.",
-    breakIt: `// The modern version — uses an arrow method and lexical this.
-// Predict: what does obj.say() print?
-
-var obj = {
-  name: "Nova",
-  say: () => {
-    return "Hi, " + this.name;
-  }
-};
-console.log(obj.say());`,
-    predict: {
-      q: "What does the breakIt arrow method print?",
-      options: ["Hi, Nova", "Hi, undefined", "Hi, [object Window]", "A TypeError"],
-      answer: 1,
-      why: "Arrow functions capture this lexically. At module level this is undefined (or the global in sloppy mode), so this.name is undefined.",
-    },
-    translate: {
-      task: "Rewrite the breakIt snippet using a regular function method so say uses obj as this via the call site.",
-      hint: "say: function () { return \"Hi, \" + this.name; }",
-    },
     solutions: [
       {
         title: "myBind with preset arguments",
@@ -726,27 +725,6 @@ console.log(tom.meow());`,
 
     exercise:
       "Build Cat(name) with meow() on the prototype. Then build Student(name, subject) that inherits from Person via Object.create and fixes its constructor.",
-    breakIt: `// The modern version — uses class and extends.
-// Predict: what does rex.bark() print, and where does bark live?
-
-class Dog {
-  constructor(name) { this.name = name; }
-  bark() { return "Woof " + this.name; }
-}
-
-var rex = new Dog("Rex");
-console.log(rex.bark());
-console.log(Object.getPrototypeOf(rex) === Dog.prototype);`,
-    predict: {
-      q: "What does the class version compile to at runtime?",
-      options: ["A real class object", "A constructor function plus prototype assignments", "A closure", "A built-in type"],
-      answer: 1,
-      why: "A class is syntax sugar. At runtime it is a constructor function with methods assigned to its prototype — exactly the code in realCode.",
-    },
-    translate: {
-      task: "Rewrite the breakIt class as a constructor function with Dog.prototype.bark = function () { ... };",
-      hint: "function Dog(name) { this.name = name; } Dog.prototype.bark = function () { return \"Woof \" + this.name; };",
-    },
     solutions: [
       {
         title: "Cat with a shared method",
@@ -896,35 +874,6 @@ console.log(Object.keys(person).length); // should be 2`,
 
     exercise:
       "Use Object.defineProperty to add an age property to person with enumerable: true so Object.keys(person) returns [\"name\", \"age\"]. Without enumerable: true it defaults to false and disappears from Object.keys.",
-    breakIt: `// The modern version — uses normal assignment, which hides the defaults.
-// Predict: what does Object.keys(person) return?
-
-var person = new Object();
-person.name = "Lydia";
-person.age = 21;
-
-console.log(Object.keys(person));
-
-// Now define a property the long way, forgetting enumerable:
-var obj = new Object();
-obj.foo = 1;
-Object.defineProperty(obj, "bar", { value: 2 });
-console.log(Object.keys(obj));`,
-    predict: {
-      q: "What are the two Object.keys outputs in breakIt?",
-      options: [
-        "[\"name\", \"age\"] then [\"foo\"]",
-        "[\"name\", \"age\"] then [\"foo\", \"bar\"]",
-        "[\"name\"] then [\"foo\", \"bar\"]",
-        "[\"name\", \"age\"] then [\"bar\"]",
-      ],
-      answer: 0,
-      why: "Normal assignment sets enumerable:true, so both name and age appear. defineProperty without enumerable defaults to false, so bar is invisible to Object.keys — only foo shows.",
-    },
-    translate: {
-      task: "Rewrite the defineProperty(obj, \"bar\", { value: 2 }) call so bar is enumerable and shows in Object.keys.",
-      hint: "Add enumerable: true to the descriptor object.",
-    },
     solutions: [
       {
         title: "Both properties visible",
@@ -1044,7 +993,13 @@ console.log(wallet + ""); // "2" — same reason
 console.log(String(wallet)); // "2 dollars" — string hint, toString runs
 
 var plain = new Object();
-console.log("" + plain); // "[object Object]" — valueOf returns the object, so toString runs instead`,
+console.log("" + plain); // "[object Object]" — valueOf returns the object, so toString runs instead
+
+// == unwraps a wrapper object when the other side is a primitive
+var wrapped = new String("");
+console.log("" == wrapped);             // true — == unwraps the wrapper to ""
+console.log("" === wrapped);            // false — === never converts
+console.log(wrapped == new String("")); // false — both sides are objects: references compared`,
 
     starter: `// Exercise: classify(value1, value2)
 // Return "strict" if === is true, "loose" if only == is true, else "none".
@@ -1062,31 +1017,7 @@ console.log(classify(0, false));`,
 
     exercise:
       "Write classify(v1, v2) that returns \"strict\" when v1 === v2, \"loose\" when v1 == v2 (but not ===), and \"none\" otherwise. Use only == and === comparisons.",
-    breakIt: `// The modern version — uses == and template coercion.
-// Predict: what does each line print?
 
-var a = [];
-var b = [];
-console.log(a == b);   // ?
-console.log(a === b);  // ?
-console.log([] == ![]);// ?
-console.log(\`\${[]}\`);   // ?`,
-
-    predict: {
-      q: "What does the breakIt code print?",
-      options: [
-        "false false true \"\"",
-        "true true true \"[]\"",
-        "false false false \"\"",
-        "false false true \"\"",
-      ],
-      answer: 0,
-      why: "[] == [] is false (different references), [] === [] is false, [] == ![] is true (both coerce to 0), and \`\${[]}\` is \"\" because an empty array coerces to the empty string.",
-    },
-    translate: {
-      task: "Rewrite the breakIt comparisons using only === and explicit conversions (String(), Number()). Replace the template literal with concatenation.",
-      hint: "String([]) is \"\", so use String([]) + \"\" or just concatenate.",
-    },
     solutions: [
       {
         title: "Strict vs loose classifier",
@@ -1152,6 +1083,17 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
         options: ["\"2\"", "\"[object Object]\"", "\"2 dollars\"", "2"],
         answer: 0,
         why: "The + operator uses the default hint, which tries valueOf first. It returns the primitive 2, so the concatenation gives \"2\".",
+      },
+      {
+        q: "What is new String(\"\") == new String(\"\")?",
+        options: [
+          "true — both wrap an empty string",
+          "false — two objects are different references",
+          "true — == always converts objects to strings",
+          "A TypeError",
+        ],
+        answer: 1,
+        why: "== only converts when one side is a primitive. When both sides are objects it compares references, and two separately created wrappers are different objects.",
       },
     ],
   },
@@ -1226,31 +1168,6 @@ console.log(reduce([1, 2, 3], function (acc, x) { return acc + x; }, 0));`,
 
     exercise:
       "Implement map, filter and reduce from scratch using only for(;;) and var. Pass value, index and the original array to the callbacks. Do not call the built-in higher-order methods.",
-    breakIt: `// The modern version — uses array methods and spread.
-// Predict: what does doubled print?
-
-var arr = [1, 2, 3, 4];
-var doubled = arr.map(function (x) { return x * 2; });
-var big = arr.filter(function (x) { return x > 2; });
-var copied = [...arr];
-console.log(doubled);
-console.log(big);
-console.log(copied);`,
-    predict: {
-      q: "What does the breakIt code print for doubled, big and copied?",
-      options: [
-        "[2, 4, 6, 8] then [3, 4] then [1, 2, 3, 4]",
-        "[2, 4, 6, 8] then [1, 2] then [1, 2, 3, 4]",
-        "[1, 2, 3, 4] then [3, 4] then [1, 2, 3, 4]",
-        "[2, 4, 6, 8] then [3, 4] then [4, 3, 2, 1]",
-      ],
-      answer: 0,
-      why: "map doubles each element, filter keeps those greater than 2, and spread copies the array in order.",
-    },
-    translate: {
-      task: "Rewrite the breakIt snippet using only for loops and manual array building (array[array.length] = value). Do not use map, filter or spread.",
-      hint: "Allocate var out = [] and append with out[out.length] = ... inside a for loop.",
-    },
     solutions: [
       {
         title: "map, filter and reduce",
@@ -1394,27 +1311,6 @@ console.log(target);`,
 
     exercise:
       "Write safeSet that runs under 'use strict' and only assigns to declared variables. Show that an undeclared assignment would throw a ReferenceError instead of creating window.x.",
-    breakIt: `// The sloppy version — no 'use strict'.
-// Predict: what does window.y equal after this runs?
-
-function pollute() {
-  y = 10; // no var, no let — creates window.y in sloppy mode
-  return y;
-}
-
-pollute();
-console.log(window.y);
-console.log(typeof y);`,
-    predict: {
-      q: "What does the breakIt sloppy code print?",
-      options: ["10 then \"number\"", "undefined then \"undefined\"", "A ReferenceError", "10 then \"undefined\""],
-      answer: 0,
-      why: "In sloppy mode, y = 10 creates window.y. Both window.y and the bare y refer to the same global, so both print 10 / \"number\".",
-    },
-    translate: {
-      task: "Rewrite the breakIt function with 'use strict' and declare y with var so the assignment is intentional and local.",
-      hint: "'use strict; function pollute() { var y = 10; return y; }",
-    },
     solutions: [
       {
         title: "Strict mode rejects accidental globals",
@@ -1521,30 +1417,6 @@ console.log("C");
 
     exercise:
       "Predict the output order of the starter code. Then wrap a setTimeout in a for(var i) loop and explain why all three callbacks print the same i.",
-    breakIt: `// The modern version — uses setTimeout with var.
-// Predict: what prints, in what order?
-
-for (var i = 0; i < 3; i = i + 1) {
-  setTimeout(function () {
-    console.log(i);
-  }, 0);
-}
-console.log("done");`,
-    predict: {
-      q: "What does the breakIt code print and in what order?",
-      options: [
-        "done then 0 1 2",
-        "0 1 2 then done",
-        "done then 3 3 3",
-        "3 3 3 then done",
-      ],
-      answer: 2,
-      why: "\"done\" prints first (synchronous code runs before timers). All three callbacks share the same var i, which is 3 after the loop finishes, so they all print 3.",
-    },
-    translate: {
-      task: "Rewrite the breakIt loop so each callback prints its own number (0, 1, 2) using only var and an IIFE.",
-      hint: "Capture i in a per-iteration binding: (function (j) { setTimeout(function () { console.log(j); }, 0); })(i);",
-    },
     solutions: [
       {
         title: "Event loop order",
@@ -1680,34 +1552,6 @@ readPromise("theme").then(function (value) {
 
     exercise:
       "Build promisify: it takes an (arg, callback) function and returns a function that returns a Promise. Then chain two Promises without async/await.",
-    breakIt: `// The modern version — uses async/await.
-// Predict: what order do the messages print?
-
-async function main() {
-  console.log("start");
-  await delay(30);
-  console.log("middle");
-  await delay(20);
-  console.log("end");
-}
-
-function delay(ms) {
-  return new Promise(function (resolve) {
-    setTimeout(function () { resolve(ms); }, ms);
-  });
-}
-
-main();`,
-    predict: {
-      q: "What order does the breakIt async version print?",
-      options: ["start, middle, end", "start, end, middle", "middle, start, end", "end, middle, start"],
-      answer: 0,
-      why: "async/await pauses at each await, so the messages print in sequence: start, middle, end.",
-    },
-    translate: {
-      task: "Rewrite the breakIt async function using only new Promise and .then chains — no async, no await.",
-      hint: "function main() { return delay(30).then(function () { console.log(\"middle\"); return delay(20); }).then(function () { console.log(\"end\"); }); }",
-    },
     solutions: [
       {
         title: "promisify",
@@ -1872,37 +1716,7 @@ console.log(it.next());`,
 
     exercise:
       "Build makeThree() that returns an iterator yielding 0, 1, 2 then done. Use only var, function, and a closure-based state machine. Do not use function* or yield.",
-    breakIt: `// The modern version — uses function* and yield.
-// Predict: what does each .next() return?
 
-function* ids() {
-  var n = 0;
-  while (true) {
-    yield n;
-    n = n + 1;
-  }
-}
-
-var it = ids();
-console.log(it.next());
-console.log(it.next());
-console.log(it.next());`,
-
-    predict: {
-      q: "What does the breakIt generator print?",
-      options: [
-        "{ value: 0, done: false } then { value: 1, done: false } then { value: 2, done: false }",
-        "0 then 1 then 2",
-        "{ value: 0 } then { value: 1 } then { value: 2 }",
-        "A syntax error",
-      ],
-      answer: 0,
-      why: ".next() always returns an object { value, done }. A running generator yields values with done: false; it never returns the bare number.",
-    },
-    translate: {
-      task: "Rewrite the breakIt generator as a manual state machine: a function that returns an object with a next() method returning { value, done }.",
-      hint: "Track state in a var (e.g. \"start\", \"running\", \"done\") and switch on it inside next().",
-    },
     solutions: [
       {
         title: "Manual generator for 0, 1, 2",
@@ -2111,32 +1925,6 @@ ee.emit("ready", 2);`,
 
     exercise:
       "Extend EventEmitter with once(event, fn) that removes itself after the first call. Use prototypes and a closure wrapper.",
-    breakIt: `// The modern version — uses class, async/await and import syntax.
-// Predict: what does this print, and why is the manual version clearer?
-
-class Bus extends EventTarget {
-  async emitAsync(event, data) {
-    await new Promise(r => setTimeout(r, 10));
-    this.dispatchEvent(new CustomEvent(event, { detail: data }));
-  }
-}
-
-import { Bus } from "./bus.js";`,
-    predict: {
-      q: "What is wrong with the breakIt version for this course?",
-      options: [
-        "It uses class, async/await and import — all Tier 2 sugar",
-        "It prints nothing",
-        "It throws a syntax error",
-        "It uses var incorrectly",
-      ],
-      answer: 0,
-      why: "class, async/await and import are Tier 2 sugar. The course version builds the same thing with prototypes, Promises and IIFEs.",
-    },
-    translate: {
-      task: "Describe how you would rewrite the breakIt class Bus using EventEmitter prototypes, new Promise and an IIFE module.",
-      hint: "function Bus() { EventEmitter.call(this); } Bus.prototype = Object.create(EventEmitter.prototype);",
-    },
     solutions: [
       {
         title: "once with a self-removing wrapper",
@@ -2317,22 +2105,6 @@ readAge("-3");`,
     starter: `// Exercise: write deepCopy(obj)\n// It should clone plain objects and arrays recursively.\n// Primitives are returned as-is.\n\nfunction deepCopy(value) {\n  // your recursive copy here\n  return value;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // should still be 2`,
     exercise:
       "Write deepCopy(value) that returns a fully disconnected copy of plain objects and arrays. Primitives are returned as-is. Use only var, function, Object.keys, Array.isArray, and for loops. Do not use {...} or structuredClone.",
-    breakIt: `// The modern version — uses spread and structuredClone.\n// Predict: what does original.tags print at the end?\n\nvar original = { name: "Ada", tags: ["dev", "js"] };\n\n// = shares the shell\nvar alias = original;\nalias.name = "Grace";\n\n// Shallow copy — new shell, shared branches\nvar shallow = { ...original };\nshallow.name = "Alan";\nshallow.tags[shallow.tags.length] = "spread";\n\n// Deep copy — new shell, new branches\nvar deep = structuredClone(original);\ndeep.name = "Deep";\ndeep.tags[deep.tags.length] = "clone";\n\nconsole.log(original.name);\nconsole.log(shallow.name);\nconsole.log(deep.name);\nconsole.log(original.tags);`,
-    predict: {
-      q: "What does original.tags print at the end of breakIt?",
-      options: [
-        "[\"dev\", \"js\", \"spread\"]",
-        "[\"dev\", \"js\"]",
-        "[\"dev\", \"js\", \"clone\"]",
-        "[\"dev\", \"js\", \"spread\", \"clone\"]",
-      ],
-      answer: 0,
-      why: "shallow.tags and original.tags are the same array, so shallow.tags.push(\"spread\") mutates original too. deep.tags is a separate array, so deep.tags.push(\"clone\") does not affect original.",
-    },
-    translate: {
-      task: "Rewrite the breakIt snippet using only var, Object.keys, for loops, and recursion. Replace { ... original } with a manual shallow copy and structuredClone with a recursive deep copy. Keep the = alias to show shared shells.",
-      hint: "Build shallow with var shallow = new Object(); and a for loop over Object.keys(original). Build deep with a function that calls itself for nested objects and arrays.",
-    },
     solutions: [
       {
         title: "Manual shallow copy",

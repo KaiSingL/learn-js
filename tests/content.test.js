@@ -26,38 +26,91 @@ describe("curriculum shape", function () {
     expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
   });
 
+  function expectOptionItem(label, item) {
+    expect(item.q.length).toBeGreaterThan(0);
+    expect(item.options.length).toBeGreaterThanOrEqual(2);
+    expect(item.answer).toBeGreaterThanOrEqual(0);
+    expect(item.answer).toBeLessThan(item.options.length);
+    expect(item.why.length).toBeGreaterThan(10);
+  }
+
   test("every lesson is complete", function () {
     for (let i = 0; i < LESSONS.length; i += 1) {
       const lesson = LESSONS[i];
       expect(lesson.title.length).toBeGreaterThan(0);
       expect(lesson.goal.length).toBeGreaterThan(0);
-      expect(lesson.longDesc.length).toBeGreaterThan(40);
-      expect(lesson.realCode.length).toBeGreaterThan(20);
-      expect(lesson.extraReal.length).toBeGreaterThan(20);
+      if (lesson.concepts) {
+        // migrated shape: interleaved concept segments
+        expect(lesson.intro.length).toBeGreaterThan(40);
+        expect(lesson.concepts.length).toBeGreaterThanOrEqual(4);
+        for (let c = 0; c < lesson.concepts.length; c += 1) {
+          const concept = lesson.concepts[c];
+          const label = "Lesson " + lesson.id + " concept " + (c + 1);
+          expect(concept.heading.length).toBeGreaterThan(0);
+          expect(concept.text.length).toBeGreaterThan(20);
+          expect(concept.purpose.length).toBeGreaterThan(10);
+          expect(concept.code.length).toBeGreaterThan(10);
+          if (concept.check) {
+            expectOptionItem(label + " check", concept.check);
+          }
+        }
+      } else {
+        // legacy shape: one long description and two big code blocks
+        expect(lesson.longDesc.length).toBeGreaterThan(40);
+        expect(lesson.realCode.length).toBeGreaterThan(20);
+        expect(lesson.extraReal.length).toBeGreaterThan(20);
+      }
       expect(lesson.starter.length).toBeGreaterThan(20);
       expect(lesson.exercise.length).toBeGreaterThan(20);
       expect(lesson.solutions.length).toBeGreaterThan(0);
       expect(lesson.checklist.length).toBeGreaterThanOrEqual(4);
       expect(lesson.realTalk.length).toBeGreaterThan(20);
       expect(lesson.quiz.length).toBeGreaterThanOrEqual(2);
-      expect(lesson.breakIt.length).toBeGreaterThan(20);
-      expect(lesson.predict.q.length).toBeGreaterThan(0);
-      expect(lesson.predict.options.length).toBeGreaterThanOrEqual(2);
-      expect(lesson.predict.answer).toBeGreaterThanOrEqual(0);
-      expect(lesson.predict.answer).toBeLessThan(lesson.predict.options.length);
-      expect(lesson.translate.task.length).toBeGreaterThan(0);
     }
+  });
+
+  test("migrated lessons have unique concept headings", function () {
+    for (let i = 0; i < LESSONS.length; i += 1) {
+      const lesson = LESSONS[i];
+      if (!lesson.concepts) continue;
+      const seen = {};
+      for (let c = 0; c < lesson.concepts.length; c += 1) {
+        const heading = lesson.concepts[c].heading;
+        if (seen[heading]) {
+          throw new Error("Lesson " + lesson.id + " repeats concept heading: " + heading);
+        }
+        seen[heading] = true;
+      }
+    }
+  });
+
+  test("every quiz question names a concept taught in this or an earlier lesson", function () {
+    const taught = new Set();
+    for (let i = 0; i < LESSONS.length; i += 1) {
+      const lesson = LESSONS[i];
+      if (lesson.concepts) {
+        for (let c = 0; c < lesson.concepts.length; c += 1) {
+          taught.add(lesson.concepts[c].heading);
+        }
+        for (let q = 0; q < lesson.quiz.length; q += 1) {
+          const tag = lesson.quiz[q].tests;
+          if (typeof tag !== "string" || !taught.has(tag)) {
+            throw new Error(
+              "Lesson " + lesson.id + " quiz " + (q + 1) +
+                " does not name a taught concept (got: " + tag + ")"
+            );
+          }
+        }
+      }
+    }
+    expect(taught.size).toBeGreaterThanOrEqual(7); // lesson 1 alone teaches 7
   });
 
   test("every quiz answer points at a real option", function () {
     for (let i = 0; i < LESSONS.length; i += 1) {
       const lesson = LESSONS[i];
       for (let q = 0; q < lesson.quiz.length; q += 1) {
-        const item = lesson.quiz[q];
-        expect(item.options.length).toBeGreaterThanOrEqual(2);
-        expect(item.answer).toBeGreaterThanOrEqual(0);
-        expect(item.answer).toBeLessThan(item.options.length);
-        expect(item.why.length).toBeGreaterThan(10);
+        expectOptionItem("Lesson " + lesson.id + " quiz " + (q + 1), lesson.quiz[q]);
       }
     }
   });
@@ -75,8 +128,23 @@ describe("lesson code obeys the course rules", function () {
   test("real code samples are clean", function () {
     for (let i = 0; i < LESSONS.length; i += 1) {
       const lesson = LESSONS[i];
+      if (lesson.concepts) continue;
       expectClean("Lesson " + lesson.id + " realCode", lesson.realCode);
       expectClean("Lesson " + lesson.id + " extraReal", lesson.extraReal);
+    }
+  });
+
+  test("concept samples are clean", function () {
+    for (let i = 0; i < LESSONS.length; i += 1) {
+      const lesson = LESSONS[i];
+      if (!lesson.concepts) continue;
+      for (let c = 0; c < lesson.concepts.length; c += 1) {
+        const concept = lesson.concepts[c];
+        expectClean(
+          "Lesson " + lesson.id + " concept " + (c + 1) + " (" + concept.heading + ")",
+          concept.code
+        );
+      }
     }
   });
 

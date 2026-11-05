@@ -31,6 +31,15 @@ function buildIndex() {
 
   for (let i = 0; i < LESSONS.length; i += 1) {
     const lesson = LESSONS[i];
+    const body = lesson.concepts
+      ? lesson.intro +
+        " " +
+        lesson.concepts
+          .map(function (concept) {
+            return concept.heading + " " + concept.text;
+          })
+          .join(" ")
+      : lesson.longDesc;
     items[items.length] = {
       id: "lesson-" + lesson.id,
       type: "lesson",
@@ -43,7 +52,7 @@ function buildIndex() {
         " " +
         lesson.goal +
         " " +
-        lesson.longDesc +
+        body +
         " " +
         lesson.exercise +
         " " +
