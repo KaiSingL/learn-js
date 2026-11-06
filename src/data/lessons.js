@@ -1980,27 +1980,81 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
     goal: "Understand why setTimeout in a for(var) loop prints 3 3 3, and why First Third Second is the right order.",
     tier: 0,
     sugarReplaces: "setTimeout, promise microtasks (concept only)",
-    longDesc:
-      "JavaScript is single-threaded. There is a call stack, Web APIs (timers, DOM events, fetch) that run outside the engine, and a task queue. When setTimeout fires, its callback does not run immediately — it goes to the queue and waits until the stack is empty. var in a for loop is function-scoped, so by the time the timer callback runs, the loop has finished and i is 3. The queue order explains why the classic loop prints 3 3 3, and why \"First Third Second\" logs in that order.",
-    realCode: `console.log("First"); // -> First
+    intro:
+      "JavaScript executes one stack at a time. Statements run in order, functions push and pop — and setTimeout never jumps the line: its callback is queued and waits until the stack is empty. The loop-and-timer surprises are all one rule plus one shared var binding.",
+    concepts: [
+      {
+        heading: "JavaScript runs one stack at a time",
+        text: "The engine executes one thing at a time: the call stack. Statements run top to bottom, functions push and pop, and nothing interleaves. Two console.log lines run in the order they appear, no matter what timers sit between them.",
+        purpose: "Watch the timer's position in the code fail to change the print order.",
+        code: `console.log("First");
 
 setTimeout(function () {
-  console.log("Second"); // -> Second
+  console.log("Second"); // queued, not run here
 }, 0);
 
-console.log("Third"); // -> Third`,
+console.log("Third"); // runs before the queued callback`,
+      },
+      {
+        heading: "setTimeout queues work for when the stack is empty",
+        text: "setTimeout does not run the function after exactly 0ms. It hands the callback to the timer system, and when the stack empties, the event loop moves the callback onto the stack. The wait is until the stack is free — not a precise delay.",
+        purpose: "Watch the queued callback land after all synchronous code, whatever the delay.",
+        code: `console.log("start");
 
-    extraReal: `for (var i = 0; i < 3; i = i + 1) {
+setTimeout(function () {
+  console.log("queued — the stack was empty");
+}, 0);
+
+console.log("end");
+// -> start
+// -> end
+// -> queued — the stack was empty`,
+        check: {
+          q: "When does a setTimeout(fn, 0) callback actually run?",
+          options: ["After 0 milliseconds, precisely","When the call stack is empty","In parallel with the stack","Only on the next user click"],
+          answer: 1,
+          why: "The callback is queued and waits for the stack to empty. 0 is a minimum suggestion, not a precise schedule.",
+        },
+      },
+      {
+        heading: "var in a loop is one binding for every timer",
+        text: "The for loop's var is created once, and the loop finishes before any timer runs. By queue time, i is 3 — and all three queued callbacks share that one binding, so they all print 3.",
+        purpose: "Watch three queued callbacks all read the loop's final value.",
+        code: `for (var i = 0; i < 3; i = i + 1) {
   setTimeout(function () {
-    console.log("i = " + i); // -> i = 3 (x3) ...
+    console.log("i = " + i);
   }, 0);
 }
-
-// After the stack clears, all three callbacks read the same i: 3
-// Prints:
-// i = 3
-// i = 3
-// i = 3`,
+console.log("done");
+// -> done
+// -> i = 3
+// -> i = 3
+// -> i = 3 — one binding, read after the loop`,
+      },
+      {
+        heading: "An IIFE freezes the value before queueing",
+        text: "Capturing i with an immediately invoked function creates a fresh binding per iteration while the loop is still running. The timer's callback closes over its own j, so each queued print gets its own number.",
+        purpose: "Watch three timers each deliver their own number.",
+        code: `for (var i = 0; i < 3; i = i + 1) {
+  (function (j) {
+    setTimeout(function () {
+      console.log("j = " + j);
+    }, 0);
+  })(i);
+}
+console.log("done");
+// -> done
+// -> j = 0
+// -> j = 1
+// -> j = 2`,
+        check: {
+          q: "Why does the IIFE version print 0, 1, 2 from the queue?",
+          options: ["Each iteration froze its own j while the loop was still running","The timers fire in value order by luck","j re-reads i when the callback runs","setTimeout copies the closure"],
+          answer: 0,
+          why: "The IIFE runs during the loop, creating a fresh j per iteration. By queue time each callback has its own binding — the lesson 2 capture, applied to timers.",
+        },
+      },
+    ],
 
     starter: `// Exercise: predict the order, then explain it.
 // These three statements run in what order?
@@ -2060,18 +2114,21 @@ console.log("done"); // -> done
         options: ["setTimeout callback first", "Synchronous console.log first", "They print together", "Random order"],
         answer: 1,
         why: "Synchronous code always runs before queued timer callbacks.",
+        tests: "JavaScript runs one stack at a time",
       },
       {
         q: "Why do all three setTimeout callbacks in for(var i) print 3?",
         options: ["Each captures its own i", "var i is one shared binding, finished at 3", "setTimeout delays them differently", "The engine optimizes them away"],
         answer: 1,
         why: "var is function-scoped. All three closures read the same i, which is 3 when the loop ends.",
+        tests: "var in a loop is one binding for every timer",
       },
       {
         q: "When does a setTimeout(..., 0) callback run?",
         options: ["Immediately", "After 0ms exactly", "After the stack empties", "Never"],
         answer: 2,
         why: "The callback is queued and runs when the call stack is empty — not at a precise time.",
+        tests: "setTimeout queues work for when the stack is empty",
       },
     ],
   },
@@ -2081,49 +2138,118 @@ console.log("done"); // -> done
     goal: "Use callbacks first, then raw Promises, with no async or await.",
     tier: 0,
     sugarReplaces: "async/await, implicit promise wrapping",
-    longDesc:
-      "Asynchronous code is a callback that runs later. A Promise is an object that holds a state and a list of callbacks; the executor function runs immediately with resolve and reject. then returns a new promise, which is what makes chaining work. catch is just then with a null success handler. async/await hides all of this behind syntactic sugar.",
-    realCode: `function fetchData(callback) {
+    intro:
+      "Asynchronous code is a function you hand to code that runs later. A promise makes that hand-off composable: an object holding a state and a list of reactions, built by an executor that runs immediately. then chains those reactions — and async/await is a different spelling of exactly that.",
+    concepts: [
+      {
+        heading: "A callback is the function you hand to later code",
+        text: "Before promises, async meant a callback argument: the function runs later, when the operation finishes. The convention is (err, value) — err carries the failure, and the callback checks it first.",
+        purpose: "Watch the callback fire after the sync code, carrying err and value.",
+        code: `function fetchName(callback) {
   setTimeout(function () {
-    callback(null, { data: "hello" });
-  }, 100);
+    callback(null, "ada");
+  }, 20);
 }
 
-fetchData(function (err, result) {
-  if (err) { console.log("error"); return; }
-  console.log(result.data); // -> hello
+console.log("before");
+fetchName(function (err, value) {
+  if (err) {
+    console.log("failed");
+    return;
+  }
+  console.log("got " + value);
+});
+console.log("after");
+// -> before
+// -> after
+// -> got ada`,
+      },
+      {
+        heading: "A promise is an object with a state machine inside",
+        text: "new Promise(executor) runs the executor immediately with two functions: resolve marks the state fulfilled and remembers the value; reject marks it rejected. Nothing else happens yet — the promise just holds a state and waits.",
+        purpose: "Watch the executor run right away, and the reaction run after the sync code.",
+        code: `var p = new Promise(function (resolve, reject) {
+  console.log("executor runs now"); // synchronous — not later
+  resolve("ready");
 });
 
-var p = new Promise(function (resolve, reject) {
-  setTimeout(function () {
-    resolve("done");
-  }, 100);
-});
+console.log("after construction");
 
 p.then(function (value) {
-  console.log(value); // -> done
+  console.log("resolved with " + value);
+});
+// -> executor runs now
+// -> after construction
+// -> resolved with ready — the reaction ran after the sync code`,
+        check: {
+          q: "When does the promise executor run?",
+          options: ["Immediately, during new Promise","When then is first called","When resolve is defined","After the microtask queue drains"],
+          answer: 0,
+          why: "The executor is called synchronously by the constructor — the logging order proves it. Only the reactions (then callbacks) wait.",
+        },
+      },
+      {
+        heading: "then returns a new promise",
+        text: "then registers a reaction and returns a NEW promise — never the same one. The returned promise settles when the callback finishes: with the returned value, or with a returned promise's outcome. That hand-off is the entire chaining mechanism.",
+        purpose: "Watch two different promises pass one value down a chain.",
+        code: `var p1 = Promise.resolve("done");
+var p2 = p1.then(function (value) {
   return value + "!";
-}).then(function (v2) {
-  console.log(v2); // -> done!
-}).catch(function (e) {
-  console.log("fail", e);
-});`,
+});
 
-    extraReal: `function delay(ms) {
+console.log(p1 === p2); // -> false — then built a new promise
+p2.then(function (value) {
+  console.log(value); // -> done!
+});
+// -> false
+// -> done!`,
+      },
+      {
+        heading: "catch is then with only a failure handler",
+        text: "promise.catch(fn) is exactly promise.then(null, fn): a rejection reaction with no success reaction. Either spelling returns a new promise, so a chain can end with catch and still be built on then.",
+        purpose: "Watch a rejected promise land in catch — spelled both ways.",
+        code: `var broken = new Promise(function (resolve, reject) {
+  reject("boom");
+});
+
+broken.then(null, function (reason) {
+  console.log("then caught: " + reason);
+});
+
+broken.catch(function (reason) {
+  console.log("catch caught: " + reason);
+});
+// -> then caught: boom
+// -> catch caught: boom`,
+      },
+      {
+        heading: "Returning a promise from then makes the chain wait",
+        text: "If a then callback returns a promise, the chain's next step waits for that promise to settle before running. This is how sequential async steps are built without async/await — each return hands the waiting job to the next then.",
+        purpose: "Watch two delays run in order, one per then.",
+        code: `function delay(ms, label) {
   return new Promise(function (resolve) {
-    setTimeout(function () { resolve(ms); }, ms);
+    setTimeout(function () {
+      resolve(label);
+    }, ms);
   });
 }
 
-delay(30).then(function (ms) {
-  console.log("waited " + ms); // -> waited 30
-  return delay(20);
-}).then(function (ms) {
-  console.log("then " + ms); // -> then 20
-  return "finished";
+delay(20, "first").then(function (value) {
+  console.log(value + " finished");
+  return delay(10, "second");
 }).then(function (value) {
-  console.log(value); // -> finished
-});`,
+  console.log(value + " finished");
+});
+// -> first finished
+// -> second finished`,
+        check: {
+          q: "What makes the second then wait for the second delay?",
+          options: ["The first callback returned delay's promise, so the chain settles with it","then adds a fixed 10ms wait","The second then polls the first promise","Delays always run in declaration order"],
+          answer: 0,
+          why: "A then callback that returns a promise hands that promise's outcome to the next then. The chain waits — that is the whole mechanism await was built on.",
+        },
+      },
+    ],
 
     starter: `// Exercise: promisify a callback-style function.
 // read(name, callback) calls callback(err, value).
@@ -2222,18 +2348,21 @@ delay(30).then(function (ms) {
         options: ["The resolved value", "A new promise", "The original promise", "undefined"],
         answer: 1,
         why: "then always returns a new promise, which is what allows chaining.",
+        tests: "then returns a new promise",
       },
       {
         q: "What is catch(fn) equivalent to?",
         options: ["then(fn, fn)", "then(null, fn)", "new Promise(fn)", "finally(fn)"],
         answer: 1,
         why: "catch is a convenience wrapper around a rejected handler in then.",
+        tests: "catch is then with only a failure handler",
       },
       {
         q: "What does async/await actually do?",
         options: ["Runs code on another thread", "Wraps a promise and awaits then callbacks", "Removes callbacks from the engine", "Creates a callback queue"],
         answer: 1,
         why: "async makes the function return a promise; await pauses that async function until the promise settles.",
+        tests: "Returning a promise from then makes the chain wait",
       },
     ],
   },

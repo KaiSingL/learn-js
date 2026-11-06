@@ -60,7 +60,9 @@ for (let i = 0; i < lessons.length; i += 1) {
     runnable.push(["L" + lesson.id + " realCode", lesson.realCode]);
     runnable.push(["L" + lesson.id + " extraReal", lesson.extraReal]);
   }
-  runnable.push(["L" + lesson.id + " starter", lesson.starter]);
+  // Starters are excluded: they are exercise skeletons with placeholder
+  // bodies that throw by design until the learner completes them. Everything
+  // else presents itself as working code and must run clean.
   for (let s = 0; s < lesson.solutions.length; s += 1) {
     runnable.push(["L" + lesson.id + " solution " + (s + 1), lesson.solutions[s].code]);
   }
