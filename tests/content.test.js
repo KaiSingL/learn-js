@@ -140,10 +140,21 @@ describe("lesson code obeys the course rules", function () {
       if (!lesson.concepts) continue;
       for (let c = 0; c < lesson.concepts.length; c += 1) {
         const concept = lesson.concepts[c];
-        expectClean(
-          "Lesson " + lesson.id + " concept " + (c + 1) + " (" + concept.heading + ")",
-          concept.code
-        );
+        // Concepts may use Tier 1 features explicitly (let/const notes),
+        // matching the playground gate where only errors block Run.
+        const errors = lintSource(concept.code).filter(function (violation) {
+          return violation.severity === "error";
+        });
+        if (errors.length > 0) {
+          const details = errors
+            .map(function (item) {
+              return "  line " + item.line + ":" + item.col + "  " + item.ruleId + "  " + item.found;
+            })
+            .join("\n");
+          throw new Error(
+            "Lesson " + lesson.id + " concept " + (c + 1) + " (" + concept.heading + ") contains Tier 2 syntax:\n" + details
+          );
+        }
       }
     }
   });
