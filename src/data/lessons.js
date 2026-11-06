@@ -442,26 +442,40 @@ console.log(check("sun"));  // -> undefined — never assigned this call`,
       },
       {
         heading: "Closures keep the binding alive",
-        text: "When a function is returned, it carries its birthplace's bindings with it. The inner function does not get a copy of the value — it keeps a live link to the binding, so changes made through one call are visible to the next.",
-        purpose: "Watch one private count survive between calls — and two counters stay independent.",
+        text: "Normally, when a function returns, its local bindings become unreachable and the garbage collector frees that memory. A closure changes the reachability graph: the returned function holds a reference to its birthplace scope, so the collector — which frees only what nothing points at — must keep that scope alive in memory. Every call then resolves count by walking the scope chain: the function's own scope first, then the birthplace scope that stayed alive. The variable is never copied into the function — it is found, live, through that chain. The memory is freed only when every function holding the scope becomes unreachable; only then does the collector finally take it.",
+        purpose: "Watch two functions reach the same kept-alive binding — one counts it up, the other resets it.",
         code: `function makeCounter() {
-  var count = 0; // lives in makeCounter's scope
-  return function () {
-    count = count + 1; // the same binding on every call
+  var count = 0;
+
+  function increment() {
+    count = count + 1;
     return count;
-  };
+  }
+
+  function reset() {
+    count = 0;
+    return count;
+  }
+
+  return [increment, reset];
 }
 
-var first = makeCounter();
-var second = makeCounter();
-console.log(first());  // -> 1
-console.log(first());  // -> 2 — the binding survived the return
-console.log(second()); // -> 1 — a new binding per makeCounter call`,
+var pair = makeCounter();
+var increment = pair[0];
+var reset = pair[1];
+
+increment();
+increment();
+console.log(increment()); // -> 3 — the scope is still alive in memory
+
+reset();
+console.log(increment()); // -> 1 — reset through the other function, same binding`,
+        diagram: "closure",
         check: {
-          q: "What does a second call to makeCounter() create?",
-          options: ["A copy of count with the current value","A fresh count binding — the counters are independent","A reference to the first counter's count","An error — count no longer exists"],
-          answer: 1,
-          why: "Each call to makeCounter runs the body again, creating a new count binding. first and second close over different bindings — that is why second() starts at 1.",
+          q: "reset() changed count to 0 — why does increment() see that change?",
+          options: ["Both functions resolve the same kept-alive scope binding","reset redefined increment","count is a global variable","The functions share a copy of count"],
+          answer: 0,
+          why: "increment and reset both reference makeCounter's scope — the one the GC kept alive. Resetting through one function is visible through the other: one binding, two doors.",
         },
       },
       {
@@ -618,6 +632,42 @@ console.log(typeof a.count); // -> undefined`,
         answer: 2,
         why: "With var, only a function creates a scope. Blocks do not.",
         tests: "Only functions create a scope for var",
+      },
+      {
+        q: "function warm() { heat = 40; } runs in sloppy mode. Where does heat end up?",
+        options: [
+          "On the global object — warm never declared it",
+          "Inside warm's scope",
+          "On window only in browsers",
+          "Nowhere — the assignment fails",
+        ],
+        answer: 0,
+        why: "No var, no function binding: the assignment walks out of warm and creates heat on the global object. Combines lesson 1's implicit global with lesson 2's scoping.",
+        tests: "= without var creates a global",
+      },
+      {
+        q: "Inside a closure, two counters each hold a number count. count = count + 1 in one counter changes the other's count because...",
+        options: [
+          "Numbers are primitives and = copies the value — so it does NOT change the other",
+          "Closures always share bindings across factories",
+          "Numbers are stored by reference",
+          "The bindings merge on the global object",
+        ],
+        answer: 0,
+        why: "= copies the value for primitives, and each makeCounter call created a fresh binding. Neither counter can reach the other's count — value copying plus separate bindings.",
+        tests: "= copies the value for primitives",
+      },
+      {
+        q: "Why does count survive after makeCounter returns?",
+        options: [
+          "The returned function still references the scope, so the garbage collector cannot collect it",
+          "count was copied into the function's body",
+          "count moved to the global object",
+          "The engine never frees memory",
+        ],
+        answer: 0,
+        why: "The GC frees only unreachable memory. The returned function references its birthplace scope, so count stays reachable — and every call finds it through the scope chain.",
+        tests: "Closures keep the binding alive",
       },
     ],
   },
@@ -808,6 +858,18 @@ console.log(toArray("a", "b").length); // -> 2`,
         answer: 1,
         why: "It has length and numeric indexes but no array methods. Use Array.prototype.slice.call to convert it.",
         tests: "arguments is array-like, not an Array",
+      },
+      {
+        q: "var alias = next; (next is a counter function). alias.count = 50; What is next.count?",
+        options: [
+          "50 — both names are one function object",
+          "The old count — alias received a copy",
+          "undefined — alias has its own count",
+          "An error — functions cannot be aliased",
+        ],
+        answer: 0,
+        why: "Functions are objects, so = copied the reference: alias and next are two names for one function. Writing through either name changes the single shared object.",
+        tests: "= copies the reference for objects and arrays",
       },
     ],
   },
@@ -1005,6 +1067,30 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
         answer: 1,
         why: "bind returns a new function. The call happens later, when you invoke that new function.",
         tests: "bind returns a new function with this locked",
+      },
+      {
+        q: "var detached = speaker.speak; What does detached hold?",
+        options: [
+          "A reference to the same function — not a copy",
+          "A copy of the function",
+          "The result of calling speak",
+          "Only the function's name",
+        ],
+        answer: 0,
+        why: "Methods are function objects, so = copied the reference. detached.call(anyObject, line) runs the same code with a different this — lesson 1's reference rule, applied to functions.",
+        tests: "= copies the reference for objects and arrays",
+      },
+      {
+        q: "function forward() { return greet.apply(this, arguments); } — why can arguments be passed to apply as-is?",
+        options: [
+          "arguments is array-like — exactly the shape apply's second argument expects",
+          "arguments is a real Array",
+          "apply converts strings automatically",
+          "It cannot — slice.call is required first",
+        ],
+        answer: 0,
+        why: "apply's second parameter only needs length and indexes, and arguments has both. Forwarding needs no conversion — slice.call is required only when a true array is needed.",
+        tests: "arguments is array-like, not an Array",
       },
     ],
   },
@@ -1227,6 +1313,30 @@ console.log(s instanceof Person); // -> true`,
         why: "Prototype methods are allocated once. Methods inside the constructor create a new function for every instance.",
         tests: "Prototype methods are shared, not copied",
       },
+      {
+        q: "var alias = rex; alias.name = \"Ace\"; What is rex.name?",
+        options: [
+          "Ace — = copied the reference, so one object has two names",
+          "Rex — alias received a copy",
+          "undefined — the rename broke rex",
+          "Ace, but only until rex.bark() runs",
+        ],
+        answer: 0,
+        why: "rex is an object, so = copied its reference into alias. Renaming through alias renamed the instance itself — the prototype plays no role in that.",
+        tests: "= copies the reference for objects and arrays",
+      },
+      {
+        q: "Dog.prototype.bark = function () { ... }; — what kind of value is stored on the prototype?",
+        options: [
+          "A function — prototypes store callable properties like any object",
+          "A class definition",
+          "A copy of the method per future instance",
+          "A special method type the engine treats differently",
+        ],
+        answer: 0,
+        why: "Prototype methods are function values stored under keys — exactly like add.description stored a string. The prototype is just an object carrying callable properties.",
+        tests: "A function is a callable object",
+      },
     ],
   },
   {
@@ -1396,6 +1506,30 @@ console.log(config.version); // -> 2`,
         answer: 0,
         why: "Accessor properties are defined with get and set functions; a single descriptor cannot mix them with value and writable.",
         tests: "Accessors are get and set instead of value and writable",
+      },
+      {
+        q: "var alias = person; alias.age = 30; What is person.age when age was created by normal assignment?",
+        options: [
+          "30 — assignment changed the one shared object",
+          "21 — alias received a copy",
+          "undefined",
+          "An error — age is not writable",
+        ],
+        answer: 0,
+        why: "Normal assignment makes age writable, and = copied the reference: person and alias are two names for one object. The flag story and the reference story stack.",
+        tests: "= copies the reference for objects and arrays",
+      },
+      {
+        q: "Reading account.cents runs the getter. What is this inside it?",
+        options: [
+          "account — the accessor is invoked through the object",
+          "The cents property itself",
+          "undefined, always",
+          "The descriptor object",
+        ],
+        answer: 0,
+        why: "Accessors are functions, so the call-site rule applies: reading account.cents calls get with this = account. That is why this.balance reaches the real property.",
+        tests: "this is decided by the call site",
       },
     ],
   },
@@ -1581,6 +1715,30 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
         answer: 1,
         why: "== only converts when one side is a primitive. When both sides are objects it compares references, and two separately created wrappers are different objects.",
         tests: "== unwraps wrapper objects against primitives",
+      },
+      {
+        q: "NaN == NaN — what does the loosest comparison say?",
+        options: [
+          "false — NaN is unequal to everything, even loosely",
+          "true — == coerces both sides to the same NaN",
+          "undefined — the comparison is meaningless",
+          "An error",
+        ],
+        answer: 0,
+        why: "Coercion cannot save a comparison with NaN: the lesson 1 rule applies to == as well. Only value !== value detects it.",
+        tests: "NaN is the number that is not equal to itself",
+      },
+      {
+        q: "wallet + 1 runs valueOf. What is this inside valueOf?",
+        options: [
+          "wallet — the engine calls it as wallet.valueOf()",
+          "The number 1",
+          "undefined in sloppy mode",
+          "The string result",
+        ],
+        answer: 0,
+        why: "ToPrimitive calls the method through the object, so the call-site rule hands this = wallet. That is why this.dollars reads the real property.",
+        tests: "this is decided by the call site",
       },
     ],
   },
@@ -1806,6 +1964,30 @@ console.log(indexOf(["a", "b", "c"], "z")); // -> -1`,
         why: "The loop makes the work visible: how many passes, what is allocated, and when you stop.",
         tests: "Early return is the exit a method hides",
       },
+      {
+        q: "var copy = arr; (arr is an array). copy[0] = 99; What is arr[0]?",
+        options: [
+          "99 — = copied the reference, so two names share one array",
+          "The old value — copy received a duplicate",
+          "undefined — copy broke arr",
+          "An error — arrays cannot be aliased",
+        ],
+        answer: 0,
+        why: "Arrays are objects: = copied the reference, so copy and arr are two names for one array — the lesson 1 rule, now with brackets.",
+        tests: "= copies the reference for objects and arrays",
+      },
+      {
+        q: "var arr = []; arr.push(1) — where does push come from?",
+        options: [
+          "Array.prototype — reached through arr's prototype chain",
+          "arr owns its own copy of push",
+          "The global object",
+          "push is syntax, not a function",
+        ],
+        answer: 0,
+        why: "arr starts empty, yet push works: it lives on Array.prototype, shared by every array — the lesson 5 chain, with Array.prototype as the link.",
+        tests: "Prototype methods are shared, not copied",
+      },
     ],
   },
   {
@@ -1970,6 +2152,18 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
         why: "Strict mode makes delete throw on non-configurable properties instead of silently failing.",
         tests: "delete removes own properties — with strict limits",
       },
+      {
+        q: "function warm() { var heat = 40; } — what does globalThis.heat read afterwards?",
+        options: [
+          "undefined — var inside a function stays in the function",
+          "40 — var always creates globals",
+          "40 until the function runs again",
+          "An error",
+        ],
+        answer: 0,
+        why: "var gives heat to the function scope only. The lesson 1 leak needs a missing var — with var declared, nothing reaches the global object.",
+        tests: "Only functions create a scope for var",
+      },
     ],
   },
   {
@@ -2127,6 +2321,18 @@ console.log("done"); // -> done
         answer: 2,
         why: "The callback is queued and runs when the call stack is empty — not at a precise time.",
         tests: "setTimeout queues work for when the stack is empty",
+      },
+      {
+        q: "If a queued callback assigns summary = i (no var anywhere), where does summary land?",
+        options: [
+          "On the global object — assignments walk out of any function, queued or not",
+          "Inside the timer's private scope",
+          "Into the task queue",
+          "Nowhere — queued code cannot assign",
+        ],
+        answer: 0,
+        why: "Queued or not, the callback is a function and the assignment rule from lesson 1 applies: no var means the global object.",
+        tests: "= without var creates a global",
       },
     ],
   },
@@ -2362,6 +2568,18 @@ delay(30).then(function (ms) {
         why: "async makes the function return a promise; await pauses that async function until the promise settles.",
         tests: "Returning a promise from then makes the chain wait",
       },
+      {
+        q: "Sync code queues a promise reaction and a setTimeout callback. Which runs first?",
+        options: [
+          "The promise reaction — reactions wait closer to the stack than timer tasks",
+          "The timer — setTimeout has priority",
+          "Whichever was queued first",
+          "They run together",
+        ],
+        answer: 0,
+        why: "Both wait for the stack to empty, but promise reactions are microtasks and run before timer tasks. The stack-first rule stands; the queue has layers.",
+        tests: "setTimeout queues work for when the stack is empty",
+      },
     ],
   },
   {
@@ -2596,6 +2814,30 @@ console.log(ids.next()); // -> { value: 2, done: false }`,
         answer: 2,
         why: "for...of looks up the well-known Symbol.iterator key and calls it to get an iterator — the object with a next method you built by hand.",
         tests: "Symbol.iterator makes an object for...of-able",
+      },
+      {
+        q: "What lesson 2 mechanism lets the manual iterator remember its position between .next() calls?",
+        options: [
+          "A closure over the factory's state variables",
+          "A global variable",
+          "The object's prototype",
+          "localStorage",
+        ],
+        answer: 0,
+        why: "makeIterator's scope holds position; each next() closes over it and updates it. The same binding survival as the lesson 2 counter.",
+        tests: "Closures keep the binding alive",
+      },
+      {
+        q: "var twin = it; (it is an iterator). twin.next() — what happens to it's position?",
+        options: [
+          "It advances too — = copied the reference; one iterator, two names",
+          "Nothing — twin got a copy",
+          "The position resets",
+          "An error — iterators cannot be aliased",
+        ],
+        answer: 0,
+        why: "The iterator is an object, so = copied the reference. twin.next() and it.next() pull from the same position — two names cannot make two machines.",
+        tests: "= copies the reference for objects and arrays",
       },
     ],
   },
@@ -3048,6 +3290,30 @@ readAge("-3");`,
         why: "finally always runs — on success, on a caught error, and even while a return is in flight.",
         tests: "try marks the risk; catch recovers; finally always runs",
       },
+      {
+        q: "Inside bus.once's wrapper, why call self.off(wrapper) instead of this.off(wrapper)?",
+        options: [
+          "The wrapper runs as a plain call — this would not be the bus; self was captured while it was correct",
+          "this is undefined inside object methods",
+          "off only accepts captured references",
+          "self is faster than this",
+        ],
+        answer: 0,
+        why: "The wrapper is invoked as a plain function, so its this would have no home. var self = this froze the bus reference while the method call was still active — the lesson 4 capture pattern.",
+        tests: "var self = this keeps the call site's this",
+      },
+      {
+        q: "parseAge uses value !== value to detect Number(\"abc\") because...",
+        options: [
+          "Number(\"abc\") is NaN, and NaN is the only value unequal to itself",
+          "value is a string",
+          "!== compares more strictly than !=",
+          "Number() returns undefined on failure",
+        ],
+        answer: 0,
+        why: "Number(\"abc\") produces NaN, and the lesson 1 rule applies: NaN fails every equality check including against itself. The self-check is the only reliable detector.",
+        tests: "NaN is the number that is not equal to itself",
+      },
     ],
   },
   {
@@ -3255,6 +3521,30 @@ console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it ca
         answer: 1,
         why: "Dates stringify to ISO strings and parsing never rebuilds them — the copy silently changes the type.",
         tests: "JSON.parse(JSON.stringify) is not a deep copy",
+      },
+      {
+        q: "The manual shallow copy loops Object.keys(original). Which properties make it into the copy?",
+        options: [
+          "Own enumerable ones — non-enumerable and inherited are skipped",
+          "Everything, including the prototype chain",
+          "Only primitives",
+          "Only functions",
+        ],
+        answer: 0,
+        why: "Object.keys keeps own enumerable keys. A hand-built shallow copy therefore takes exactly what the lesson 6 listing takes — and nested values still go by reference.",
+        tests: "Object.keys lists enumerable own properties only",
+      },
+      {
+        q: "deepCopy starts with if (value === null || typeof value !== \"object\") — why is the null check needed first?",
+        options: [
+          "typeof null is \"object\" — the famous bug would send null down the clone path",
+          "null cannot be compared",
+          "null is always an object",
+          "Order does not matter",
+        ],
+        answer: 0,
+        why: "Lesson 1's bug: typeof null answers \"object\". Without the null check first, deepCopy(null) would try to clone it as an object. Old bugs shape new code.",
+        tests: "typeof reads the type — with one famous bug",
       },
     ],
   },

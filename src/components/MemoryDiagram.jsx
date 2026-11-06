@@ -75,6 +75,38 @@ export default function MemoryDiagram({ kind }) {
       </div>
     );
   }
+  if (kind === "closure") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              returned function
+            </div>
+            <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+              increment
+            </span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="mono text-[10px] leading-none text-muted">holds</span>
+            <span className="mono text-[13px] leading-none text-muted">▶</span>
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              birthplace scope
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+              count
+            </span>
+          </div>
+        </div>
+        <p className="mono mt-2 text-[10px] leading-[1.5] text-muted">
+          the GC frees only unreachable memory — the returned function keeps its birthplace scope
+          reachable, so count stays alive and every call finds it
+        </p>
+      </div>
+    );
+  }
   return null;
 }
 
