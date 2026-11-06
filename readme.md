@@ -17,7 +17,7 @@ Rule #0: **If you cannot write it with `var` + `function` + `prototype`, you do 
 | Section | What it does |
 | --- | --- |
 | **Rules** | The three-tier ruleset, with the hidden default each Tier 1 feature carries |
-| **Lessons** | 14 lessons — concept segments with one idea and one purpose-labelled example each, an exercise with a starter and runnable solutions, a checklist, and a knowledge check. Completed lessons, quiz answers and reading position persist in localStorage |
+| **Lessons** | 14 lessons built from concept segments — one idea and one purpose-labelled runnable example each, an exercise with a starter and runnable solutions, a checklist, and a knowledge check. Completed lessons, quiz answers and reading position persist in localStorage |
 | **Cheatsheet** | Sugar → real mapping, plus a table of hidden defaults that bite |
 | **De-sugar Lab** | Paste modern sugar, get tier-tagged analysis and the Tier 0/1 equivalent |
 | **Playground** | Runs your code in a sandboxed worker/iframe; Tier 2 sugar blocks Run, Tier 1 runs fine with notes |
@@ -47,7 +47,8 @@ Requires [Bun](https://bun.sh):
 ```bash
 bun install
 bun run dev          # dev server on :5180
-bun test             # 86 unit tests — content shape, tier-aware linter, storage, router
+bun test             # 96 unit tests — content shape, tier-aware linter, storage, router
+bun scripts/verify-sandbox.js  # run every lesson snippet in the real sandbox
 bun run build        # single-file bundle in dist/ (vite-plugin-singlefile)
 bun scripts/e2e.js   # Playwright checks (needs: bunx playwright install chromium)
 ```

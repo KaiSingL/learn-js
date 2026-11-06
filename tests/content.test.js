@@ -40,7 +40,7 @@ describe("curriculum shape", function () {
       expect(lesson.title.length).toBeGreaterThan(0);
       expect(lesson.goal.length).toBeGreaterThan(0);
       if (lesson.concepts) {
-        // migrated shape: interleaved concept segments
+        // interleaved concept segments — the required shape
         expect(lesson.intro.length).toBeGreaterThan(40);
         expect(lesson.concepts.length).toBeGreaterThanOrEqual(4);
         for (let c = 0; c < lesson.concepts.length; c += 1) {
@@ -55,10 +55,7 @@ describe("curriculum shape", function () {
           }
         }
       } else {
-        // legacy shape: one long description and two big code blocks
-        expect(lesson.longDesc.length).toBeGreaterThan(40);
-        expect(lesson.realCode.length).toBeGreaterThan(20);
-        expect(lesson.extraReal.length).toBeGreaterThan(20);
+        throw new Error("Lesson " + lesson.id + " has no concepts — every lesson must be segmented");
       }
       expect(lesson.starter.length).toBeGreaterThan(20);
       expect(lesson.exercise.length).toBeGreaterThan(20);
@@ -125,15 +122,6 @@ describe("curriculum shape", function () {
 });
 
 describe("lesson code obeys the course rules", function () {
-  test("real code samples are clean", function () {
-    for (let i = 0; i < LESSONS.length; i += 1) {
-      const lesson = LESSONS[i];
-      if (lesson.concepts) continue;
-      expectClean("Lesson " + lesson.id + " realCode", lesson.realCode);
-      expectClean("Lesson " + lesson.id + " extraReal", lesson.extraReal);
-    }
-  });
-
   test("concept samples are clean", function () {
     for (let i = 0; i < LESSONS.length; i += 1) {
       const lesson = LESSONS[i];

@@ -9,9 +9,7 @@
 //   tests        — quiz items name the concept heading they draw from, so
 //                  every question is answerable from taught content only
 //
-// Lessons not yet migrated still use the legacy shape (longDesc + realCode +
-// extraReal) and render exactly as before. Lesson 1 is the reference example
-// of the migrated shape.
+// Every lesson follows this shape; lesson 1 is the reference example.
 
 export const LESSONS = [
   {
