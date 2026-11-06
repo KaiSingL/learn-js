@@ -629,44 +629,97 @@ console.log(typeof a.count); // -> undefined`,
     goal: "A function is a callable object with properties, arguments and return semantics.",
     tier: 0,
     sugarReplaces: "arrow functions, rest parameters, default parameters",
-    longDesc:
-      "A function is an object with a special internal method that lets you call it. That is why you can attach properties to it, pass it around and store it. Inside every real function there is an arguments object containing the actual values passed. Function declarations hoist; function expressions only hoist their variable, as undefined. Arrow functions have none of this — no own this, no arguments, no prototype.",
-    realCode: `function add(a, b) {
+    intro:
+      "A function is an object with one extra ability: it can be called. That single fact explains why functions can carry properties, live in variables, travel as values — and why every real function carries an arguments object holding the values that actually arrived.",
+    concepts: [
+      {
+        heading: "A function is a callable object",
+        text: "typeof answers \"function\" for functions — a special case for callable objects. Being an object means a function can do everything objects can: carry properties, be stored in variables, passed around, returned.",
+        purpose: "Watch typeof name the type, and a property live on the function itself.",
+        code: `function add(a, b) {
   return a + b;
 }
 
-var multiply = function (a, b) {
+console.log(typeof add); // -> function — callable, and still an object
+
+add.description = "adds two numbers"; // functions carry properties
+console.log(add.description); // -> adds two numbers`,
+      },
+      {
+        heading: "Declarations hoist; expressions do not",
+        text: "A function declaration registers the whole function at function entry, so it is callable from the first line. A function expression only hoists the variable — the body arrives when the line runs. Calling the variable before that throws a TypeError.",
+        purpose: "Watch the declaration work above its own line, and note the commented expression that would fail.",
+        code: `console.log(declared(2, 3)); // -> 5 — the whole function hoisted
+
+function declared(a, b) {
+  return a + b;
+}
+
+// console.log(early(2, 3)); // TypeError: early is not a function
+var early = function (a, b) {
   return a * b;
 };
-
-function showArgs() {
-  var args = arguments;
+console.log(early(2, 3)); // -> 6 — callable only after its line`,
+        check: {
+          q: "var double = function (n) { return n * 2; } — what exists before this line runs?",
+          options: ["The whole function","Only the variable double, as undefined","Nothing — expressions do not hoist at all","The function without a name"],
+          answer: 1,
+          why: "The var binding hoists as undefined; the function body arrives when the line runs. Calling double early throws a TypeError.",
+        },
+      },
+      {
+        heading: "arguments holds the actual values passed",
+        text: "Every real function has an arguments object: the values that actually arrived, whether or not they match the parameter list. Extra arguments are not lost — they are right there. arguments.length counts what arrived; the function's own length counts what was declared.",
+        purpose: "Watch a function read more values than it declared parameters for.",
+        code: `function show() {
   var result = "";
-  for (var i = 0; i < args.length; i = i + 1) {
-    result = result + args[i] + " ";
+  for (var i = 0; i < arguments.length; i = i + 1) {
+    result = result + arguments[i] + " ";
   }
   return result;
 }
 
-add.description = "adds two numbers";
-console.log(add.description); // -> adds two numbers
-console.log(typeof add); // -> function
-console.log(showArgs("a", "b", "c")); // -> a b c 
-console.log(multiply(3, 4)); // -> 12`,
+console.log(show("a", "b", "c")); // -> a b c
+console.log(show.length); // -> 0 — declared parameters, not received values`,
+      },
+      {
+        heading: "arguments is array-like, not an Array",
+        text: "arguments has length and numeric indexes, which makes it array-like — but it is not an Array, so none of the array methods hang off it. The real conversion is borrowed slicing: Array.prototype.slice.call(arguments) runs slice with arguments as its target.",
+        purpose: "Watch slice borrowed from Array.prototype collect arguments into a true array.",
+        code: `function collect() {
+  return Array.prototype.slice.call(arguments);
+}
 
-    extraReal: `var Counter = function () {
-  var fn = function () {
-    fn.count = fn.count + 1;
-    return fn.count;
-  };
-  fn.count = 0;
-  return fn;
-};
+var list = collect("x", "y");
+console.log(list.length); // -> 2
+console.log(list[1]); // -> y — a real array, not just array-like`,
+      },
+      {
+        heading: "State can live on the function object",
+        text: "A function's properties persist between calls, which makes the function itself a place for state. The classic counter: increment fn.count on every call. Any code that can reach the function can also read — and overwrite — that state, because it is an ordinary property.",
+        purpose: "Watch a count climb across calls — and survive an outside overwrite.",
+        code: `function makeCounter() {
+  function counter() {
+    counter.count = counter.count + 1;
+    return counter.count;
+  }
+  counter.count = 0;
+  return counter;
+}
 
-var next = Counter();
+var next = makeCounter();
 console.log(next()); // -> 1
 console.log(next()); // -> 2
-console.log(next.count); // -> 2`,
+next.count = 100;
+console.log(next()); // -> 101 — the state is public property, not a secret`,
+        check: {
+          q: "next.count = 100 runs between two calls. What does the next call return?",
+          options: ["3 — the internal count is protected","101 — count is an ordinary property anyone can change","100 — the call resets it","undefined — the function broke"],
+          answer: 1,
+          why: "Properties on a function are as public as on any object. Nothing hides them — which is why closures (lesson 2) are the privacy mechanism when you need one.",
+        },
+      },
+    ],
 
     starter: `// Exercise: makeCounter
 // Return a function that increments its own count property on every call.
@@ -742,18 +795,21 @@ console.log(toArray("a", "b").length); // -> 2`,
         options: ["\"object\"", "\"function\"", "\"callable\"", "\"undefined\""],
         answer: 1,
         why: "typeof has a special case for callable objects and reports \"function\".",
+        tests: "A function is a callable object",
       },
       {
         q: "What is available before a function expression is assigned?",
         options: ["The function body", "The whole expression", "Only the variable, as undefined", "A syntax error"],
         answer: 2,
         why: "The var binding hoists, but the assignment happens in place. Calling it early throws a TypeError.",
+        tests: "Declarations hoist; expressions do not",
       },
       {
         q: "What is arguments?",
         options: ["A real Array", "An array-like object", "A string", "A copy of the parameters"],
         answer: 1,
         why: "It has length and numeric indexes but no array methods. Use Array.prototype.slice.call to convert it.",
+        tests: "arguments is array-like, not an Array",
       },
     ],
   },
