@@ -17,7 +17,7 @@ export const LESSONS = [
     title: "Variables, Types & Reference vs Value",
     goal: "Understand primitives vs objects, reference equality, typeof, and explicit undefined checks.",
     tier: 0,
-    sugarReplaces: "let / const, ??, truthy coercion",
+    sugarReplaces: "types, typeof, assignment semantics",
     intro:
       "A variable is a name bound to a value. Primitives — numbers, strings, booleans, null, undefined — are carried by the binding itself. Objects and arrays are reached through a reference. Every surprise in this course traces back to two questions: what does = actually copy — the value, or the reference — and where does the binding live — this function, or the global object? Syntax is the small part; these two questions are the lesson.",
     concepts: [
@@ -398,7 +398,7 @@ console.log(describe("hi")); // -> string`,
     title: "Scope, Hoisting & TDZ",
     goal: "See var hoisting, function scope, the temporal dead zone, and why let throws where var gives undefined.",
     tier: 1,
-    sugarReplaces: "let block scope, arrow closure sugar",
+    sugarReplaces: "var vs let — function scope, TDZ",
     intro:
       "A binding lives inside the function that declares it, and it exists from the moment the function starts — not from the line where it is written. Only functions create that home; blocks do nothing for var. let draws the same boundary around any block and punishes reads that come too early.",
     concepts: [
