@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { QUIZ_RESET_EVENT, readQuizStorage, writeQuizStorage } from "../lib/quizStorage.js";
+import CodeBlock from "./CodeBlock.jsx";
 import Icon from "./Icon.jsx";
 
 // A quiz or inline check. When `id` is provided the answers persist to
@@ -84,6 +85,7 @@ export default function Quiz({ items, id, label = "Knowledge check" }) {
                 <span className="mono mr-1.5 text-muted">{questionIndex + 1}.</span>
                 {item.q}
               </p>
+              {item.code ? <CodeBlock code={item.code} className="mt-2" /> : null}
               <div className="mt-2 space-y-1.5">
                 {item.options.map(function (option, optionIndex) {
                   const isAnswer = optionIndex === item.answer;
