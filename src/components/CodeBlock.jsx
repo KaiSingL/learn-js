@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { highlight } from "../lib/highlight.jsx";
+import { useInlineRun } from "../lib/useInlineRun.js";
 import Icon from "./Icon.jsx";
 
 function legacyCopy(text) {
@@ -20,6 +21,12 @@ function legacyCopy(text) {
   return ok;
 }
 
+const STATUS_TEXT = {
+  running: "running…",
+  timeout: "stopped after 2.2s",
+  blocked: "blocked by course rules",
+};
+
 export default function CodeBlock({
   code,
   label,
@@ -29,6 +36,8 @@ export default function CodeBlock({
   maxHeight,
 }) {
   const [copied, setCopied] = useState(false);
+  const output = useInlineRun(code);
+  const hasOutput = output.lines.length > 0 || output.status === "running";
 
   function copy() {
     function done() {
@@ -48,17 +57,26 @@ export default function CodeBlock({
 
   const action = (
     <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={output.run}
+        className="btn h-7 px-2 gap-1"
+        title="Run this code here"
+      >
+        <Icon name="play" size={11} />
+        <span className="hidden sm:inline">Run</span>
+      </button>
       {onPlayground ? (
         <button
           type="button"
           onClick={function () {
             onPlayground(code);
           }}
-          className="btn h-7 px-2 gap-1"
-          title="Open this code in the playground"
+          className="btn h-7 w-7 p-0"
+          aria-label="Copy to playground"
+          title="Copy to playground"
         >
-          <Icon name="play" size={11} />
-          <span className="hidden sm:inline">Run</span>
+          <Icon name="squareArrowOutUpRight" size={12} />
         </button>
       ) : null}
       <button
@@ -100,6 +118,50 @@ export default function CodeBlock({
       >
         <code className="mono">{highlight(code)}</code>
       </pre>
+      {hasOutput ? (
+        <div className="border-t border-line bg-ink">
+          <div className="flex items-center justify-between gap-2 px-3 pt-1.5">
+            <span className="mono text-[10px] uppercase tracking-[0.12em] text-muted">Output</span>
+            <div className="flex items-center gap-2">
+              <span className="mono text-[10px] text-muted">
+                {output.status === "done" && output.duration !== null
+                  ? "done · " + output.duration + "ms"
+                  : STATUS_TEXT[output.status] || ""}
+              </span>
+              <button
+                type="button"
+                onClick={output.clear}
+                className="mono text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-paper"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <div className="max-h-[240px] space-y-0.5 overflow-y-auto px-3 pb-2 pt-1">
+            {output.lines.map(function (line, index) {
+              const tone =
+                line.kind === "error"
+                  ? "text-danger"
+                  : line.kind === "warn"
+                    ? "text-accent"
+                    : line.kind === "result"
+                      ? "text-muted"
+                      : "text-paper/85";
+              return (
+                <div
+                  key={index}
+                  className={"mono text-[11px] leading-[1.6] whitespace-pre-wrap break-words " + tone}
+                >
+                  {line.text}
+                </div>
+              );
+            })}
+            {output.status === "running" ? (
+              <div className="mono text-[11px] leading-[1.6] text-muted">running…</div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -182,6 +182,29 @@ try {
     "quiz answers cleared by reset"
   );
 
+  console.log("\nInline run");
+  await goto("#/lesson/1");
+  await page.waitForTimeout(300);
+  const inlineRun = page.locator("#lesson-1").getByRole("button", { name: "Run", exact: true }).first();
+  await inlineRun.click();
+  await page.waitForFunction(
+    function () {
+      return document.body.innerText.indexOf("done ·") !== -1;
+    },
+    { timeout: 8000 }
+  );
+  check(
+    (await page.locator("#lesson-1").innerText()).indexOf("done ·") !== -1,
+    "inline run shows output under the code block"
+  );
+  await page.locator("#lesson-1").getByRole("button", { name: "Copy to playground" }).first().click();
+  await page.waitForTimeout(300);
+  check(page.url().indexOf("#/playground") !== -1, "copy to playground opens the playground", page.url());
+  check(
+    (await page.locator("textarea").inputValue()).indexOf("var age = 25") !== -1,
+    "playground received the code"
+  );
+
   console.log("\nSearch");
   await goto("");
   await page.keyboard.press("Control+k");
