@@ -1237,55 +1237,84 @@ console.log(s instanceof Person); // -> true`,
     goal: "Control property flags: writable, enumerable, configurable.",
     tier: 1,
     sugarReplaces: "obj.age = 21 (sugar for defineProperty with all flags true)",
-    longDesc:
-      "A normal assignment like obj.age = 21 is sugar for Object.defineProperty with writable, enumerable and configurable all set to true. When you call Object.defineProperty directly and only pass value, every missing flag defaults to false. That is why a non-enumerable property disappears from Object.keys and for-in loops, why a non-writable property silently ignores assignment in sloppy mode, and why a non-configurable property cannot be deleted or redefined. The classic trap is that the default is enumerable:false. Descriptors come in two shapes: data descriptors carry value and writable; accessor descriptors carry get and set — the machinery behind getters and setters.",
-    realCode: `var person = new Object();
-person.name = "Lydia";
-
-Object.defineProperty(person, "age", {
-  value: 21,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-console.log(person.name); // -> Lydia
-console.log(person.age); // -> 21
+    intro:
+      "Writing obj.age = 21 defines a property with three flags silently set to true. Object.defineProperty is the long form that makes those flags explicit — and every flag you leave out defaults to false. The flags decide who can write, list, or delete the property; accessors swap value for a get/set pair.",
+    concepts: [
+      {
+        heading: "Normal assignment is defineProperty with every flag true",
+        text: "obj.age = 21 does more than store a value: it defines the property with writable, enumerable and configurable all true. The long form makes those choices explicit — the descriptor shows what assignment silently picked.",
+        purpose: "Watch the descriptor that the short assignment form created.",
+        code: `var person = { name: "Lydia" };
+person.age = 21;
 
 var descriptor = Object.getOwnPropertyDescriptor(person, "age");
-console.log(descriptor.value); // -> 21
-console.log(descriptor.writable); // -> false
-console.log(descriptor.enumerable); // -> false
-console.log(descriptor.configurable); // -> false
+console.log(descriptor.writable); // -> true
+console.log(descriptor.enumerable); // -> true
+console.log(descriptor.configurable); // -> true`,
+      },
+      {
+        heading: "Missing flags default to false",
+        text: "defineProperty with only a value leaves every flag false. The property exists and reads fine — but it cannot be written, it hides from Object.keys and for-in, and it cannot be deleted or redefined.",
+        purpose: "Watch a defined property exist, read — and stay invisible to Object.keys.",
+        code: `var person = { name: "Lydia" };
+Object.defineProperty(person, "age", { value: 21 });
 
-console.log(Object.keys(person)); // -> ["name"]
-console.log(person.hasOwnProperty("age")); // -> true
-console.log(person.propertyIsEnumerable("age")); // -> false`,
-
-    extraReal: `var person2 = new Object();
-person2.name = "Lydia";
-Object.defineProperty(person2, "age", {
-  value: 21,
-  writable: true,
+console.log(person.age); // -> 21 — the property exists
+console.log(person.hasOwnProperty("age")); // -> true — it is own
+console.log(Object.keys(person)); // -> ["name"] — age is not enumerable`,
+        check: {
+          q: "defineProperty(obj, \"bar\", { value: 2 }) — what did bar NOT get?",
+          options: ["A value — that was provided","writable, enumerable and configurable — all default to false","Its spot in memory","A prototype link"],
+          answer: 1,
+          why: "Every missing descriptor flag defaults to false: not writable, not enumerable, not configurable. The classic trap is expecting assignment-like behavior from the long form.",
+        },
+      },
+      {
+        heading: "writable: false makes assignment silently fail",
+        text: "A non-writable property keeps its value: assigning to it does nothing in sloppy mode — no error, no change. Reading it back proves the write was refused, not lost.",
+        purpose: "Watch a write land nowhere at all.",
+        code: `var config = { version: 1 };
+Object.defineProperty(config, "version", {
+  value: 2,
+  writable: false,
   enumerable: true,
-  configurable: true
+  configurable: true,
 });
-console.log(Object.keys(person2)); // -> ["name", "age"]
 
-// Accessor descriptors — get/set is the machinery behind the property syntax
-var account = new Object();
-account.balance = 100;
+config.version = 3;
+console.log(config.version); // -> 2 — the write was ignored
+console.log(Object.keys(config)); // -> ["version"] — enumerable this time`,
+      },
+      {
+        heading: "Object.keys lists enumerable own properties only",
+        text: "Object.keys walks the object's own properties and keeps exactly the enumerable ones. Enumerable is a property flag, not a judgment: defineProperty controls it, and inherited properties never leak in — only own properties qualify.",
+        purpose: "Watch one flag decide whether a property appears.",
+        code: `var visible = { a: 1 };
+Object.defineProperty(visible, "b", { value: 2, enumerable: true });
+Object.defineProperty(visible, "c", { value: 3, enumerable: false });
+
+console.log(Object.keys(visible)); // -> ["a","b"] — c exists but hides
+console.log(visible.c); // -> 3 — still there when read directly`,
+      },
+      {
+        heading: "Accessors are get and set instead of value and writable",
+        text: "A descriptor describes either a data property (value, writable) or an accessor property (get, set). An accessor has no stored value of its own: reading runs get, writing runs set — the machinery behind getter and setter syntax.",
+        purpose: "Watch cents convert through get and set with nothing stored in between.",
+        code: `var account = { balance: 100 };
 Object.defineProperty(account, "cents", {
   get: function () {
     return Math.round(this.balance * 100);
   },
   set: function (value) {
     this.balance = value / 100;
-  }
+  },
 });
+
 account.cents = 250;
-console.log(account.balance); // 2.5
-console.log(account.cents); // 250`,
+console.log(account.balance); // -> 2.5 — set ran
+console.log(account.cents); // -> 250 — get ran`,
+      },
+    ],
 
     starter: `// Exercise: Make Object.keys return both properties.
 // Define age with enumerable: true so Object.keys sees it.
@@ -1354,18 +1383,21 @@ console.log(config.version); // -> 2`,
         options: ["The property name", "Nothing for that property", "A syntax error", "undefined"],
         answer: 1,
         why: "Object.keys only returns enumerable own properties. A non-enumerable property is invisible to it.",
+        tests: "Object.keys lists enumerable own properties only",
       },
       {
         q: "What happens when you omit writable in defineProperty?",
         options: ["It defaults to true", "It defaults to false", "It throws an error", "It copies from the prototype"],
         answer: 1,
         why: "Every missing descriptor flag defaults to false, including writable.",
+        tests: "Missing flags default to false",
       },
       {
         q: "What does an accessor descriptor carry instead of value and writable?",
         options: ["get and set", "read and write", "open and closed", "has and gives"],
         answer: 0,
         why: "Accessor properties are defined with get and set functions; a single descriptor cannot mix them with value and writable.",
+        tests: "Accessors are get and set instead of value and writable",
       },
     ],
   },
@@ -1375,36 +1407,59 @@ console.log(config.version); // -> 2`,
     goal: "Understand +, == vs ===, and how Object keys always become strings.",
     tier: 0,
     sugarReplaces: "== vs ===, implicit coercion, template coercion",
-    longDesc:
-      "JavaScript coerces values in more places than you notice. The + operator concatenates strings but adds numbers, and it coerces operands to primitive first. == coerces both sides before comparing; === does not. Object property keys are always strings (or Symbols), so a[b] = 123 with b an object stores under the key \"[object Object]\". The mechanism is ToPrimitive: with a number hint the engine calls valueOf first; with a string hint it calls toString first.",
-    realCode: `var a = 5;
+    intro:
+      "JavaScript converts types in more places than you notice. + flips between adding and joining, == converts before comparing while === refuses to, and object keys are always strings — so the object you used as a key became \"[object Object]\". The mechanism has a name, ToPrimitive, and objects can control it.",
+    concepts: [
+      {
+        heading: "+ adds numbers, concatenates strings",
+        text: "The + operator looks at its operands: if either side is a string, + concatenates; with two numbers it adds. Other operators coerce differently — subtraction always goes numeric. That asymmetry is why \"10\" - 5 is 5 while \"10\" + 5 is \"105\".",
+        purpose: "Watch + flip between adding and joining based on one operand.",
+        code: `console.log(5 + 5); // -> 10 — two numbers, added
+console.log("5" + 5); // -> 55 — one string, concatenated
+console.log("10" + 5); // -> 105
+console.log("10" - 5); // -> 5 — subtraction forces numeric`,
+      },
+      {
+        heading: "== coerces, === does not",
+        text: "== converts the operands to a common type before comparing; === compares type and value with no conversion. Same pair of values, opposite answers — which is why this course writes === everywhere and reaches for == only deliberately.",
+        purpose: "Watch one pair split into two answers by the operator alone.",
+        code: `var a = 5;
 var b = "5";
 
-console.log(a == b);   // true — == coerces "5" to 5
-console.log(a === b);  // false — === compares type and value
-console.log(a + b);    // "55" — string concatenation
-console.log(b + a);    // "55"
-console.log(1 + true); // 2 — true coerces to 1
-console.log("10" - 5); // 5 — subtraction coerces to number
+console.log(a == b); // -> true — == coerced "5" to 5
+console.log(a === b); // -> false — === compared type first
 
-var obj = {};
-var key = { name: "secret" };
-obj[key] = 123;
-console.log(obj["[object Object]"]); // 123 — the object key became a string`,
+console.log(null == undefined); // -> true — the one special pair
+console.log(null === undefined); // -> false`,
+      },
+      {
+        heading: "Object keys are always strings",
+        text: "Whatever you place inside obj[...] becomes a property key, and keys are strings (or Symbols). An object as a key is converted to its string form first — so every plain object lands on the same key: \"[object Object]\".",
+        purpose: "Watch two different object keys collapse into one string key.",
+        code: `var box = {};
+var first = { id: 1 };
+var second = { id: 2 };
 
-    extraReal: `function same(x, y) {
-  if (x === y) { return "strict equal"; }
-  if (x == y) { return "loose equal"; }
-  return "not equal";
-}
+box[first] = "first value";
+box[second] = "second value"; // overwrote the same key!
 
-console.log(same(1, 1)); // -> strict equal
-console.log(same(1, "1")); // -> loose equal
-console.log(same(null, undefined)); // -> loose equal
-console.log(same(0, false)); // -> loose equal
+console.log(box["[object Object]"]); // -> second value — both collided
+console.log(Object.keys(box)); // -> ["[object Object]"] — one key total
 
-// ToPrimitive: the default hint (+) calls valueOf first; String() hints string, so toString first
-var wallet = {
+box[42] = "answer";
+console.log(box["42"]); // -> answer — number keys become strings too`,
+        check: {
+          q: "obj[{ id: 1 }] = 1; obj[{ id: 2 }] = 2; What does Object.keys(obj) return?",
+          options: ["Both object keys, converted","[\"[object Object]\"] — both objects became the same string key","An error — objects cannot be keys","[] — objects are not enumerable"],
+          answer: 1,
+          why: "Keys are strings: each object converts to \"[object Object]\", so the second write overwrites the first. One key, one value.",
+        },
+      },
+      {
+        heading: "ToPrimitive: valueOf first for +, toString first for strings",
+        text: "When an object meets + or a string context, the engine converts it to a primitive first — that is ToPrimitive. With a numeric hint (like +) it calls valueOf first; with a string hint (like String()) it calls toString first. An object controls its own conversion by defining these.",
+        purpose: "Watch one wallet answer three ways, depending on the hint.",
+        code: `var wallet = {
   dollars: 2,
   valueOf: function () {
     return this.dollars;
@@ -1413,18 +1468,22 @@ var wallet = {
     return this.dollars + " dollars";
   }
 };
-console.log(wallet + 1); // 3 — valueOf already returned a primitive
-console.log(wallet + ""); // "2" — same reason
-console.log(String(wallet)); // "2 dollars" — string hint, toString runs
 
-var plain = new Object();
-console.log("" + plain); // "[object Object]" — valueOf returns the object, so toString runs instead
+console.log(wallet + 1); // -> 3 — numeric hint: valueOf ran
+console.log(wallet + ""); // -> 2 — valueOf already returned a primitive
+console.log(String(wallet)); // -> 2 dollars — string hint: toString ran`,
+      },
+      {
+        heading: "== unwraps wrapper objects against primitives",
+        text: "new String(\"\") creates a wrapper object. Against a primitive, == unwraps it and compares the inside — that is why \"\" == new String(\"\") is true. Two wrappers compared to each other are two objects: references compared, no unwrapping, false.",
+        purpose: "Watch == unwrap one wrapper but refuse to unwrap two.",
+        code: `var wrapped = new String("");
 
-// == unwraps a wrapper object when the other side is a primitive
-var wrapped = new String("");
-console.log("" == wrapped);             // true — == unwraps the wrapper to ""
-console.log("" === wrapped);            // false — === never converts
-console.log(wrapped == new String("")); // false — both sides are objects: references compared`,
+console.log("" == wrapped); // -> true — == unwrapped it to ""
+console.log("" === wrapped); // -> false — === never converts
+console.log(wrapped == new String("")); // -> false — two objects, references compared`,
+      },
+    ],
 
     starter: `// Exercise: classify(value1, value2)
 // Return "strict" if === is true, "loose" if only == is true, else "none".
@@ -1490,24 +1549,28 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
         options: ["true", "false", "undefined", "A syntax error"],
         answer: 0,
         why: "== coerces the string \"5\" to the number 5 before comparing, so the result is true.",
+        tests: "== coerces, === does not",
       },
       {
         q: "What does 5 === \"5\" return?",
         options: ["true", "false", "undefined", "A syntax error"],
         answer: 1,
         why: "=== does not coerce. Number and string are different types, so the result is false.",
+        tests: "== coerces, === does not",
       },
       {
         q: "What key does obj[{ name: \"x\" }] = 1 store under?",
         options: ["\"[object Object]\"", "\"name\"", "42", "The object itself"],
         answer: 0,
         why: "Object keys are strings. The object key is converted to \"[object Object]\" via ToPrimitive.",
+        tests: "Object keys are always strings",
       },
       {
         q: "What does wallet + \"\" return when wallet.valueOf() returns 2?",
         options: ["\"2\"", "\"[object Object]\"", "\"2 dollars\"", "2"],
         answer: 0,
         why: "The + operator uses the default hint, which tries valueOf first. It returns the primitive 2, so the concatenation gives \"2\".",
+        tests: "ToPrimitive: valueOf first for +, toString first for strings",
       },
       {
         q: "What is new String(\"\") == new String(\"\")?",
@@ -1519,6 +1582,7 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
         ],
         answer: 1,
         why: "== only converts when one side is a primitive. When both sides are objects it compares references, and two separately created wrappers are different objects.",
+        tests: "== unwraps wrapper objects against primitives",
       },
     ],
   },
