@@ -135,6 +135,36 @@ console.log(readScore()); // -> 10`,
         },
       },
       {
+        heading: "One global object, three names",
+        text: "The object is always the same — only the name changes with where the code runs. globalThis is the ECMAScript standard and exists in every runtime: browsers, Node.js, workers. window is the browser's name for it; global is Node's name. Each per-runtime name exists only in its own home — window in Node is undefined, and so is global in a browser. Make globalThis your default and the other two stop being surprises: when you meet them in someone else's code, they are just local names for the object you already know.",
+        purpose: "Watch the same object answer to globalThis — and window and global stay undefined outside their homes.",
+        code: `score = 10;
+
+// globalThis: the standard name — exists in every runtime.
+console.log(typeof globalThis); // -> object
+console.log(globalThis.score);  // -> 10
+
+// window: the browser name. global: the Node.js name.
+// This sandbox is a worker — neither one lives here:
+console.log(typeof window); // -> undefined
+console.log(typeof global); // -> undefined
+
+// Same object, different local names per runtime:
+// browser:  window -> object,  global -> undefined
+// Node.js:  global -> object,  window -> undefined`,
+        check: {
+          q: "Code runs on Node.js and reads window. What is typeof window?",
+          options: [
+            "undefined — window is the browser's name",
+            "The global object — window works in every runtime",
+            "The same object as global — they are identical in Node",
+            "A permission error",
+          ],
+          answer: 0,
+          why: "window only exists in browsers and global only exists in Node. The one name guaranteed everywhere is globalThis — which is why it is the default choice.",
+        },
+      },
+      {
         heading: "undefined and null are two kinds of nothing",
         text: "undefined means \"never assigned\" — a declared name with no value yet. null means \"intentionally empty\" — a value you set on purpose. They are different values, so check each with ===, never with truthiness: 0, \"\" and false are real values too.",
         purpose: "Watch the explicit === checks separate the two kinds of nothing.",
@@ -355,6 +385,13 @@ console.log(describe("hi")); // -> string`,
         answer: 0,
         why: "The global object is built before the first line runs — loose names land on it because it is already there. window and self are its per-runtime names; globalThis is the one that works everywhere.",
         tests: "There is always a global object",
+      },
+      {
+        q: "Which name for the global object is guaranteed to work in every runtime?",
+        options: ["globalThis", "window", "global", "self"],
+        answer: 0,
+        why: "globalThis is the ECMAScript standard — browsers, Node.js and workers all define it. window is browser-only, global is Node-only, self is the worker-side name.",
+        tests: "One global object, three names",
       },
     ],
   },
