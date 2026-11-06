@@ -2372,57 +2372,113 @@ delay(30).then(function (ms) {
     goal: "See that function* hides a state machine, yield suspends execution, and .next() returns { value, done }.",
     tier: 0,
     sugarReplaces: "function*, yield, .next(), for...of iterator protocol",
-    longDesc:
-      "A generator function is syntax sugar for a closure-based state machine. function* does not run its body when called; it returns an iterator object. Calling .next() on that object runs the body up to the next yield, then suspends and returns { value, done }. The state (which yield to resume from, all local variables) lives inside the closure between calls. for...of is just a loop that calls .next() until done is true. All of this can be written by hand with var, function, and an object that has a next method. The protocol even has a name: Symbol.iterator. Attach that key — a function returning the iterator — and for...of can consume your object.",
-    realCode: `function makeCounter() {
-  var state = "start";
-  var value = 0;
+    intro:
+      "An iterator is the smallest possible protocol: an object with a next method returning { value, done }. Everything called iteration — generators, for...of, spread — compiles down to that method being called until done. Writing the machine by hand shows there is nothing hidden: a closure remembers the position, and Symbol.iterator is the door loop syntax knocks on.",
+    concepts: [
+      {
+        heading: "An iterator is an object with a next method",
+        text: "The whole protocol is one method: next() returns { value, done }. value is the current item; done signals the end. Any object with such a next is an iterator — no special class required.",
+        purpose: "Watch a hand-written next deliver 0, then 1, then done.",
+        code: `var it = {
+  index: 0,
+  next: function () {
+    if (this.index < 2) {
+      this.index = this.index + 1;
+      return { value: this.index - 1, done: false };
+    }
+    return { value: undefined, done: true };
+  }
+};
+
+console.log(it.next()); // -> { value: 0, done: false }
+console.log(it.next()); // -> { value: 1, done: false }
+console.log(it.next()); // -> { value: undefined, done: true }`,
+      },
+      {
+        heading: "State lives in a closure between calls",
+        text: "Between next() calls the iterator must remember where it was. The hand-written way is a closure: the factory creates the state variables, and next reads and writes them. Each factory call produces an independent machine.",
+        purpose: "Watch two iterators keep separate positions.",
+        code: `function makeIterator() {
+  var position = 0;
   return {
     next: function () {
-      if (state === "start") {
-        state = "yielded";
-        return { value: 0, done: false };
-      }
-      if (state === "yielded") {
-        state = "done";
-        return { value: 1, done: false };
-      }
-      return { value: undefined, done: true };
+      position = position + 1;
+      return { value: position, done: false };
     }
   };
 }
 
-var it = makeCounter();
+var a = makeIterator();
+var b = makeIterator();
+a.next();
+a.next();
+console.log(a.next().value); // -> 3 — a's own position
+console.log(b.next().value); // -> 1 — b never touched`,
+        check: {
+          q: "What remembers an iterator's position between .next() calls?",
+          options: ["The closure — next reads and writes the factory's variables","The engine suspends the function","A cursor stored on the object's prototype","Nothing — each call restarts"],
+          answer: 0,
+          why: "position lives in makeIterator's scope; every next() call updates it. A generator's suspended frame replaces the closure, but the remembering job is identical.",
+        },
+      },
+      {
+        heading: "function* is sugar for the same machine",
+        text: "function* and yield do nothing the hand-written machine cannot: the engine rewrites the body into a state machine, and calling the generator returns exactly such an iterator. .next() runs the body to the next yield, then suspends — the sugar exists so you never write the resume bookkeeping.",
+        purpose: "Watch the generator produce the same result shape, with no hand-written state.",
+        code: `function* numbers() {
+  yield 0;
+  yield 1;
+}
+
+var it = numbers();
 console.log(it.next()); // -> { value: 0, done: false }
 console.log(it.next()); // -> { value: 1, done: false }
-console.log(it.next()); // -> { value: undefined, done: true }
-console.log(it.next()); // -> { value: undefined, done: true }
-
-// Symbol.iterator is the well-known key loops look for — attach it and the object is iterable
-it[Symbol.iterator] = function () {
-  return this;
+console.log(it.next()); // -> { value: undefined, done: true }`,
+      },
+      {
+        heading: "Symbol.iterator makes an object for...of-able",
+        text: "for...of asks one question: does the object have a method under the well-known key Symbol.iterator? That method must return an iterator — returning this if the object is one itself. It is the only bridge between your objects and loop syntax.",
+        purpose: "Watch for...of's lookup key handed to a hand-built iterator.",
+        code: `var counter = {
+  count: 0,
+  next: function () {
+    this.count = this.count + 1;
+    if (this.count <= 3) {
+      return { value: this.count, done: false };
+    }
+    return { value: undefined, done: true };
+  }
 };
-console.log(typeof it[Symbol.iterator]); // "function"`,
+counter[Symbol.iterator] = function () {
+  return this; // the object itself is the iterator
+};
 
-    extraReal: `function idGenerator() {
-  var state = "start";
+// for...of looks up exactly this key, then calls next until done:
+var iter = counter[Symbol.iterator]();
+console.log(iter.next().value); // -> 1
+console.log(iter.next().value); // -> 2
+// for (var n of counter) would now collect 1, 2, 3`,
+      },
+      {
+        heading: "An infinite iterator never reaches done",
+        text: "Nothing in the protocol requires done: an id generator can hand out values forever. The consumer decides when to stop pulling — which is why infinite generators are safe as long as nothing walks them blindly.",
+        purpose: "Watch three pulls from a machine that never says done.",
+        code: `function idGenerator() {
   var n = 0;
   return {
     next: function () {
-      if (state === "start") {
-        state = "running";
-        return { value: n, done: false };
-      }
       n = n + 1;
-      return { value: n, done: false };
+      return { value: n, done: false }; // done never arrives
     }
   };
 }
 
 var ids = idGenerator();
-console.log(ids.next()); // -> { value: 0, done: false }
-console.log(ids.next()); // -> { value: 1, done: false }
-console.log(ids.next()); // -> { value: 2, done: false }`,
+console.log(ids.next().value); // -> 1
+console.log(ids.next().value); // -> 2
+console.log(ids.next().value); // -> 3`,
+      },
+    ],
 
     starter: `// Exercise: build a manual generator for 0, 1, 2.
 // It should return { value, done } from next() and stop after 2.
@@ -2520,24 +2576,28 @@ console.log(ids.next()); // -> { value: 2, done: false }`,
         options: ["The yielded value directly", "{ value, done }", "A promise", "undefined"],
         answer: 1,
         why: "The iterator protocol always returns an object { value, done }, never the bare value.",
+        tests: "An iterator is an object with a next method",
       },
       {
         q: "When does a generator function body start running?",
         options: ["When the function is called", "When .next() is first called", "When for...of starts", "Immediately on definition"],
         answer: 1,
         why: "Calling a generator function only creates the iterator. The body runs on the first .next().",
+        tests: "function* is sugar for the same machine",
       },
       {
         q: "What does done: true mean?",
         options: ["The generator threw an error", "The generator has no more values", "The generator is paused", "The generator is infinite"],
         answer: 1,
         why: "done: true signals the end of iteration; value is typically undefined then.",
+        tests: "An iterator is an object with a next method",
       },
       {
         q: "Which property makes an object consumable by for...of?",
         options: ["next", "done", "Symbol.iterator", "for"],
         answer: 2,
         why: "for...of looks up the well-known Symbol.iterator key and calls it to get an iterator — the object with a next method you built by hand.",
+        tests: "Symbol.iterator makes an object for...of-able",
       },
     ],
   },
@@ -2547,61 +2607,200 @@ console.log(ids.next()); // -> { value: 2, done: false }`,
     goal: "Build an EventEmitter with prototype methods, a Promise from scratch, and an IIFE module — all without class or import.",
     tier: 0,
     sugarReplaces: "class EventEmitter, extends, async/await, import/export",
-    longDesc:
-      "This is the capstone. The EventEmitter is the core of Node's EventEmitter written with the primitives from the whole course: constructor owns the storage, methods live on the prototype, emit forwards arguments with apply, and off rebuilds the listener array. A manual Promise shows the executor/resolve/reject machinery without async/await. The IIFE module shows private state with a public API — the pattern import/export compiles to. Its Manual Promise leans on throw, try, catch and finally — the error machinery every real library uses.",
-    realCode: `function EventEmitter() {
+    intro:
+      "The capstone: an EventEmitter and a promise built from the primitives the whole course taught. The constructor owns storage, the prototype owns methods, apply forwards arguments, closures remember state, and a promise is just a one-way state machine with a reaction list. Nothing here is new — it is everything, assembled.",
+    concepts: [
+      {
+        heading: "The constructor owns storage; the prototype owns methods",
+        text: "EventEmitter starts with the split every prototype lesson teaches: this.events = {} in the constructor gives each emitter its own listener map, while on, off and emit live on the prototype — one shared copy for all emitters.",
+        purpose: "Watch two emitters keep separate listener maps through shared methods.",
+        code: `function Emitter() {
   this.events = {};
 }
-
-EventEmitter.prototype.on = function (event, listener) {
-  if (typeof this.events[event] !== "object") {
-    this.events[event] = [];
+Emitter.prototype.on = function (event, listener) {
+  var list = this.events[event];
+  if (typeof list !== "object") {
+    list = [];
+    this.events[event] = list;
   }
-  this.events[event][this.events[event].length] = listener;
+  list[list.length] = listener;
   return this;
 };
 
-EventEmitter.prototype.off = function (event, listener) {
-  if (typeof this.events[event] !== "object") { return this; }
-  var listeners = this.events[event];
-  var next = [];
-  for (var i = 0; i < listeners.length; i = i + 1) {
-    if (listeners[i] !== listener) { next[next.length] = listeners[i]; }
-  }
-  this.events[event] = next;
-  return this;
+var a = new Emitter();
+var b = new Emitter();
+a.on("ping", function () {});
+console.log(a.events.ping.length); // -> 1
+console.log(b.events.ping); // -> undefined — b has its own map`,
+      },
+      {
+        heading: "emit forwards arguments with apply",
+        text: "emit receives the extra arguments inside arguments — the array-like from lesson 3. slice.call grabs everything after the event name, and apply spreads it into each listener. apply exists for exactly this job.",
+        purpose: "Watch three extra arguments reach a listener intact.",
+        code: `function Emitter() {
+  this.events = {};
+}
+Emitter.prototype.on = function (event, listener) {
+  var list = this.events[event];
+  if (typeof list !== "object") { list = []; this.events[event] = list; }
+  list[list.length] = listener;
 };
-
-EventEmitter.prototype.emit = function (event) {
-  var args = Array.prototype.slice.call(arguments, 1);
+Emitter.prototype.emit = function (event) {
+  var args = Array.prototype.slice.call(arguments, 1); // drop the event name
   var listeners = this.events[event];
   if (typeof listeners !== "object") { return false; }
   for (var i = 0; i < listeners.length; i = i + 1) {
-    listeners[i].apply(this, args);
+    listeners[i].apply(this, args); // spread into each listener
   }
   return true;
 };
 
-var ee = new EventEmitter();
-ee.on("data", function (x) { console.log(x); });
-ee.emit("data", "hello");`,
+var ee = new Emitter();
+ee.on("order", function (item, count, note) {
+  console.log(item + " x" + count + " (" + note + ")");
+});
+ee.emit("order", "coffee", 2, "urgent"); // -> coffee x2 (urgent)`,
+      },
+      {
+        heading: "off rebuilds the list instead of splicing",
+        text: "Removing while iterating shifts indexes under your feet. off avoids the whole problem by building a next array with every listener that is NOT the one being removed, then swapping it in. Removal becomes one visible pass.",
+        purpose: "Watch removal build a new list and leave the original untouched.",
+        code: `function keepNot(list, removed) {
+  var next = [];
+  for (var i = 0; i < list.length; i = i + 1) {
+    if (list[i] !== removed) {
+      next[next.length] = list[i];
+    }
+  }
+  return next;
+}
 
-    extraReal: `EventEmitter.prototype.once = function (event, listener) {
-  var self = this;
-  var wrapper = function () {
-    self.off(event, wrapper);
-    listener.apply(self, arguments);
-  };
-  this.on(event, wrapper);
-  return this;
+var listeners = [1, 2, 3];
+console.log(keepNot(listeners, 2)); // -> [1, 3]
+console.log(listeners); // -> [1, 2, 3] — rebuilt, not mutated`,
+      },
+      {
+        heading: "once registers a wrapper that removes itself",
+        text: "once cannot know the future — so it registers a wrapper instead of the listener. The wrapper runs, calls off with its own reference to remove itself, then invokes the real listener. Self-removal needs a reference to itself: the wrapper has one.",
+        purpose: "Watch the listener fire exactly once, then the list drain to empty.",
+        code: `var bus = {
+  listeners: [],
+  run: function () {
+    for (var i = 0; i < this.listeners.length; i = i + 1) { this.listeners[i](); }
+  },
+  on: function (fn) { this.listeners[this.listeners.length] = fn; },
+  off: function (fn) {
+    var next = [];
+    for (var i = 0; i < this.listeners.length; i = i + 1) {
+      if (this.listeners[i] !== fn) { next[next.length] = this.listeners[i]; }
+    }
+    this.listeners = next;
+  },
+  once: function (fn) {
+    var self = this;
+    var wrapper = function () { self.off(wrapper); fn(); };
+    this.on(wrapper); // register the wrapper, not the listener
+  }
 };
 
-var ee = new EventEmitter();
-ee.once("ready", function (value) {
-  console.log("once " + value); // -> once 1
+bus.once(function () { console.log("only once"); });
+bus.run();
+bus.run();
+console.log(bus.listeners.length); // -> 0 — the wrapper removed itself
+// -> only once`,
+        check: {
+          q: "Why does once register wrapper instead of fn?",
+          options: ["The wrapper can remove itself by name before calling fn — self-removal needs a reference to itself","Wrappers run faster","fn cannot be stored in arrays","To prevent other listeners from being called"],
+          answer: 0,
+          why: "off needs the exact reference to remove. Since the wrapper holds its own reference, it can take itself off the list and then invoke the real listener — exactly once.",
+        },
+      },
+      {
+        heading: "A manual promise: state, reactions, resolve",
+        text: "Strip a promise to its engine: a state (\"pending\" or \"fulfilled\"), a stored value, and resolve — a function that flips the state once and remembers the value. then either waits in the reaction list or reads the stored value. Everything else grows from these pieces.",
+        purpose: "Watch the state flip exactly once and the reaction read the stored value.",
+        code: `function TinyPromise(executor) {
+  var state = "pending";
+  var value = null;
+  var reactions = [];
+
+  function resolve(result) {
+    if (state !== "pending") return; // resolve wins once, forever
+    state = "fulfilled";
+    value = result;
+    for (var i = 0; i < reactions.length; i = i + 1) {
+      reactions[i](value);
+    }
+  }
+
+  this.then = function (onFulfilled) {
+    if (state === "fulfilled") {
+      onFulfilled(value);
+    } else {
+      reactions[reactions.length] = onFulfilled;
+    }
+  };
+
+  executor(resolve);
+}
+
+var p = new TinyPromise(function (resolve) {
+  resolve("tiny");
+  resolve("ignored"); // second resolve is a no-op
 });
-ee.emit("ready", 1);
-ee.emit("ready", 2);`,
+
+p.then(function (value) {
+  console.log(value); // -> tiny
+});`,
+        check: {
+          q: "What does the second resolve(\"ignored\") do?",
+          options: ["Nothing — the state already left pending, and resolve wins once","Overwrites the value with \"ignored\"","Throws an error","Re-runs all reactions"],
+          answer: 0,
+          why: "The guard state !== \"pending\" makes resolve one-way: first call wins. That one-way state is what makes promises predictable.",
+        },
+      },
+      {
+        heading: "try marks the risk; catch recovers; finally always runs",
+        text: "try wraps the risky call. catch receives whatever was thrown and turns it into a controlled response. finally runs no matter how the try block exited — success, caught error, even a return in flight. Custom error types are plain constructors with Error.prototype as their prototype.",
+        purpose: "Watch three inputs take three paths — and finally run on all of them.",
+        code: `function ValidationError(message) {
+  this.name = "ValidationError";
+  this.message = message;
+}
+ValidationError.prototype = Object.create(Error.prototype);
+
+function parseAge(raw) {
+  var value = Number(raw);
+  if (value !== value) {
+    throw new ValidationError("not a number: " + raw);
+  }
+  if (value < 0) {
+    throw new RangeError("negative: " + value);
+  }
+  return value;
+}
+
+function readAge(raw) {
+  try {
+    console.log("parsed " + parseAge(raw));
+  } catch (err) {
+    console.log(err.name + ": " + err.message);
+  } finally {
+    console.log("finished with " + raw);
+  }
+}
+
+readAge("42");
+readAge("abc");
+readAge("-3");
+// -> parsed 42
+// -> finished with 42
+// -> ValidationError: not a number: abc
+// -> finished with abc
+// -> RangeError: negative: -3
+// -> finished with -3`,
+      },
+    ],
 
     starter: `// Exercise: add once(event, fn) to EventEmitter.
 // The listener runs exactly once, then removes itself.
@@ -2657,7 +2856,36 @@ ee.emit("ready", 2);`,
       {
         title: "once with a self-removing wrapper",
         note: "The wrapper is registered, not the original listener. That is why off can find and remove it before invoking the real function.",
-        code: `EventEmitter.prototype.once = function (event, listener) {
+        code: `function EventEmitter() {
+  this.events = {};
+}
+EventEmitter.prototype.on = function (event, listener) {
+  var list = this.events[event];
+  if (typeof list !== "object") { list = []; this.events[event] = list; }
+  list[list.length] = listener;
+  return this;
+};
+EventEmitter.prototype.off = function (event, listener) {
+  var current = this.events[event];
+  if (typeof current !== "object") { return this; }
+  var next = [];
+  for (var i = 0; i < current.length; i = i + 1) {
+    if (current[i] !== listener) { next[next.length] = current[i]; }
+  }
+  this.events[event] = next;
+  return this;
+};
+EventEmitter.prototype.emit = function (event) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  var listeners = this.events[event];
+  if (typeof listeners !== "object") { return false; }
+  for (var i = 0; i < listeners.length; i = i + 1) {
+    listeners[i].apply(this, args);
+  }
+  return true;
+};
+
+EventEmitter.prototype.once = function (event, listener) {
   var self = this;
   var wrapper = function () {
     self.off(event, wrapper);
@@ -2799,24 +3027,28 @@ readAge("-3");`,
         options: ["With arguments.slice", "With Array.prototype.slice.call(arguments, 1) and apply", "With rest parameters", "It cannot"],
         answer: 1,
         why: "arguments is array-like. slice.call converts the tail to an array, and apply spreads it into each listener.",
+        tests: "emit forwards arguments with apply",
       },
       {
         q: "Why does off build a new array?",
         options: ["It is required by the engine", "To avoid mutating while iterating and keep the logic explicit", "To sort listeners", "To clear all events"],
         answer: 1,
         why: "Rebuilding keeps the removal visible and avoids index-shifting bugs while looping.",
+        tests: "off rebuilds the list instead of splicing",
       },
       {
         q: "What does once register?",
         options: ["The original listener", "A wrapper that removes itself then calls the listener", "A copy of the emitter", "A promise"],
         answer: 1,
         why: "The wrapper has a reference to the emitter and to itself, so it can off(event, wrapper) before the real call.",
+        tests: "once registers a wrapper that removes itself",
       },
       {
         q: "Which block runs no matter how the try block exits?",
         options: ["catch", "finally", "throw", "then"],
         answer: 1,
         why: "finally always runs — on success, on a caught error, and even while a return is in flight.",
+        tests: "try marks the risk; catch recovers; finally always runs",
       },
     ],
   },
@@ -2826,10 +3058,93 @@ readAge("-3");`,
     goal: "See that = shares the shell, shallow copy copies only the shell, and deep copy clones every branch.",
     tier: 0,
     sugarReplaces: "let b = a, {...a}, structuredClone(a)",
-    longDesc:
-      "Assigning an object does not copy it — both variables point to the same shell. A shallow copy builds a new shell but copies the references inside, so nested arrays and objects are still shared. A deep copy builds a new shell and recursively clones every nested plain object and array, so nothing is shared. The shell analogy makes it permanent: = is two names for one shell, {...a} is a new shell with the same branches inside, and structuredClone is a new shell with brand-new branches. The popular shortcut JSON.parse(JSON.stringify(value)) is not a deep copy — it drops undefined and function values, turns Dates into strings, and throws on circular references.",
-    realCode: `var original = { name: "Ada", tags: ["dev", "js"] };\n\n// = shares the shell — both names point to the same object\nvar alias = original;\nalias.name = "Grace";\nconsole.log(original.name); // "Grace" — same shell, changed through either name\n\n// Shallow copy — new shell, same branches inside\nvar shallow = new Object();\nvar keys = Object.keys(original);\nfor (var i = 0; i < keys.length; i = i + 1) {\n  var key = keys[i];\n  shallow[key] = original[key];\n}\nshallow.name = "Alan";\nconsole.log(original.name); // "Grace" — top-level copy, original untouched\nconsole.log(shallow.tags === original.tags); // true — nested array still shared\nshallow.tags[shallow.tags.length] = "copy";\nconsole.log(original.tags); // ["dev", "js", "copy"] — shared branch mutated\n\n// Deep copy — new shell, new branches, fully disconnected\nfunction deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var j = 0; j < value.length; j = j + 1) {\n      copy[copy.length] = deepCopy(value[j]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var objKeys = Object.keys(value);\n  for (var k = 0; k < objKeys.length; k = k + 1) {\n    var objKey = objKeys[k];\n    copy[objKey] = deepCopy(value[objKey]);\n  }\n  return copy;\n}\n\nvar deep = deepCopy(original);\ndeep.name = "Deep";\ndeep.tags[deep.tags.length] = "deep";\nconsole.log(original.name); // "Grace" — disconnected\nconsole.log(original.tags); // ["dev", "js", "copy"] — deep copy did not touch original`,
-    extraReal: `function deepCopy(value) {\n  if (value === null || typeof value !== "object") {\n    return value;\n  }\n  if (Array.isArray(value)) {\n    var copy = [];\n    for (var i = 0; i < value.length; i = i + 1) {\n      copy[copy.length] = deepCopy(value[i]);\n    }\n    return copy;\n  }\n  var copy = new Object();\n  var keys = Object.keys(value);\n  for (var i = 0; i < keys.length; i = i + 1) {\n    copy[keys[i]] = deepCopy(value[keys[i]]);\n  }\n  return copy;\n}\n\nvar nested = { a: 1, b: { c: 2, d: [3, 4] } };\nvar cloned = deepCopy(nested);\ncloned.b.c = 99;\ncloned.b.d[cloned.b.d.length] = 5;\nconsole.log(nested.b.c); // 2 — untouched\nconsole.log(nested.b.d); // [3, 4] — untouched`,
+    intro:
+      "Assigning an object never copies it — it copies the reference, so both names hold one shell. A shallow copy builds a new shell but shares every branch inside. A deep copy recurses until nothing is shared. The shell analogy makes all three permanent: two names on one shell, a new shell with old branches, or a new shell with new branches.",
+    concepts: [
+      {
+        heading: "= shares the shell",
+        text: "Assigning an object copies the reference: both names point at one shell. Change through either name and the other sees it — there is no such thing as a copy until you explicitly build one.",
+        purpose: "Watch one rename flow through both names — one shell.",
+        code: `var original = { name: "Ada", tags: ["dev", "js"] };
+var alias = original;
+
+alias.name = "Grace";
+console.log(original.name); // -> Grace — same shell, changed through either name
+console.log(alias === original); // -> true — still one object`,
+        diagram: "reference",
+      },
+      {
+        heading: "A shallow copy builds a new shell, same branches",
+        text: "A shallow copy allocates a new object and copies each top-level property. Primitives copy by value, so the top levels disconnect — but every nested object or array is copied by reference: the new shell holds the SAME branches inside.",
+        purpose: "Watch the top level disconnect while the nested array stays shared.",
+        code: `var original = { name: "Ada", tags: ["dev", "js"] };
+
+var shallow = { name: original.name, tags: original.tags }; // new shell, same branch
+shallow.name = "Alan";
+shallow.tags[shallow.tags.length] = "copy";
+
+console.log(original.name); // -> Ada — the primitive copied by value
+console.log(original.tags); // -> ["dev", "js", "copy"] — the branch was shared
+console.log(shallow.tags === original.tags); // -> true — one array, two shells`,
+        check: {
+          q: "After a shallow copy, renaming shallow.name to \"Alan\" — what does original.name read?",
+          options: ["Ada — primitives copied by value into the new shell","Alan — the names are linked","undefined","An error"],
+          answer: 0,
+          why: "Top-level primitives were copied by value, so the shells are separate. Only the nested branch (tags) is shared, because that property holds a reference.",
+        },
+      },
+      {
+        heading: "A deep copy clones every branch",
+        text: "A deep copy recurses: primitives copy as-is, arrays clone element by element, plain objects clone key by key. Nothing is shared afterwards — changing the copy can never reach the original, at any depth.",
+        purpose: "Watch the deep clone mutate freely while the original stands still.",
+        code: `function deepCopy(value) {
+  if (value === null || typeof value !== "object") {
+    return value; // primitives: nothing to clone
+  }
+  if (Array.isArray(value)) {
+    var copy = [];
+    for (var i = 0; i < value.length; i = i + 1) {
+      copy[copy.length] = deepCopy(value[i]);
+    }
+    return copy;
+  }
+  var obj = {};
+  var keys = Object.keys(value);
+  for (var k = 0; k < keys.length; k = k + 1) {
+    obj[keys[k]] = deepCopy(value[keys[k]]);
+  }
+  return obj;
+}
+
+var original = { name: "Ada", tags: ["dev"] };
+var deep = deepCopy(original);
+deep.tags[deep.tags.length] = "deep";
+
+console.log(original.tags); // -> ["dev"] — untouched at depth
+console.log(deep.tags === original.tags); // -> false — a brand-new branch`,
+      },
+      {
+        heading: "JSON.parse(JSON.stringify) is not a deep copy",
+        text: "The JSON shortcut looks like a deep copy but loses its way: undefined values and functions are dropped, Dates become strings, circular references throw. It copies only what JSON can represent — not what the object holds.",
+        purpose: "Watch two properties vanish and a Date degrade through the JSON shortcut.",
+        code: `var source = {
+  when: new Date("2024-01-01"),
+  note: undefined,
+  run: function () {}
+};
+
+var jsonCopy = JSON.parse(JSON.stringify(source));
+console.log(Object.keys(jsonCopy)); // -> ["when"] — note and run silently dropped
+console.log(jsonCopy.when); // -> "2024-01-01T00:00:00.000Z" — a string, not a Date
+console.log(typeof jsonCopy.when); // -> string`,
+        check: {
+          q: "Why does the JSON shortcut drop the run function?",
+          options: ["JSON.stringify only writes what JSON can represent — functions are not","Functions are private","JSON runs the function first","run was not enumerable"],
+          answer: 0,
+          why: "JSON has no way to represent a function or undefined, so stringify skips them. A deep copy keeps every key — the JSON shortcut is a format conversion, not a copy.",
+        },
+      },
+    ],
     starter: `// Exercise: write deepCopy(obj)\n// It should clone plain objects and arrays recursively.\n// Primitives are returned as-is.\n\nfunction deepCopy(value) {\n  // your recursive copy here\n  return value;\n}\n\nvar original = { a: 1, b: { c: 2 } };\nvar clone = deepCopy(original);\nclone.b.c = 99;\nconsole.log(original.b.c); // should still be 2`,
     exercise:
       "Write deepCopy(value) that returns a fully disconnected copy of plain objects and arrays. Primitives are returned as-is. Use only var, function, Object.keys, Array.isArray, and for loops. Do not use {...} or structuredClone.",
@@ -2847,7 +3162,26 @@ readAge("-3");`,
       {
         title: "Why JSON is not a deep copy",
         note: "JSON.stringify drops undefined and function values, stringifies Dates, and throws on circular references — the hand-rolled copy keeps the shape.",
-        code: `var source = {
+        code: `function deepCopy(value) {
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    var copy = [];
+    for (var i = 0; i < value.length; i = i + 1) {
+      copy[copy.length] = deepCopy(value[i]);
+    }
+    return copy;
+  }
+  var obj = new Object();
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i = i + 1) {
+    obj[keys[i]] = deepCopy(value[keys[i]]);
+  }
+  return obj;
+}
+
+var source = {
   when: new Date("2024-01-01"),
   note: undefined,
   run: function () {}
@@ -2891,6 +3225,7 @@ console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it ca
         ],
         answer: 1,
         why: "Assignment copies the reference, not the object. Both names point to the same shell.",
+        tests: "= shares the shell",
       },
       {
         q: "What does { ... a } copy?",
@@ -2902,6 +3237,7 @@ console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it ca
         ],
         answer: 1,
         why: "Spread creates a new object and copies own enumerable properties. Nested objects are copied by reference, so they are still shared.",
+        tests: "A shallow copy builds a new shell, same branches",
       },
       {
         q: "What does structuredClone(a) do that { ... a } does not?",
@@ -2913,12 +3249,14 @@ console.log(typeof safe.run); // "function" — the hand-rolled copy keeps it ca
         ],
         answer: 0,
         why: "structuredClone recurses into every nested plain object and array, producing a fully disconnected copy.",
+        tests: "A deep copy clones every branch",
       },
       {
         q: "What does JSON.parse(JSON.stringify(obj)) do to a Date property?",
         options: ["Keeps it a Date", "Turns it into an ISO string", "Drops the key", "Throws on any Date"],
         answer: 1,
         why: "Dates stringify to ISO strings and parsing never rebuilds them — the copy silently changes the type.",
+        tests: "JSON.parse(JSON.stringify) is not a deep copy",
       },
     ],
   },
