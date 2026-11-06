@@ -16,6 +16,8 @@ export default function Concepts({ concepts, lessonId, onPlayground }) {
           return (
             <div
               key={concept.heading}
+              id={"lesson-" + lessonId + "-concept-" + (index + 1)}
+              data-reading-anchor
               className="rounded-panel border border-line bg-card p-4"
             >
               <div className="mb-1.5 flex items-center gap-2">

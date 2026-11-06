@@ -13,6 +13,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import { getLesson } from "./data/lessons.js";
 import { navigate, routeKey, useRoute } from "./lib/router.js";
 import { clearQuizStorage, QUIZ_RESET_EVENT } from "./lib/quizStorage.js";
+import { clearReadingStorage } from "./lib/readingPosition.js";
 import { useProgress } from "./lib/useProgress.js";
 
 const TITLES = {
@@ -95,6 +96,7 @@ export default function App() {
     progress.reset();
     if (typeof window !== "undefined") {
       clearQuizStorage(window.localStorage);
+      clearReadingStorage(window.localStorage);
       window.dispatchEvent(new Event(QUIZ_RESET_EVENT));
     }
   }

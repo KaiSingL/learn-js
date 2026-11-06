@@ -23,6 +23,7 @@ export default function LessonCard({
   return (
     <article
       id={"lesson-" + lesson.id}
+      data-reading-anchor
       className={
         "group overflow-hidden rounded-card border bg-card transition-colors " +
         (expanded ? "border-accent/30" : "border-line hover:border-line/80")
@@ -122,7 +123,11 @@ export default function LessonCard({
               </>
             )}
 
-            <div className="rounded-panel border border-line bg-card p-4">
+            <div
+              id={"lesson-" + lesson.id + "-exercise"}
+              data-reading-anchor
+              className="rounded-panel border border-line bg-card p-4"
+            >
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" />

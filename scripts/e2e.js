@@ -205,6 +205,33 @@ try {
     "playground received the code"
   );
 
+  console.log("\nReading position");
+  await goto("#/lesson/1");
+  await page.waitForTimeout(500);
+  await page.locator("#lesson-1-concept-3").evaluate(function (node) {
+    node.scrollIntoView({ block: "start" });
+  });
+  await page.waitForTimeout(600);
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(700);
+  const restoredTop = await page.locator("#lesson-1-concept-3").evaluate(function (node) {
+    return node.getBoundingClientRect().top;
+  });
+  check(
+    restoredTop > -80 && restoredTop < 200,
+    "reload restores the reading position",
+    "concept 3 top after reload: " + restoredTop
+  );
+  // In-app navigation must not yank the reader back to the stored spot.
+  await page.locator("#lesson-1").getByRole("button", { name: "Next" }).click();
+  await page.waitForTimeout(800);
+  await page.locator("#lesson-2").getByRole("button", { name: "Previous", exact: true }).click();
+  await page.waitForTimeout(800);
+  const navTop = await page.locator("#lesson-1-concept-3").evaluate(function (node) {
+    return node.getBoundingClientRect().top;
+  });
+  check(navTop > 200, "in-app navigation does not restore the stored position", "top=" + navTop);
+
   console.log("\nSearch");
   await goto("");
   await page.keyboard.press("Control+k");

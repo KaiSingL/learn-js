@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { markSessionNavigated } from "./readingPosition.js";
 
 const VALID_PATHS = {
   "/": true,
@@ -59,6 +60,9 @@ export function routeKey(route) {
 }
 
 export function navigate(path) {
+  // Any in-app navigation invalidates a stored reading position: only a real
+  // page load (reload, reopened tab, fresh link) may restore one.
+  markSessionNavigated();
   const next = "#" + path;
   if (window.location.hash !== next) {
     window.location.hash = path;

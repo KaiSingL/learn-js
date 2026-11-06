@@ -1,8 +1,25 @@
 import { useEffect, useState } from "react";
 import { LESSONS } from "../data/lessons.js";
 import { countDone } from "../lib/progress.js";
+import { canRestore, readReadingStorage, writeReadingStorage } from "../lib/readingPosition.js";
 import LessonCard from "./LessonCard.jsx";
 import { PageHeader, ProgressBar } from "./PageHeader.jsx";
+
+// Scrolls to an anchor once it exists in the DOM. Concepts render with the
+// expansion, but give the commit a few frames via retries just in case.
+function scrollToAnchor(anchorId, instant, attempt) {
+  const tries = attempt || 0;
+  const node = document.getElementById(anchorId);
+  if (node) {
+    node.scrollIntoView({ behavior: instant ? "auto" : "smooth", block: "start" });
+    return;
+  }
+  if (tries < 14) {
+    window.setTimeout(function () {
+      scrollToAnchor(anchorId, instant, tries + 1);
+    }, 100);
+  }
+}
 
 export default function Lessons({ route, progress, onPlayground, onNavigate }) {
   const [open, setOpen] = useState(function () {
@@ -15,9 +32,17 @@ export default function Lessons({ route, progress, onPlayground, onNavigate }) {
       if (route.path === "/lesson" && route.param) {
         const id = Number(route.param);
         setOpen(id);
+        const routePath = "/lesson/" + id;
         const timer = window.setTimeout(function () {
-          const node = document.getElementById("lesson-" + id);
-          if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
+          // A real page load restores the stored reading spot; in-app
+          // navigation (router.navigate already marked the session) falls
+          // back to the top of the lesson card.
+          const stored = canRestore() ? readReadingStorage(window.localStorage) : null;
+          const anchorId =
+            stored && stored.path === routePath && stored.anchorId
+              ? stored.anchorId
+              : "lesson-" + id;
+          scrollToAnchor(anchorId, anchorId !== "lesson-" + id);
         }, 120);
         return function () {
           window.clearTimeout(timer);
@@ -29,6 +54,41 @@ export default function Lessons({ route, progress, onPlayground, onNavigate }) {
       return undefined;
     },
     [route.path, route.param]
+  );
+
+  // While reading, remember the topmost visible section so a reload can
+  // restore it. Saves only when the anchor changes, throttled via rAF.
+  useEffect(
+    function () {
+      if (!open) return undefined;
+      let frame = 0;
+      let lastAnchor = null;
+      function onScroll() {
+        if (frame) return;
+        frame = window.requestAnimationFrame(function () {
+          frame = 0;
+          const nodes = document.querySelectorAll("[data-reading-anchor]");
+          let current = null;
+          for (let i = 0; i < nodes.length; i += 1) {
+            if (nodes[i].getBoundingClientRect().top <= 96) current = nodes[i].id;
+          }
+          if (current && current !== lastAnchor) {
+            lastAnchor = current;
+            writeReadingStorage(window.localStorage, {
+              path: "/lesson/" + open,
+              anchorId: current,
+            });
+          }
+        });
+      }
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return function () {
+        if (frame) window.cancelAnimationFrame(frame);
+        window.removeEventListener("scroll", onScroll);
+      };
+    },
+    [open]
   );
 
   const ids = LESSONS.map(function (lesson) {
