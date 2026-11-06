@@ -496,6 +496,7 @@ var fns = build();
 console.log(fns[0]()); // -> 3
 console.log(fns[1]()); // -> 3 — the same binding, read after the loop
 console.log(fns[2]()); // -> 3`,
+        diagram: "loop-var",
       },
       {
         heading: "An IIFE gives each callback its own binding",
@@ -515,6 +516,7 @@ console.log(fns[2]()); // -> 3`,
 
 var fns = build();
 console.log(fns[0](), fns[1](), fns[2]()); // -> 0 1 2`,
+        diagram: "iife",
         check: {
           q: "What makes the IIFE version print 0 1 2 instead of 3 3 3?",
           options: ["The IIFE copies i into a fresh j binding per iteration","The loop runs slower, giving the callbacks time","j is a reference to i, resolved at call time","The returned function is called immediately"],
