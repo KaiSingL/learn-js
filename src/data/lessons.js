@@ -819,49 +819,104 @@ console.log(toArray("a", "b").length); // -> 2`,
     goal: "See that this is decided by the call site, then control it explicitly.",
     tier: 0,
     sugarReplaces: "arrow lexical this, hidden receiver tricks",
-    longDesc:
-      "this is not lexical in a real function. It is determined when the function is called: a method call uses the object before the dot, a plain call uses undefined in strict mode, and call, apply and bind let you set it yourself. call takes arguments one by one, apply takes an array-like, and bind returns a new function with this locked in.",
-    realCode: `function greet(greeting) {
+    intro:
+      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways to set it, each with a different way of passing the rest of the arguments. And when a nested call would lose the right this, an ordinary variable holds onto it.",
+    concepts: [
+      {
+        heading: "this is decided by the call site",
+        text: "A real function does not own its this. Calling through an object sets this to that object; calling the function on its own leaves this without a home (undefined in strict mode). Same function, different call sites, different this.",
+        purpose: "Watch one function answer with two different verdicts, depending on how it was called.",
+        code: `function whoami() {
+  return this === speaker; // in strict mode a plain call makes this undefined
+}
+
+var speaker = { greet: whoami };
+
+console.log(speaker.greet()); // -> true — called through the object
+console.log(whoami());        // -> false — called on its own`,
+      },
+      {
+        heading: "call sets this and lists arguments one by one",
+        text: "call borrows the function for one invocation: the first argument becomes this, and the rest are passed on as normal comma-separated arguments.",
+        purpose: "Watch greet run twice with two different this objects, arguments passed one by one.",
+        code: `function greet(greeting) {
   return greeting + " " + this.name;
 }
 
-var person = { name: "Alex" };
+var alex = { name: "Alex" };
+var kai = { name: "Kai" };
 
-var r1 = greet.call(person, "Hello");
-var r2 = greet.apply(person, ["Hi"]);
-var bound = greet.bind(person);
-var r3 = bound("Hey");
+console.log(greet.call(alex, "Hello")); // -> Hello Alex
+console.log(greet.call(kai, "Hey"));    // -> Hey Kai`,
+      },
+      {
+        heading: "apply sets this and takes the arguments as an array",
+        text: "apply is call with a different signature: this first, then an array-like of arguments. Same result, different packing — exactly what you need when the arguments are already collected in an array or in arguments itself.",
+        purpose: "Watch the same call run through apply with its arguments packed in an array.",
+        code: `function greet(greeting, punctuation) {
+  return greeting + " " + this.name + punctuation;
+}
 
-console.log(r1); // -> Hello Alex
-console.log(r2); // -> Hi Alex
-console.log(r3); // -> Hey Alex
+var alex = { name: "Alex" };
 
-function Counter() {
+console.log(greet.apply(alex, ["Hi", "!"])); // -> Hi Alex!
+console.log(greet.call(alex, "Hi", "!"));    // -> Hi Alex! — same result, other packing`,
+      },
+      {
+        heading: "bind returns a new function with this locked",
+        text: "bind does not call anything. It returns a new function whose this is permanently the first argument; the call happens later, whenever — and however many times — the bound function is invoked.",
+        purpose: "Watch the bound function stay reusable — same lock, many calls.",
+        code: `function greet(greeting) {
+  return greeting + " " + this.name;
+}
+
+var alex = { name: "Alex" };
+var helloAlex = greet.bind(alex);
+
+console.log(helloAlex("Hi"));    // -> Hi Alex
+console.log(helloAlex("Hello")); // -> Hello Alex — the lock holds
+console.log(typeof helloAlex);   // -> function — a new function, not a result`,
+      },
+      {
+        heading: "var self = this keeps the call site's this",
+        text: "An inner function called on its own does not inherit the outer call's this — the call site decides, and a plain call supplies none. The fix is to capture this in an ordinary variable while it is still correct, and use that variable inside.",
+        purpose: "Watch the count climb through a callback that would otherwise lose this.",
+        code: `function Counter() {
   this.count = 0;
   var self = this;
   this.inc = function () {
     self.count = self.count + 1;
   };
 }
+
 var counter = new Counter();
 counter.inc();
 counter.inc();
-console.log(counter.count); // -> 2`,
-
-    extraReal: `Function.prototype.myBind = function (ctx) {
-  var fn = this;
-  var preset = Array.prototype.slice.call(arguments, 1);
-  return function () {
-    var args = preset.concat(Array.prototype.slice.call(arguments));
-    return fn.apply(ctx, args);
-  };
+console.log(counter.count); // -> 2 — self kept the call site's this`,
+        check: {
+          q: "Why capture var self = this inside the constructor?",
+          options: ["An inner plain call would not inherit this from the method call","this is undefined inside every function body","self becomes a private property of the object","It copies the whole object for safety"],
+          answer: 0,
+          why: "this is decided per call. Inside this.inc it still points at the object, but a nested plain call would not — self freezes the value while it is correct.",
+        },
+      },
+      {
+        heading: "Borrowing a method with call",
+        text: "A method is just a function stored on an object — any object with a matching shape can lend itself as this. call lets a different object run someone else's method without copying the code.",
+        purpose: "Watch a quiet object borrow a speaker's method — no copying, just call.",
+        code: `var speaker = {
+  name: "Nova",
+  speak: function (line) {
+    return this.name + ": " + line;
+  }
 };
 
-function greet(greeting) {
-  return greeting + " " + this.name;
-}
-var bound = greet.myBind({ name: "Alex" }, "Hello");
-console.log(bound("!")); // -> Hello Alex`,
+var quiet = { name: "Echo" };
+
+console.log(speaker.speak.call(quiet, "hello")); // -> Echo: hello
+console.log(speaker.speak("hi")); // -> Nova: hi — the original is untouched`,
+      },
+    ],
 
     starter: `// Exercise: myBind(fn, ctx, ...presetArgs)
 // Return a function that calls fn with ctx as this.
@@ -937,18 +992,21 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
         options: ["Where the function was written", "How the function is called", "The function name", "The return value"],
         answer: 1,
         why: "A real function receives this from its call site. Only arrow functions capture this lexically.",
+        tests: "this is decided by the call site",
       },
       {
         q: "What is the second argument of apply?",
         options: ["A single value", "An array-like of arguments", "The this object", "A callback"],
         answer: 1,
         why: "apply(thisArg, argsArray) spreads the array-like into the parameter list.",
+        tests: "apply sets this and takes the arguments as an array",
       },
       {
         q: "What does bind return?",
         options: ["The result of calling the function", "A new function with this fixed", "The this object", "undefined"],
         answer: 1,
         why: "bind returns a new function. The call happens later, when you invoke that new function.",
+        tests: "bind returns a new function with this locked",
       },
     ],
   },
@@ -958,48 +1016,120 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
     goal: "Replace the class keyword with a constructor function, prototype methods and prototype-chain walking.",
     tier: 0,
     sugarReplaces: "class, extends, constructor, super",
-    longDesc:
-      "A class is syntax sugar for a constructor function plus assignments on its prototype. new does four things: create an empty object, link it to the constructor's prototype, call the constructor with this set to that object, and return the object. Methods belong on the prototype so every instance shares one copy instead of allocating a new function per object. Every object has an internal [[Prototype]] link; property lookup walks that link until it finds the key or reaches null.",
-    realCode: `function Dog(name) {
+    intro:
+      "A class is syntax sugar for two plain moves: a constructor function that fills this, and methods assigned to its prototype so every instance shares one copy. new runs those moves; the prototype chain lets one constructor reuse another's. None of it is hidden — all of it can be written by hand.",
+    concepts: [
+      {
+        heading: "new builds the object in four steps",
+        text: "new Dog(\"Rex\") creates a fresh object, links it to Dog.prototype, calls Dog with this set to that object, and — unless the constructor returns its own object — hands the new object back. Everything the constructor writes on this lands on the fresh object.",
+        purpose: "Watch the constructor's this become the returned instance.",
+        code: `function Dog(name) {
+  // new made the object and set this to it:
   this.name = name;
   this.tricks = [];
+}
+
+var rex = new Dog("Rex");
+console.log(rex.name);   // -> Rex
+console.log(rex.tricks); // -> [] — the constructor built this one
+console.log(typeof rex); // -> object`,
+        check: {
+          q: "What does new Dog(\"Rex\") do before running the constructor body?",
+          options: ["Creates an empty object linked to Dog.prototype and sets this to it","Copies Dog.prototype onto the new object","Calls Dog once to warm it up","Creates a string with the name"],
+          answer: 0,
+          why: "Four steps: fresh object, prototype link, constructor call with this bound, and the object returned. The body's writes on this land on that fresh object.",
+        },
+      },
+      {
+        heading: "Prototype methods are shared, not copied",
+        text: "A method assigned to Dog.prototype exists once. Instances do not own it — reaching rex.bark walks the prototype link and finds it on the prototype. hasOwnProperty makes the split visible: name is on rex, bark is not.",
+        purpose: "Watch the instance own its data but borrow its method.",
+        code: `function Dog(name) {
+  this.name = name;
 }
 
 Dog.prototype.bark = function () {
   return "Woof " + this.name;
 };
 
-Dog.prototype.learn = function (trick) {
-  this.tricks[this.tricks.length] = trick;
-  return this;
-};
-
 var rex = new Dog("Rex");
-console.log(rex.bark()); // -> Woof Rex
-console.log(rex.learn("sit").learn("roll").tricks); // -> ["sit", "roll"]
-console.log(rex.hasOwnProperty("name")); // -> true
-console.log(rex.hasOwnProperty("bark")); // -> false`,
-
-    extraReal: `function Person(name) { this.name = name; }
+console.log(rex.bark()); // -> Woof Rex — found through the prototype link
+console.log(rex.hasOwnProperty("name")); // -> true — own property
+console.log(rex.hasOwnProperty("bark")); // -> false — lives on the prototype`,
+      },
+      {
+        heading: "Inheritance: link prototypes, then repair the constructor",
+        text: "Student inherits by calling the parent constructor for its own state (Person.call(this, name)) and replacing its prototype with an object linked to the parent's (Object.create(Person.prototype)). The constructor property is then repaired, because replacing the prototype destroyed it.",
+        purpose: "Watch a Student answer both a Person call and its own, through one chain.",
+        code: `function Person(name) {
+  this.name = name;
+}
 Person.prototype.sayHi = function () {
   return "Hi, " + this.name;
 };
 
 function Student(name, subject) {
-  Person.call(this, name);
+  Person.call(this, name); // parent state, with this = the new student
   this.subject = subject;
 }
-Student.prototype = Object.create(Person.prototype);
-Student.prototype.constructor = Student;
+Student.prototype = Object.create(Person.prototype); // link the chain
+Student.prototype.constructor = Student; // repair the broken pointer
 Student.prototype.study = function () {
   return this.name + " studies " + this.subject;
 };
 
 var s = new Student("Mira", "math");
-console.log(s.sayHi()); // -> Hi, Mira
-console.log(s.study()); // -> Mira studies math
-console.log(s instanceof Person); // -> true
-console.log(s instanceof Student); // -> true`,
+console.log(s.sayHi()); // -> Hi, Mira — found up the chain
+console.log(s.study()); // -> Mira studies math`,
+        check: {
+          q: "Why repair Student.prototype.constructor after Object.create?",
+          options: ["Replacing the prototype removed the constructor property, so it points at Person","Object.create requires a constructor to work","The repair gives Student new methods","Without it, new Student returns a Person"],
+          answer: 0,
+          why: "Student.prototype = Object.create(...) wiped the old prototype, including its constructor pointer. Setting it back keeps Student.prototype.constructor answering Student.",
+        },
+      },
+      {
+        heading: "instanceof walks the same chain",
+        text: "instanceof does not compare constructors — it checks whether the constructor's prototype appears somewhere in the object's prototype chain. A Student is an instance of both Student and Person because both prototypes sit on one chain.",
+        purpose: "Watch one object satisfy three instanceof checks through a single chain.",
+        code: `function Person(name) {
+  this.name = name;
+}
+function Student(name, subject) {
+  Person.call(this, name);
+  this.subject = subject;
+}
+Student.prototype = Object.create(Person.prototype);
+
+var s = new Student("Mira", "math");
+console.log(s instanceof Student); // -> true — direct link
+console.log(s instanceof Person); // -> true — Person.prototype is up the chain
+console.log(s instanceof Object); // -> true — the chain ends there`,
+        check: {
+          q: "Why is s instanceof Person true even though Student built s?",
+          options: ["Student.prototype links to Person.prototype, so the chain passes through it","Person.call copied Person's methods onto s","instanceof compares constructor names","Student extends Person internally"],
+          answer: 0,
+          why: "instanceof walks s's prototype chain looking for Person.prototype. Object.create(Person.prototype) placed exactly that object one step up the chain.",
+        },
+      },
+      {
+        heading: "Methods that return this enable chaining",
+        text: "A prototype method that returns this hands the same instance back to the next call, so calls chain on one line. this is the instance — returning it is returning the object the method just worked on.",
+        purpose: "Watch two chained calls operate on the same dog.",
+        code: `function Dog(name) {
+  this.name = name;
+  this.tricks = [];
+}
+
+Dog.prototype.learn = function (trick) {
+  this.tricks[this.tricks.length] = trick;
+  return this; // hand the same instance back
+};
+
+var rex = new Dog("Rex");
+console.log(rex.learn("sit").learn("roll").tricks.length); // -> 2`,
+      },
+    ],
 
     starter: `// Exercise: build Cat with a meow method on the prototype.
 // new Cat("Tom").meow() should return "Tom says meow".
@@ -1083,18 +1213,21 @@ console.log(s instanceof Person); // -> true`,
         options: ["A copy of Dog.prototype", "An empty object linked to Dog.prototype", "A global object", "A string"],
         answer: 1,
         why: "new creates a fresh object, links its prototype to Dog.prototype, then runs Dog with this bound to it.",
+        tests: "new builds the object in four steps",
       },
       {
         q: "Where does rex.bark live?",
         options: ["On rex", "On Dog.prototype", "On Object.prototype", "In a closure"],
         answer: 1,
         why: "The method is assigned once to Dog.prototype and found through the prototype chain.",
+        tests: "Prototype methods are shared, not copied",
       },
       {
         q: "Why put methods on the prototype?",
         options: ["They run faster", "One shared copy instead of one per instance", "They become private", "They can use new"],
         answer: 1,
         why: "Prototype methods are allocated once. Methods inside the constructor create a new function for every instance.",
+        tests: "Prototype methods are shared, not copied",
       },
     ],
   },
