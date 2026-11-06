@@ -197,6 +197,12 @@ try {
     (await page.locator("#lesson-1").innerText()).indexOf("done ·") !== -1,
     "inline run shows output under the code block"
   );
+  await page.locator("#lesson-1").getByRole("button", { name: "Copy to playground" }).first().hover();
+  await page.waitForTimeout(550);
+  check(
+    (await page.locator("#lesson-1").innerText()).indexOf("Copy to playground") !== -1,
+    "styled tooltip appears on hover"
+  );
   await page.locator("#lesson-1").getByRole("button", { name: "Copy to playground" }).first().click();
   await page.waitForTimeout(300);
   check(page.url().indexOf("#/playground") !== -1, "copy to playground opens the playground", page.url());

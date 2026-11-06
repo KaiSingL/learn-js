@@ -2,6 +2,7 @@ import { useState } from "react";
 import { highlight } from "../lib/highlight.jsx";
 import { useInlineRun } from "../lib/useInlineRun.js";
 import Icon from "./Icon.jsx";
+import Tooltip from "./Tooltip.jsx";
 
 function legacyCopy(text) {
   const area = document.createElement("textarea");
@@ -57,38 +58,37 @@ export default function CodeBlock({
 
   const action = (
     <div className="flex items-center gap-1">
-      <button
-        type="button"
-        onClick={output.run}
-        className="btn h-7 px-2 gap-1"
-        title="Run this code here"
-      >
-        <Icon name="play" size={11} />
-        <span className="hidden sm:inline">Run</span>
-      </button>
+      <Tooltip label="Run this code here">
+        <button type="button" onClick={output.run} className="btn h-7 px-2 gap-1">
+          <Icon name="play" size={11} />
+          <span className="hidden sm:inline">Run</span>
+        </button>
+      </Tooltip>
       {onPlayground ? (
+        <Tooltip label="Copy to playground">
+          <button
+            type="button"
+            onClick={function () {
+              onPlayground(code);
+            }}
+            className="btn h-7 w-7 p-0"
+            aria-label="Copy to playground"
+          >
+            <Icon name="squareArrowOutUpRight" size={12} />
+          </button>
+        </Tooltip>
+      ) : null}
+      <Tooltip label="Copy code">
         <button
           type="button"
-          onClick={function () {
-            onPlayground(code);
-          }}
-          className="btn h-7 w-7 p-0"
-          aria-label="Copy to playground"
-          title="Copy to playground"
+          onClick={copy}
+          className="btn h-7 px-2 gap-1"
+          aria-label={copied ? "Copied" : "Copy code"}
         >
-          <Icon name="squareArrowOutUpRight" size={12} />
+          <Icon name={copied ? "check" : "copy"} size={12} />
+          <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
         </button>
-      ) : null}
-      <button
-        type="button"
-        onClick={copy}
-        className="btn h-7 px-2 gap-1"
-        aria-label={copied ? "Copied" : "Copy code"}
-        title="Copy code"
-      >
-        <Icon name={copied ? "check" : "copy"} size={12} />
-        <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
-      </button>
+      </Tooltip>
     </div>
   );
 

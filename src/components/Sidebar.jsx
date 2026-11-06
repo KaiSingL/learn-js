@@ -3,6 +3,7 @@ import { PRIMARY_NAV, TAIL_NAV } from "../data/nav.js";
 import { countDone } from "../lib/progress.js";
 import { navigate } from "../lib/router.js";
 import Icon from "./Icon.jsx";
+import Tooltip from "./Tooltip.jsx";
 import { ProgressBar } from "./PageHeader.jsx";
 
 function NavItem({ item, active, onClick }) {
@@ -146,14 +147,15 @@ export default function Sidebar({ route, progress, onOpenPalette, onResetAll }) 
               {done === LESSONS.length ? "Course complete" : "Mark lessons as you go"}
             </span>
             {done > 0 ? (
-              <button
-                type="button"
-                onClick={onResetAll}
-                className="mono text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-danger"
-                title="Reset all progress and quiz answers"
-              >
-                Reset
-              </button>
+              <Tooltip label="Reset all progress and quiz answers">
+                <button
+                  type="button"
+                  onClick={onResetAll}
+                  className="mono text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-danger"
+                >
+                  Reset
+                </button>
+              </Tooltip>
             ) : null}
           </div>
         </div>

@@ -9,6 +9,7 @@ import {
 import { runInIframe, runInWorker } from "../lib/sandbox.js";
 import { navigate } from "../lib/router.js";
 import Icon from "./Icon.jsx";
+import Tooltip from "./Tooltip.jsx";
 import { PageHeader, Pill } from "./PageHeader.jsx";
 import PreviewPane from "./PreviewPane.jsx";
 
@@ -362,10 +363,12 @@ export default function Playground({ route, request }) {
           })}
         </select>
         <div className="flex shrink-0 gap-2">
-          <button type="button" onClick={resetPreset} className="btn h-10 px-3" title="Reset to the preset code">
-            <Icon name="reset" size={13} />
-            Reset
-          </button>
+          <Tooltip label="Reset to the preset code">
+            <button type="button" onClick={resetPreset} className="btn h-10 px-3">
+              <Icon name="reset" size={13} />
+              Reset
+            </button>
+          </Tooltip>
           <button type="button" onClick={function () { copyText(code); }} className="btn h-10 px-3">
             <Icon name="copy" size={13} />
             Copy

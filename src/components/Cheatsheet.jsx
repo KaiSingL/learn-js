@@ -6,6 +6,7 @@ import {
   filterCheatsheet,
 } from "../data/cheatsheet.js";
 import Icon from "./Icon.jsx";
+import Tooltip from "./Tooltip.jsx";
 import { PageHeader, Pill } from "./PageHeader.jsx";
 
 export default function Cheatsheet({ onPlayground }) {
@@ -104,17 +105,18 @@ export default function Cheatsheet({ onPlayground }) {
                 <div className="pr-3 text-[12px] leading-[1.55] text-muted/70">
                   {row.defaults ? row.defaults : "—"}
                 </div>
-                <button
-                  type="button"
-                  onClick={function () {
-                    onPlayground(row.real, "Cheatsheet: " + row.sugar);
-                  }}
-                  className="btn h-7 w-7"
-                  title="Open this real code in the playground"
-                  aria-label={"Open " + row.sugar + " in the playground"}
-                >
-                  <Icon name="play" size={11} />
-                </button>
+                <Tooltip label="Open this real code in the playground">
+                  <button
+                    type="button"
+                    onClick={function () {
+                      onPlayground(row.real, "Cheatsheet: " + row.sugar);
+                    }}
+                    className="btn h-7 w-7"
+                    aria-label={"Open " + row.sugar + " in the playground"}
+                  >
+                    <Icon name="play" size={11} />
+                  </button>
+                </Tooltip>
               </div>
             );
           })}
