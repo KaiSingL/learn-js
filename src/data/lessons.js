@@ -1206,6 +1206,7 @@ var rex = new Dog("Rex");
 console.log(rex.bark()); // -> Woof Rex — found through the prototype link
 console.log(rex.hasOwnProperty("name")); // -> true — own property
 console.log(rex.hasOwnProperty("bark")); // -> false — lives on the prototype`,
+        diagram: "proto-chain",
       },
       {
         heading: "Inheritance: link prototypes, then repair the constructor",
@@ -2075,6 +2076,7 @@ greetign = {}; // the typo — no var anywhere
 console.log(typeof greeting); // -> undefined — never assigned
 console.log(typeof greetign); // -> object — the typo became a real global
 console.log(greetign === globalThis.greetign); // -> true — it landed on the global object`,
+        diagram: "scope",
       },
       {
         heading: "\"use strict\" turns the silent global into an error",
@@ -2267,6 +2269,7 @@ console.log("end");
 // -> start
 // -> end
 // -> queued — the stack was empty`,
+        diagram: "event-loop",
         check: {
           q: "When does a setTimeout(fn, 0) callback actually run?",
           options: ["After 0 milliseconds, precisely","When the call stack is empty","In parallel with the stack","Only on the next user click"],
@@ -2291,7 +2294,7 @@ console.log("done");
       },
       {
         heading: "An IIFE freezes the value before queueing",
-        text: "Capturing i with an immediately invoked function creates a fresh binding per iteration while the loop is still running. The timer's callback closes over its own j, so each queued print gets its own number.",
+        text: "Capturing i with an IIFE creates a fresh binding per iteration while the loop is still running. The timer's callback closes over its own j, so each queued print gets its own number.",
         purpose: "Watch three timers each deliver their own number.",
         code: `for (var i = 0; i < 3; i = i + 1) {
   (function (j) {
@@ -2696,6 +2699,7 @@ a.next();
 a.next();
 console.log(a.next().value); // -> 3 — a's own position
 console.log(b.next().value); // -> 1 — b never touched`,
+        diagram: "closure",
         check: {
           q: "What remembers an iterator's position between .next() calls?",
           options: ["The closure — next reads and writes the factory's variables","The engine suspends the function","A cursor stored on the object's prototype","Nothing — each call restarts"],
@@ -3416,6 +3420,7 @@ shallow.tags[shallow.tags.length] = "copy";
 console.log(original.name); // -> Ada — the primitive copied by value
 console.log(original.tags); // -> ["dev", "js", "copy"] — the branch was shared
 console.log(shallow.tags === original.tags); // -> true — one array, two shells`,
+        diagram: "shallow-copy",
         check: {
           q: "After a shallow copy, renaming shallow.name to \"Alan\" — what does original.name read?",
           options: ["Ada — primitives copied by value into the new shell","Alan — the names are linked","undefined","An error"],
@@ -3452,6 +3457,7 @@ deep.tags[deep.tags.length] = "deep";
 
 console.log(original.tags); // -> ["dev"] — untouched at depth
 console.log(deep.tags === original.tags); // -> false — a brand-new branch`,
+        diagram: "deep-copy",
       },
       {
         heading: "JSON.parse(JSON.stringify) is not a deep copy",

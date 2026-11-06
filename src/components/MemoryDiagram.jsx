@@ -5,6 +5,10 @@
 // kind="closure"   — a returned function keeps its birthplace scope alive
 // kind="loop-var"  — one var in a loop is one binding, left at 3 when the calls happen
 // kind="iife"      — an IIFE per pass gives each callback its own j (0, 1, 2)
+// kind="event-loop" — stack → timer system → queue, drained only when the stack is empty
+// kind="proto-chain" — instances own data; methods are found one prototype link away
+// kind="shallow-copy" — a new shell whose nested branches still point at the original's
+// kind="deep-copy"   — a new shell with brand-new branches at every depth
 export default function MemoryDiagram({ kind }) {
   if (kind === "value") {
     return (
@@ -220,6 +224,193 @@ export default function MemoryDiagram({ kind }) {
       </div>
     );
   }
+  if (kind === "event-loop") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              call stack
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+              one thing at a time
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="mono text-[10px] text-muted">hands to</span>
+            <Arrow className="text-muted" />
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              timer system
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+              0ms = minimum
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="mono text-[10px] text-muted">when done</span>
+            <Arrow className="text-muted" />
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              queue
+            </div>
+            <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+              callback
+            </span>
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Arrow direction="left" className="text-accent" />
+          <span className="mono text-[10px] text-accent">
+            the event loop moves it when the stack is empty
+          </span>
+        </div>
+        <p className="mono mt-1.5 text-[10px] leading-[1.5] text-muted">
+          the wait is until the stack has emptied — not a precise 0ms schedule
+        </p>
+      </div>
+    );
+  }
+  if (kind === "proto-chain") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              rex · own
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+              {'name : "Rex"'}
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="mono text-[10px] leading-none text-muted">link · on miss</span>
+            <Arrow className="text-muted" />
+          </div>
+          <div className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              dog.prototype · shared
+            </div>
+            <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+              bark
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="mono text-[10px] leading-none text-muted">chain</span>
+            <Arrow className="text-muted" />
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              object.prototype
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-muted">
+              …
+            </span>
+          </div>
+        </div>
+        <p className="mono mt-2 text-[10px] leading-[1.5] text-muted">
+          the instance owns its data; the method exists once on the prototype and is found one link
+          away — hasOwnProperty(&quot;bark&quot;) is false
+        </p>
+      </div>
+    );
+  }
+  if (kind === "shallow-copy") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              original
+            </div>
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                {'name : "Ada" — copied by value'}
+              </span>
+              <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+                tags — copied by reference
+              </span>
+            </div>
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              shallow · new shell
+            </div>
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                {'name : "Alan" — disconnected'}
+              </span>
+              <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+                tags — same branch
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Arrow className="text-accent" />
+          <Arrow className="text-accent" />
+          <span className="mono rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+            {`[ "dev", "js", "copy" ] — one array behind both tags`}
+          </span>
+        </div>
+        <p className="mono mt-2 text-[10px] leading-[1.5] text-muted">
+          top-level primitives disconnected; the nested branch stayed shared — two shells, one
+          array
+        </p>
+      </div>
+    );
+  }
+  if (kind === "deep-copy") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              original
+            </div>
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                {'name : "Ada"'}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                  tags
+                </span>
+                <Arrow className="text-muted" />
+                <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                  {`[ "dev" ]`}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              deep · nothing shared
+            </div>
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                {'name : "Ada" — a fresh string'}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                  tags
+                </span>
+                <Arrow className="text-muted" />
+                <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+                  {`[ "dev", "deep" ]`}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p className="mono mt-2 text-[10px] leading-[1.5] text-muted">
+          every branch cloned at every depth — mutation in the copy can never reach the original
+        </p>
+      </div>
+    );
+  }
   return null;
 }
 
@@ -271,16 +462,26 @@ function IterationCard({ i, fn, j }) {
 }
 
 // A real arrow (shaft + head) instead of the ▶ glyph: crisp at any size and
-// identical across fonts.
-function Arrow({ className = "" }) {
+// identical across fonts. direction="right" (default) or "left".
+function Arrow({ direction = "right", className = "" }) {
+  const left = direction === "left";
   return (
     <svg
       viewBox="0 0 16 7"
       aria-hidden="true"
       className={"shrink-0 h-[7px] w-4 " + className}
     >
-      <line x1="0" y1="3.5" x2="11" y2="3.5" stroke="currentColor" strokeWidth="1.5" />
-      <polygon points="11,0.5 15,3.5 11,6.5" fill="currentColor" />
+      {left ? (
+        <g>
+          <line x1="16" y1="3.5" x2="5" y2="3.5" stroke="currentColor" strokeWidth="1.5" />
+          <polygon points="5,0.5 1,3.5 5,6.5" fill="currentColor" />
+        </g>
+      ) : (
+        <g>
+          <line x1="0" y1="3.5" x2="11" y2="3.5" stroke="currentColor" strokeWidth="1.5" />
+          <polygon points="11,0.5 15,3.5 11,6.5" fill="currentColor" />
+        </g>
+      )}
     </svg>
   );
 }
