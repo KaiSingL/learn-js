@@ -21,7 +21,7 @@ export const LESSONS = [
     tier: 0,
     sugarReplaces: "let / const, ??, truthy coercion",
     intro:
-      "A variable is a name bound to a value. Primitives — numbers, strings, booleans, null, undefined — are carried by the binding itself. Objects and arrays are reached through a reference. Every surprise in this course traces back to what = actually copies: the value, or the reference.",
+      "A variable is a name bound to a value. Primitives — numbers, strings, booleans, null, undefined — are carried by the binding itself. Objects and arrays are reached through a reference. Every surprise in this course traces back to two questions: what does = actually copy — the value, or the reference — and where does the binding live — this function, or the global object? Syntax is the small part; these two questions are the lesson.",
     concepts: [
       {
         heading: "var gives a name, = gives it a value",
@@ -52,6 +52,57 @@ console.log(typeof null);      // -> object — the bug. null is not an object`,
           options: ["\"null\"", "\"object\"", "\"undefined\"", "It throws an error"],
           answer: 1,
           why: "A historical bug: typeof null is \"object\". null is still a primitive, so test for it with === null, never with typeof.",
+        },
+      },
+      {
+        heading: "= without var creates a global",
+        text: "Names live in scopes, and assignment never creates one. When = cannot find the name anywhere, it does not fail — it drops the name in the widest scope there is: as a property on the global object (globalThis). The code runs without complaint, which is exactly why this is dangerous: a typo becomes a real, working global.",
+        purpose: "Watch bare assignment succeed with no declaration — and see where the name landed.",
+        code: `a = 1; // no var anywhere — this still runs
+console.log(a); // -> 1
+
+// = never declares. With no name to assign to, the engine
+// created one: a is now a property of the global object.
+console.log(a === globalThis.a); // -> true — the name landed on the global object
+
+// Under "use strict" the same line fails fast instead:
+// ReferenceError: a is not defined (lesson 9 covers the cure)`,
+        check: {
+          q: "Why does a = 1 work when a was never declared?",
+          options: [
+            "The engine creates a as a property on the global object, then assigns 1 to it",
+            "Primitive values do not need declarations",
+            "a is hoisted from a var declaration further down the file",
+            "The engine silently inserts var a before the assignment",
+          ],
+          answer: 0,
+          why: "= never declares. In sloppy mode, assigning to a name that exists nowhere resolves to the global object and creates the property there. \"use strict\" turns the same line into a ReferenceError.",
+        },
+      },
+      {
+        heading: "var is function-scoped — bare assignment is not",
+        text: "var is the opposite of loose assignment: it puts the binding exactly where you wrote it — inside the current function. Nothing outside can see it, even after the function returns. Loose assignment ignores function walls, walks outward, and lands on the global object. Two names written side by side — two completely different homes.",
+        purpose: "Watch one name stay inside the function while the other escapes to the top.",
+        code: `function run() {
+  var inside = "declared with var"; // function-scoped
+  leaked = "no var at all";         // no declaration — escapes the function
+}
+
+run();
+console.log(typeof inside); // -> undefined — var never left the function
+console.log(leaked);        // -> no var at all — the bare assignment escaped
+console.log(leaked === globalThis.leaked); // -> true — leaked is a global property`,
+        diagram: "scope",
+        check: {
+          q: "After run() finishes, which name is a property of the global object?",
+          options: [
+            "inside — var bindings are global",
+            "leaked — the loose assignment escaped the function",
+            "Both names end up on the global object",
+            "Neither — both die with the function",
+          ],
+          answer: 1,
+          why: "var scoped inside to the function — outside it, typeof inside is undefined. leaked was never declared, so the assignment dropped it on the global object, where it survives after run() returns.",
         },
       },
       {
@@ -203,7 +254,7 @@ console.log(describe("hi")); // -> string`,
       },
     ],
     checklist: [
-      "Use var for every binding",
+      "Use var for every binding — a = 1 instead creates a global",
       "Check === undefined instead of relying on truthiness",
       "Check === null separately from undefined",
       "Use value !== value to detect NaN",
@@ -251,6 +302,18 @@ console.log(describe("hi")); // -> string`,
         answer: 1,
         why: "=== on objects compares references, not contents. Two separately created objects are never strictly equal.",
         tests: "=== on objects compares references, not contents",
+      },
+      {
+        q: "a = 1 runs with no var in sight. What did the engine do?",
+        options: [
+          "Created a as a property on the global object, then stored 1 in it",
+          "Ignored the assignment because a is undeclared",
+          "Hoisted var a from somewhere later in the code",
+          "Declared a in the nearest function scope instead",
+        ],
+        answer: 0,
+        why: "= never declares. In sloppy mode, assigning to a name that exists nowhere creates it as a global property first, then assigns. \"use strict\" makes the same line throw a ReferenceError — that is lesson 9's subject.",
+        tests: "= without var creates a global",
       },
     ],
   },
@@ -1293,7 +1356,7 @@ function strict() {
 }
 
 console.log(sloppy()); // -> 10
-console.log(typeof window.z); // -> number
+console.log(typeof globalThis.z); // -> number
 console.log(strict()); // -> 0`,
 
     starter: `// Exercise: write a strict-mode function that rejects accidental globals.

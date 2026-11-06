@@ -43,6 +43,38 @@ export default function MemoryDiagram({ kind }) {
       </div>
     );
   }
+  if (kind === "scope") {
+    return (
+      <div className="mt-3 rounded-md border border-line bg-card2 px-3 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="rounded-md border border-line bg-card px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              function run
+            </div>
+            <span className="mono rounded border border-line bg-card2 px-1.5 py-0.5 text-[11px] text-paper">
+              inside
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="mono text-[10px] text-accent">leaked</span>
+            <span className="mono text-[13px] leading-none text-accent">▶▶</span>
+          </div>
+          <div className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-2">
+            <div className="mono mb-1.5 text-[9.5px] uppercase tracking-[0.12em] text-muted">
+              global object
+            </div>
+            <span className="mono rounded border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[11px] text-accent">
+              leaked
+            </span>
+          </div>
+        </div>
+        <p className="mono mt-2 text-[10px] leading-[1.5] text-muted">
+          var stays inside the function; a loose assignment escapes all the way out to the global
+          object
+        </p>
+      </div>
+    );
+  }
   return null;
 }
 
