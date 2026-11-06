@@ -59,7 +59,7 @@ export default function LessonCard({
               </span>
               {lesson.tier === 1 ? (
                 <span className="mono inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wide text-accent">
-                  tier 1
+                  tier 1 · hidden default
                 </span>
               ) : null}
               {done ? (

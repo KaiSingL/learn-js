@@ -111,7 +111,7 @@ export default function Lessons({ route, progress, onPlayground, onNavigate }) {
       <PageHeader
         eyebrow={"Section 02 — " + LESSONS.length + " lessons"}
         title="Learn the real form"
-        subtitle="Every lesson has the code, the sugar it replaces, a checklist, a knowledge check and at least one runnable solution."
+        subtitle="Every lesson has the code, the sugar it replaces, a checklist, a knowledge check and at least one runnable solution. Cards marked tier 1 · hidden default cover allowed-but-explicit features — each carries a gotcha you must know."
         aside={
           <div className="w-full rounded-panel border border-line bg-card p-3 lg:w-[230px]">
             <div className="mb-2 flex items-center justify-between">
