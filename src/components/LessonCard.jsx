@@ -106,7 +106,7 @@ export default function LessonCard({
             </div>
 
             {lesson.concepts ? (
-              <Concepts concepts={lesson.concepts} onPlayground={onPlayground} />
+              <Concepts concepts={lesson.concepts} lessonId={lesson.id} onPlayground={onPlayground} />
             ) : (
               <>
                 <CodeBlock
@@ -224,7 +224,7 @@ export default function LessonCard({
               <p className="mono text-[11px] leading-[1.5]">{lesson.realTalk}</p>
             </div>
 
-            <Quiz items={lesson.quiz} label={"Lesson " + lesson.id + " check"} />
+            <Quiz items={lesson.quiz} id={"lesson-" + lesson.id + "-quiz"} label={"Lesson " + lesson.id + " check"} />
 
             <button
               type="button"

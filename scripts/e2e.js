@@ -154,9 +154,33 @@ try {
   check((await page.getByRole("button", { name: "Marked complete" }).count()) === 1, "completion survives reload");
   const asideText = await page.locator("aside").innerText();
   check(asideText.indexOf("1 / " + LESSONS.length) !== -1, "sidebar progress updates");
+
+  console.log("\nQuiz persistence");
+  const quizOption = page.locator("#quiz-lesson-1-quiz button").nth(1);
+  await quizOption.click();
+  await page.waitForTimeout(200);
+  check(
+    (await page.locator("#quiz-lesson-1-quiz").innerText()).indexOf("1 correct") !== -1,
+    "quiz result shows correct count"
+  );
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(400);
+  check(
+    (await page.locator("#quiz-lesson-1-quiz button").nth(1).getAttribute("aria-pressed")) === "true",
+    "quiz answer survives reload"
+  );
+  check(
+    (await page.locator("#quiz-lesson-1-quiz").innerText()).indexOf("1 correct") !== -1,
+    "quiz result survives reload"
+  );
+
   await page.locator("aside").getByRole("button", { name: "Reset", exact: true }).click();
   await page.waitForTimeout(200);
   check((await page.locator("aside").innerText()).indexOf("0 / " + LESSONS.length) !== -1, "progress reset works");
+  check(
+    (await page.locator("#quiz-lesson-1-quiz").innerText()).indexOf("correct") === -1,
+    "quiz answers cleared by reset"
+  );
 
   console.log("\nSearch");
   await goto("");

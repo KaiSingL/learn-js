@@ -5,7 +5,7 @@ import Quiz from "./Quiz.jsx";
 // The migrated lesson body: numbered concept segments, one idea each.
 // A segment is heading -> short text -> purpose-labelled snippet, plus an
 // optional memory sketch and an optional inline check question.
-export default function Concepts({ concepts, onPlayground }) {
+export default function Concepts({ concepts, lessonId, onPlayground }) {
   return (
     <div>
       <div className="mono mb-2 text-[10px] uppercase tracking-[0.14em] text-muted">
@@ -35,7 +35,11 @@ export default function Concepts({ concepts, onPlayground }) {
               {concept.diagram ? <MemoryDiagram kind={concept.diagram} /> : null}
               {concept.check ? (
                 <div className="mt-2">
-                  <Quiz items={[concept.check]} label="Quick check" />
+                  <Quiz
+                    items={[concept.check]}
+                    id={"lesson-" + lessonId + "-concept-" + concept.heading}
+                    label="Quick check"
+                  />
                 </div>
               ) : null}
             </div>

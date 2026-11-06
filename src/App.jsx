@@ -12,6 +12,7 @@ import SearchPalette from "./components/SearchPalette.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import { getLesson } from "./data/lessons.js";
 import { navigate, routeKey, useRoute } from "./lib/router.js";
+import { clearQuizStorage, QUIZ_RESET_EVENT } from "./lib/quizStorage.js";
 import { useProgress } from "./lib/useProgress.js";
 
 const TITLES = {
@@ -90,6 +91,14 @@ export default function App() {
     navigate("/playground");
   }
 
+  function resetAll() {
+    progress.reset();
+    if (typeof window !== "undefined") {
+      clearQuizStorage(window.localStorage);
+      window.dispatchEvent(new Event(QUIZ_RESET_EVENT));
+    }
+  }
+
   function focusMain() {
     const main = document.getElementById("main");
     if (main) main.focus();
@@ -140,6 +149,7 @@ export default function App() {
         onOpenPalette={function () {
           setPaletteOpen(true);
         }}
+        onResetAll={resetAll}
       />
 
       <MobileNav

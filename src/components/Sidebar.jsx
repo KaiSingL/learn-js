@@ -27,7 +27,7 @@ function NavItem({ item, active, onClick }) {
   );
 }
 
-export default function Sidebar({ route, progress, onOpenPalette }) {
+export default function Sidebar({ route, progress, onOpenPalette, onResetAll }) {
   const lessonIds = LESSONS.map(function (lesson) {
     return lesson.id;
   });
@@ -148,9 +148,9 @@ export default function Sidebar({ route, progress, onOpenPalette }) {
             {done > 0 ? (
               <button
                 type="button"
-                onClick={progress.reset}
+                onClick={onResetAll}
                 className="mono text-[10px] uppercase tracking-wide text-muted transition-colors hover:text-danger"
-                title="Reset all progress"
+                title="Reset all progress and quiz answers"
               >
                 Reset
               </button>

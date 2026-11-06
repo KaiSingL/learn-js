@@ -1,24 +1,66 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { QUIZ_RESET_EVENT, readQuizStorage, writeQuizStorage } from "../lib/quizStorage.js";
 import Icon from "./Icon.jsx";
 
-export default function Quiz({ items, label = "Knowledge check" }) {
-  const [picked, setPicked] = useState({});
-  const answered = Object.keys(picked).length === items.length;
+// A quiz or inline check. When `id` is provided the answers persist to
+// localStorage and are restored on reload; the DOM container id becomes
+// "quiz-" + id (sanitized) so tests can target a specific quiz.
+export default function Quiz({ items, id, label = "Knowledge check" }) {
+  const [picked, setPicked] = useState(function () {
+    if (!id || typeof window === "undefined") return {};
+    const stored = readQuizStorage(window.localStorage);
+    return stored[id] || {};
+  });
+
+  useEffect(
+    function () {
+      if (!id || typeof window === "undefined") return undefined;
+      function reread() {
+        const stored = readQuizStorage(window.localStorage);
+        setPicked(stored[id] || {});
+      }
+      window.addEventListener(QUIZ_RESET_EVENT, reread);
+      return function () {
+        window.removeEventListener(QUIZ_RESET_EVENT, reread);
+      };
+    },
+    [id]
+  );
+
+  function writeThrough(next) {
+    setPicked(next);
+    if (!id || typeof window === "undefined") return;
+    const all = readQuizStorage(window.localStorage);
+    if (Object.keys(next).length === 0) {
+      delete all[id];
+    } else {
+      all[id] = next;
+    }
+    writeQuizStorage(window.localStorage, all);
+  }
 
   function choose(question, option) {
     if (picked[question] !== undefined) return;
     const next = {};
     for (const key in picked) next[key] = picked[key];
     next[question] = option;
-    setPicked(next);
+    writeThrough(next);
   }
 
   function reset() {
-    setPicked({});
+    writeThrough({});
   }
 
+  const answered = Object.keys(picked).length === items.length;
+  let correctCount = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    if (picked[i] === items[i].answer) correctCount += 1;
+  }
+
+  const domId = id ? "quiz-" + id.replace(/[^a-zA-Z0-9-]/g, "-") : undefined;
+
   return (
-    <div className="rounded-panel border border-line bg-card p-4">
+    <div id={domId} className="rounded-panel border border-line bg-card p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -26,6 +68,7 @@ export default function Quiz({ items, label = "Knowledge check" }) {
         </div>
         <span className="mono text-[10px] text-muted">
           {Object.keys(picked).length}/{items.length}
+          {Object.keys(picked).length > 0 ? " · " + correctCount + " correct" : ""}
         </span>
       </div>
 
