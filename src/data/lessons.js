@@ -526,7 +526,7 @@ console.log(fns[0](), fns[1](), fns[2]()); // -> 0 1 2`,
       },
       {
         heading: "let is block-scoped and throws in the TDZ",
-        text: "let draws its scope around any block — and from the start of that block until the declaration line, the binding sits in the temporal dead zone (TDZ): reading it throws a ReferenceError instead of giving undefined. That is the real difference between var and let: when the binding exists, and what an early read does.",
+        text: "let draws its scope around any block — and from the start of that block until the declaration line, the binding sits in the temporal dead zone (TDZ): temporal because the zone is a span of time — block start to the declaration line — not a region of code; dead because the binding already exists yet nothing can touch it. Reading a name inside the zone throws a ReferenceError instead of giving undefined. That is the real difference between var and let: when the binding exists, and what an early read does.",
         purpose: "Watch let work after its line — and note the two commented lines that would throw.",
         code: `function demo() {
   // console.log(later); // ReferenceError: Cannot access 'later' before initialization
