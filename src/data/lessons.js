@@ -106,6 +106,35 @@ console.log(leaked === globalThis.leaked); // -> true — leaked is a global pro
         },
       },
       {
+        heading: "There is always a global object",
+        text: "The global object is not something your code creates: the engine builds it before the first line runs, and it lives for the entire run of the program. It is the widest scope there is — the last stop when a name is not found anywhere else. Loose assignments land on it as properties, and every function in the program shares this one object. In a browser page it is called window, in a worker self — globalThis is the one name that works everywhere.",
+        purpose: "Watch one object that already exists, holds loose names, and is reachable from any function.",
+        code: `// The global object is there before your first line runs —
+// and it stays for the whole run of the program.
+console.log(typeof globalThis); // -> object
+
+// Names without a home land on it, as properties:
+score = 10; // no var — loose assignment
+console.log(globalThis.score); // -> 10
+
+// Every function in the program shares this one object:
+function readScore() {
+  return globalThis.score; // no passing, no import — it is just there
+}
+console.log(readScore()); // -> 10`,
+        check: {
+          q: "Where does the global object come from?",
+          options: [
+            "The engine creates it before your code runs, and it lives for the whole program",
+            "Your code creates it the first time it assigns without var",
+            "Each function call creates a fresh one",
+            "It exists only in browsers, as window",
+          ],
+          answer: 0,
+          why: "The global object is built before the first line runs — loose names land on it because it is already there. window and self are its per-runtime names; globalThis is the one that works everywhere.",
+        },
+      },
+      {
         heading: "undefined and null are two kinds of nothing",
         text: "undefined means \"never assigned\" — a declared name with no value yet. null means \"intentionally empty\" — a value you set on purpose. They are different values, so check each with ===, never with truthiness: 0, \"\" and false are real values too.",
         purpose: "Watch the explicit === checks separate the two kinds of nothing.",
@@ -314,6 +343,18 @@ console.log(describe("hi")); // -> string`,
         answer: 0,
         why: "= never declares. In sloppy mode, assigning to a name that exists nowhere creates it as a global property first, then assigns. \"use strict\" makes the same line throw a ReferenceError — that is lesson 9's subject.",
         tests: "= without var creates a global",
+      },
+      {
+        q: "When does the global object come into existence?",
+        options: [
+          "The engine creates it before your code runs, and it lives for the whole program",
+          "Your code creates it the first time it assigns without var",
+          "Each function call creates a fresh one",
+          "It exists only in browsers, as window",
+        ],
+        answer: 0,
+        why: "The global object is built before the first line runs — loose names land on it because it is already there. window and self are its per-runtime names; globalThis is the one that works everywhere.",
+        tests: "There is always a global object",
       },
     ],
   },
