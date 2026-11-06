@@ -36,9 +36,15 @@ async function runSnippet(label, code) {
   await page.locator("textarea").fill(code);
   await page.getByRole("button", { name: "Run code", exact: true }).click();
   await page.waitForTimeout(600);
-  const consoleText = await page.locator('[aria-live="polite"]').innerText();
-  if (consoleText.toLowerCase().indexOf("error") !== -1) {
+  // Error-kind console lines are styled text-danger (see Playground.jsx) —
+  // counting those is exact, unlike scanning text for the word "error"
+  // (a snippet may legitimately print err.name such as ReferenceError).
+  const errorLines = await page
+    .locator('[aria-live="polite"] .text-danger')
+    .count();
+  if (errorLines > 0) {
     failures += 1;
+    const consoleText = await page.locator('[aria-live="polite"]').innerText();
     console.log("  FAIL " + label + " — " + consoleText.slice(0, 160).replace(/\n/g, " | "));
   }
 }

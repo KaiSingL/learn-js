@@ -1592,32 +1592,28 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
     goal: "Write the loops that map, filter and reduce hide.",
     tier: 0,
     sugarReplaces: ".map .filter .find .reduce, spread [...]",
-    longDesc:
-      "Array methods are loops with a callback. When you write the loop yourself you can see the allocation, the index, the early return and the accumulator. Writing arr[arr.length] = value is the real push. Returning a new array instead of mutating the input is a decision you make explicitly, not something a method does for you.",
-    realCode: `var arr = [1, 2, 3, 4];
-var doubled = [];
+    intro:
+      "Every array method you have used is a loop plus a callback. Writing the loop by hand shows the allocation, the index, the early exit and the accumulator that the method hides — and appending is just one honest move: arr[arr.length] = value.",
+    concepts: [
+      {
+        heading: "A new array starts empty and grows by index",
+        text: "Building a result array is two moves: create [], then append with arr[arr.length] = value — length is always one past the last index, so assigning there appends. That is the real push, and it is the only append this course needs.",
+        purpose: "Watch an empty array grow one honest index at a time.",
+        code: `var doubled = [];
+var arr = [1, 2, 3, 4];
+
 for (var i = 0; i < arr.length; i = i + 1) {
-  var x = arr[i];
-  doubled[doubled.length] = x * 2;
+  doubled[doubled.length] = arr[i] * 2;
 }
 
-var filtered = [];
-for (var j = 0; j < arr.length; j = j + 1) {
-  if (arr[j] > 2) {
-    filtered[filtered.length] = arr[j];
-  }
-}
-
-function manualPush(array, value) {
-  array[array.length] = value;
-  return array.length;
-}
-
-manualPush(doubled, 10);
-console.log(doubled); // -> [2, 4, 6, 8, 10]
-console.log(filtered); // -> [3, 4]`,
-
-    extraReal: `function map(array, fn) {
+console.log(doubled); // -> [2, 4, 6, 8]
+console.log(doubled.length); // -> 4 — length grew with every write`,
+      },
+      {
+        heading: "map is a loop that allocates a new array",
+        text: "map's contract, written by hand: loop over every index, call the function with (value, index, array), and append the result to a new array of the same length. The input is untouched — the allocation is visible because you wrote it.",
+        purpose: "Watch the callback receive value and index, and the input stay unchanged.",
+        code: `function map(array, fn) {
   var out = [];
   for (var i = 0; i < array.length; i = i + 1) {
     out[out.length] = fn(array[i], i, array);
@@ -1625,10 +1621,75 @@ console.log(filtered); // -> [3, 4]`,
   return out;
 }
 
-var names = ["ada", "grace", "alan"];
-console.log(map(names, function (name, index) {
+var names = ["ada", "grace"];
+var tagged = map(names, function (name, index) {
   return index + ":" + name;
-}));`,
+});
+
+console.log(tagged); // -> ["0:ada", "1:grace"]
+console.log(names); // -> ["ada", "grace"] — untouched`,
+      },
+      {
+        heading: "filter is a loop with an if",
+        text: "filter's contract: the same loop, but the callback decides whether the value enters the new array. No magic in what gets kept — the if does it, and skipping is just not appending.",
+        purpose: "Watch the if decide membership while both arrays stay independent.",
+        code: `function filter(array, fn) {
+  var out = [];
+  for (var i = 0; i < array.length; i = i + 1) {
+    if (fn(array[i], i, array)) {
+      out[out.length] = array[i];
+    }
+  }
+  return out;
+}
+
+var kept = filter([1, 2, 3, 4], function (n) {
+  return n > 2;
+});
+
+console.log(kept); // -> [3, 4]`,
+      },
+      {
+        heading: "reduce carries an accumulator",
+        text: "reduce's contract: start from an initial value, then for each element the callback receives the accumulator and the value, and returns the next accumulator. The final accumulator is the result — the loop just threads one value through.",
+        purpose: "Watch one value travel through the loop, changing at every step.",
+        code: `function reduce(array, fn, initial) {
+  var acc = initial;
+  for (var i = 0; i < array.length; i = i + 1) {
+    acc = fn(acc, array[i], i, array);
+  }
+  return acc;
+}
+
+var total = reduce([1, 2, 3, 4], function (acc, n) {
+  return acc + n;
+}, 0);
+
+console.log(total); // -> 10`,
+      },
+      {
+        heading: "Early return is the exit a method hides",
+        text: "A loop can stop the moment it finds what it needs — return from inside. That is how a hand-written indexOf works, and it is exactly the control a method that always walks the whole array never gives you.",
+        purpose: "Watch the loop stop at the first match and return the index.",
+        code: `function indexOf(array, value) {
+  for (var i = 0; i < array.length; i = i + 1) {
+    if (array[i] === value) {
+      return i; // early exit — nothing after this runs
+    }
+  }
+  return -1;
+}
+
+console.log(indexOf(["a", "b", "c"], "b")); // -> 1
+console.log(indexOf(["a", "b", "c"], "z")); // -> -1 — the loop finished`,
+        check: {
+          q: "indexOf([\"a\", \"b\", \"c\"], \"b\") — how many comparisons run before the return?",
+          options: ["Two — the loop exits at the first match","Three — the array is always fully walked","One — strings compare instantly","Zero — indexOf is built in"],
+          answer: 0,
+          why: "The early return fires when i is 1, after two comparisons. A full walk would run three — writing the loop makes the exit visible and controllable.",
+        },
+      },
+    ],
 
     starter: `// Exercise: implement map, filter and reduce with for loops only.
 // Do not call the built-in array methods.
@@ -1731,18 +1792,21 @@ console.log(indexOf(["a", "b", "c"], "z")); // -> -1`,
         options: ["The original array", "A new array of the same length", "The last value", "undefined"],
         answer: 1,
         why: "map allocates a new array and writes the callback result at each index.",
+        tests: "map is a loop that allocates a new array",
       },
       {
         q: "What does arr[arr.length] = x do?",
         options: ["Overwrites the last item", "Appends x", "Throws an error", "Removes the last item"],
         answer: 1,
         why: "The length is one past the last index, so assigning there appends and grows length.",
+        tests: "A new array starts empty and grows by index",
       },
       {
         q: "Why write the loop manually?",
         options: ["It is always faster", "You can see the allocation and control the exit", "It makes code shorter", "Built-in methods are deprecated"],
         answer: 1,
         why: "The loop makes the work visible: how many passes, what is allocated, and when you stop.",
+        tests: "Early return is the exit a method hides",
       },
     ],
   },
@@ -1752,38 +1816,81 @@ console.log(indexOf(["a", "b", "c"], "z")); // -> -1`,
     goal: "See how accidental globals are created, and how \"use strict\" fails fast.",
     tier: 1,
     sugarReplaces: "implicit global assignment, non-strict delete",
-    longDesc:
-      "In sloppy mode, assigning to an undeclared identifier creates a property on the global object (window.y = 10). A typo like greetign = {} silently creates a global instead of throwing. delete on a plain property works in sloppy mode but throws in strict mode when the property is non-configurable. \"use strict\" at the top of a file or function makes these mistakes throw immediately instead of silently corrupting the global object.",
-    realCode: `'use strict';
+    intro:
+      "In sloppy mode — the default — assigning to a name that was never declared creates a property on the global object. A typo becomes a working global and nothing points at the mistake. \"use strict\" changes that trade: the same assignment throws at its own line, per file or per function.",
+    concepts: [
+      {
+        heading: "The typo becomes a real global",
+        text: "greetign = {} (misspelled) runs without complaint: with no var anywhere, the assignment walks out and creates a property on the global object. The intended greeting stays undefined, and nothing points at the mistake.",
+        purpose: "Watch a typo succeed quietly — and the real name stay empty.",
+        code: `var greeting; // the intended name
+greetign = {}; // the typo — no var anywhere
 
-var greetign = {}; // typo: intended greeting
-console.log(typeof greetign); // -> object
+console.log(typeof greeting); // -> undefined — never assigned
+console.log(typeof greetign); // -> object — the typo became a real global
+console.log(greetign === globalThis.greetign); // -> true — it landed on the global object`,
+      },
+      {
+        heading: "\"use strict\" turns the silent global into an error",
+        text: "\"use strict\" at the top of a file or function changes the rules: assigning to an undeclared name throws a ReferenceError at that line instead of creating a global. The mistake is caught where it happens.",
+        purpose: "Watch strict mode stop the typo before it lands.",
+        code: `"use strict";
 
-// In strict mode, this would throw:
-// y = 10; // ReferenceError: Cannot assign to undeclared variable y
+var greeting;
+try {
+  greetign = {}; // undeclared — strict mode refuses
+} catch (err) {
+  greeting = {}; // the fix: declare what you meant
+  console.log(err.name); // -> ReferenceError
+}
 
-var obj = { x: 1 };
-delete obj.x; // OK — deleting own property
-console.log(obj.x); // undefined
-
-// In strict mode, deleting a non-configurable property throws:
-// Object.defineProperty(obj, "y", { value: 2, configurable: false });
-// delete obj.y; // TypeError`,
-
-    extraReal: `function sloppy() {
-  z = 10; // creates window.z in sloppy mode
-  return z;
+console.log(typeof greeting); // -> object — declared this time
+console.log(typeof globalThis.greetign); // -> undefined — no global was created`,
+        check: {
+          q: "Under \"use strict\", what does greetign = {} do?",
+          options: ["Creates a global object like before","Throws a ReferenceError at that line","Assigns to the nearest declared name","Silently does nothing"],
+          answer: 1,
+          why: "Strict mode forbids implicit globals: the assignment throws immediately, so the typo is caught where it happens instead of polluting the run.",
+        },
+      },
+      {
+        heading: "Strict mode is per file or per function",
+        text: "\"use strict\" is a directive, not a global switch: at the top of a file it governs that file's code; at the top of a function body it governs just that function. Sloppy code around it stays sloppy.",
+        purpose: "Watch one function run strict while its neighbor stays sloppy.",
+        code: `function sloppy() {
+  leaked = "sloppy"; // creates a global
+  return leaked;
 }
 
 function strict() {
-  'use strict';
-  // z = 10; // ReferenceError — fails fast instead of polluting globals
-  return 0;
+  "use strict";
+  var contained = "strict"; // declared — no leak possible
+  return contained;
 }
 
-console.log(sloppy()); // -> 10
-console.log(typeof globalThis.z); // -> number
-console.log(strict()); // -> 0`,
+console.log(sloppy() === globalThis.leaked); // -> true — the leak is real
+console.log(strict()); // -> strict — declared with var, nothing leaked`,
+      },
+      {
+        heading: "delete removes own properties — with strict limits",
+        text: "delete removes a property from an object. Configurable properties delete cleanly; non-configurable ones (like defineProperty without configurable: true) refuse — silently in sloppy mode, with a TypeError in strict mode.",
+        purpose: "Watch delete succeed on a configurable property and refuse a non-configurable one.",
+        code: `var box = {};
+Object.defineProperty(box, "fixed", {
+  value: 1,
+  configurable: false,
+  enumerable: true,
+  writable: true,
+});
+
+box.own = 2;
+delete box.own;
+console.log(box.own); // -> undefined — own properties delete fine
+
+console.log(delete box.fixed); // -> false — refused, no throw in sloppy
+console.log(box.fixed); // -> 1 — still there`,
+      },
+    ],
 
     starter: `// Exercise: write a strict-mode function that rejects accidental globals.
 // It should assign to a declared variable only, and throw if given an undeclared target.
@@ -1849,18 +1956,21 @@ Object.defineProperty(obj, "y", { value: 2, configurable: false });
         options: ["Throws an error", "Creates window.y", "Creates a local variable", "Does nothing"],
         answer: 1,
         why: "In sloppy mode, assigning to an undeclared identifier creates a property on the global object.",
+        tests: "The typo becomes a real global",
       },
       {
         q: "What does \"use strict\" do to undeclared assignments?",
         options: ["Allows them", "Throws a ReferenceError", "Ignores them", "Creates a local variable"],
         answer: 1,
         why: "Strict mode forbids implicit globals — the assignment throws immediately.",
+        tests: "\"use strict\" turns the silent global into an error",
       },
       {
         q: "What happens when you delete a non-configurable property in strict mode?",
         options: ["Returns true", "Returns false", "Throws a TypeError", "Does nothing"],
         answer: 2,
         why: "Strict mode makes delete throw on non-configurable properties instead of silently failing.",
+        tests: "delete removes own properties — with strict limits",
       },
     ],
   },
