@@ -1613,7 +1613,7 @@ console.log(null === undefined); // -> false`,
       },
       {
         heading: "Object keys are always strings",
-        text: "Whatever you place inside obj[...] becomes a property key, and keys are strings (or Symbols). An object as a key is converted to its string form first — so every plain object lands on the same key: \"[object Object]\".",
+        text: "Whatever you place inside obj[...] becomes a property key, and keys are strings: a number key 42 is stored as \"42\", and an object as a key is converted to its string form first — so every plain object lands on the same key: \"[object Object]\". One second key kind, Symbol, exists — lesson 12 uses one, Symbol.iterator, as a key. The rule to keep: every key you write becomes a string; a Symbol is the one kind you cannot reach by accident.",
         purpose: "Watch two different object keys collapse into one string key.",
         code: `var box = {};
 var first = { id: 1 };
@@ -1872,7 +1872,7 @@ console.log(total); // -> 10`,
       },
       {
         heading: "Early return is the exit a method hides",
-        text: "A loop can stop the moment it finds what it needs — return from inside. That is how a hand-written indexOf works, and it is exactly the control a method that always walks the whole array never gives you.",
+        text: "A loop can stop the moment it finds what it needs — return from inside. That is how a hand-written indexOf works, and it is exactly the control this lesson's methods never give you: map, filter and reduce must visit every index by contract, so among them, the early exit is something only your own loop can do.",
         purpose: "Watch the loop stop at the first match and return the index.",
         code: `function indexOf(array, value) {
   for (var i = 0; i < array.length; i = i + 1) {
@@ -2257,7 +2257,7 @@ console.log("end");
       },
       {
         heading: "var in a loop is one binding for every timer",
-        text: "The for loop's var is created once, and the loop finishes before any timer runs. By queue time, i is 3 — and all three queued callbacks share that one binding, so they all print 3.",
+        text: "The for loop's var is created once. The loop's finish line is guaranteed: setTimeout only queues the callback, and queued callbacks wait until the stack empties (the rule the previous concept taught), so the loop always finishes first. By the time a queued callback runs, the one shared binding i holds 3 — all three queued callbacks read that one binding, so they all print 3.",
         purpose: "Watch three queued callbacks all read the loop's final value.",
         code: `for (var i = 0; i < 3; i = i + 1) {
   setTimeout(function () {
@@ -2417,7 +2417,7 @@ console.log("after");
       },
       {
         heading: "A promise is an object with a state machine inside",
-        text: "new Promise(executor) runs the executor immediately with two functions: resolve marks the state fulfilled and remembers the value; reject marks it rejected. Nothing else happens yet — the promise just holds a state and waits.",
+        text: "A promise is a three-state machine: it starts pending. new Promise(executor) runs the executor immediately with two functions: resolve marks the state fulfilled and remembers the value; reject marks it rejected. Nothing else happens yet — the promise just holds its state and waits. The first of the two to run moves it out of pending, and that move is final.",
         purpose: "Watch the executor run right away, and the reaction run after the sync code.",
         code: `var p = new Promise(function (resolve, reject) {
   console.log("executor runs now"); // synchronous — not later

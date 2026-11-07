@@ -9,6 +9,14 @@ Working rules for this repo, learned the hard way.
 - Every snippet carries a `purpose` line telling the student where to look
   before they read the code. Code comments announce output: `// -> result`.
 - Teach the model, not syntax trivia. "= never declares" beats "a = 1 is bad".
+- Terse must not mean unclear: a single-sentence concept must still be
+  self-explanatory. No dangling referents ("a method that always walks" —
+  name the methods: map/filter/reduce), no term from a later lesson without
+  a named pointer ("Symbol, lesson 12"), and every term the heading promises
+  must appear complete in the text (a "state machine" heading needs all
+  three states named, not two). When a compressed phrase hides reasoning
+  that took two facts to get ("by queue time"), expand the steps instead.
+  (All four examples come from real concept rewrites in this repo.)
 - Inline `check` questions go at the point of surprise. Quiz items are tagged
   `tests: "<concept heading>"`; the build fails if the tag does not resolve to
   this or an earlier lesson. Never test what was not taught.
