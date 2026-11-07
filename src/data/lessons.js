@@ -691,7 +691,7 @@ console.log(typeof a.count); // -> undefined`,
     tier: 0,
     sugarReplaces: "arrow functions, rest parameters, default parameters",
     intro:
-      "A function is an object with one extra ability: it can be called. That single fact explains why functions can carry properties, live in variables, travel as values — and why every real function carries an arguments object holding the values that actually arrived.",
+      "A function is an object with one extra ability: it can be called. The object half explains why functions can carry properties, live in variables and travel as values — everything { a: 1 } does too. The callable half explains the () — and why every real function carries an arguments object holding the values that actually arrived.",
     concepts: [
       {
         heading: "A function is a callable object",
@@ -705,6 +705,28 @@ console.log(typeof add); // -> function — callable, and still an object
 
 add.description = "adds two numbers"; // functions carry properties
 console.log(add.description); // -> adds two numbers`,
+      },
+      {
+        heading: "Callability is not a property",
+        text: "Every property a function owns is visible: length, name, prototype, anything you attach. Callability is not among them — it is an internal engine trait, created at function birth and impossible to list, copy or inherit. Copy every property onto a plain object and typeof still says object.",
+        purpose: "Watch every own property travel with Object.assign — while callability stays behind.",
+        code: `function add(a, b) {
+  return a + b;
+}
+add.description = "adds two numbers";
+
+console.log(Object.getOwnPropertyNames(add).sort().join(", "));
+// -> description, length, name, prototype — callability is not listed
+
+var copy = Object.assign({}, add); // copy every own property to a plain object
+console.log(copy.description); // -> adds two numbers — the properties traveled
+console.log(typeof copy); // -> object — callability did not make the trip`,
+        check: {
+          q: "var copy = Object.assign({}, add) copies a function's own properties. What does copy(1, 2) do?",
+          options: ["Returns 3 — callability was copied with the rest","TypeError — callability is an internal trait, not a property","undefined — the copy lost its body","3, but only the first time"],
+          answer: 1,
+          why: "Object.assign moves visible properties only. Callability lives in the engine's internal [[Call]] slot — typeof's \"function\" answer is the only way to ask about it — so the copy is a dead object.",
+        },
       },
       {
         heading: "Declarations hoist; expressions do not",
@@ -855,7 +877,7 @@ console.log(toArray("a", "b").length); // -> 2`,
         q: "What does typeof function () {} return?",
         options: ["\"object\"", "\"function\"", "\"callable\"", "\"undefined\""],
         answer: 1,
-        why: "typeof has a special case for callable objects and reports \"function\".",
+        why: "typeof has a special case for callable objects and reports \"function\". It is the only way to ask about callability — the trait Object.getOwnPropertyNames never lists and Object.assign can never copy.",
         tests: "A function is a callable object",
       },
       {
@@ -871,6 +893,18 @@ console.log(toArray("a", "b").length); // -> 2`,
         answer: 1,
         why: "It has length and numeric indexes but no array methods. Use Array.prototype.slice.call to convert it.",
         tests: "arguments is array-like, not an Array",
+      },
+      {
+        q: "var copy = Object.assign({}, next) copies every own property of a function. What is true of copy?",
+        options: [
+          "It is callable — all the data traveled",
+          "It carries the properties but typeof says \"object\" — callability stayed behind",
+          "It is an array-like object with a length property",
+          "The assignment throws — functions cannot be copied",
+        ],
+        answer: 1,
+        why: "Properties are visible slots; callability is an internal engine trait no copy operation reaches. The copy proves the split: object side traveled, callable side did not.",
+        tests: "Callability is not a property",
       },
       {
         q: "var alias = next; (next is a counter function). alias.count = 50; What is next.count?",
