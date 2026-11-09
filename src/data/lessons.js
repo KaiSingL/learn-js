@@ -54,7 +54,7 @@ console.log(typeof null);      // -> object — the bug. null is not an object`,
       },
       {
         heading: "= without var creates a global",
-        text: "Names live in scopes, and assignment never creates one. When = cannot find the name anywhere, it does not fail — it drops the name in the widest scope there is: as a property on the global object (globalThis). The code runs without complaint, which is exactly why this is dangerous: a typo becomes a real, working global.",
+        text: "Names live in scopes, and assignment never creates one. When = cannot find the name anywhere, it does not fail — it drops the name in the widest scope there is: as a property on the global object (globalThis). The code runs without complaint, which is exactly why this is dangerous: a typo becomes a real, working global. This lenient default has a name: sloppy mode — lesson 9 shows its opposite, \"use strict\".",
         purpose: "Watch bare assignment succeed with no declaration — and see where the name landed.",
         code: `a = 1; // no var anywhere — this still runs
 console.log(a); // -> 1
@@ -369,7 +369,7 @@ console.log(describe("hi")); // -> string`,
           "Declared a in the nearest function scope instead",
         ],
         answer: 0,
-        why: "= never declares. In sloppy mode, assigning to a name that exists nowhere creates it as a global property first, then assigns. \"use strict\" makes the same line throw a ReferenceError — that is lesson 9's subject.",
+        why: "= never declares. Sloppy mode (the default; lesson 9 names it against \"use strict\") creates a name that exists nowhere as a global property first, then assigns. \"use strict\" makes the same line throw a ReferenceError — that is lesson 9's subject.",
         tests: "= without var creates a global",
       },
       {
@@ -871,7 +871,7 @@ console.log(toArray("a", "b").length); // -> 2`,
       "Know that declarations hoist and expressions do not",
     ],
     realTalk:
-      "Arrow functions do not have their own this, arguments or prototype. A real function has all three. That is the difference the syntax was hiding.",
+      "Arrow functions (sugar this course shows only in translation) have no own this, no arguments, and no reach for the shared object every real function carries — the one lesson 5 names the prototype. A real function has all three. That is the difference the syntax was hiding.",
     quiz: [
       {
         q: "What does typeof function () {} return?",
@@ -927,7 +927,7 @@ console.log(toArray("a", "b").length); // -> 2`,
     tier: 0,
     sugarReplaces: "arrow lexical this, hidden receiver tricks",
     intro:
-      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways to set it, each with a different way of passing the rest of the arguments. And when a nested call would lose the right this, an ordinary variable holds onto it. None of these are new syntax: call, apply and bind arrive from a shared object every function uses — the prototype, named in lesson 5.",
+      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways you control here; new is the fifth, supplying this while building an object, with its own concept before its first use. And when a nested call would lose the right this, an ordinary variable holds onto it. None of these are new syntax: call, apply and bind come with every function, found on one shared object rather than written onto each one.",
     concepts: [
       {
         heading: "this is decided by the call site",
@@ -944,7 +944,7 @@ console.log(whoami());        // -> false — called on its own`,
       },
       {
         heading: "call sets this and lists arguments one by one",
-        text: "call is not syntax — it is a property that comes to a function from the outside, and the reasoning chain is: a function is an object (lesson 3), so it can carry properties; the built-in ones — call, apply, bind — are not written onto each function, they sit on one shared object that every function looks to, which is why greet.call works without anyone ever writing call onto greet; lesson 5 names that shared object — the prototype — and shows the same sharing for methods you define yourself. The method's job here: borrow the function for one invocation, the first argument becomes this, and the rest are passed on as normal comma-separated arguments.",
+        text: "call is not syntax — it is a property that comes to a function from the outside, and the reasoning chain is: a function is an object (lesson 3), so it can carry properties; the built-in ones — call, apply, bind — sit on one shared object that every function looks to, which is why greet.call works without anyone ever writing call onto greet. The method's job: borrow the function for one invocation, the first argument becomes this, and the rest are passed on as normal comma-separated arguments.",
         purpose: "Watch greet run twice with two different this objects, arguments passed one by one.",
         code: `function greet(greeting) {
   return greeting + " " + this.name;
@@ -985,8 +985,23 @@ console.log(helloAlex("Hello")); // -> Hello Alex — the lock holds
 console.log(typeof helloAlex);   // -> function — a new function, not a result`,
       },
       {
+        heading: "new builds the object, then calls the function once",
+        text: "new is another way to call a function, and one the next concept still needs: new Cat(\"Milo\") first builds a fresh object, then runs Cat once with this pointed at that fresh object, then hands the object back. The name says the two halves in order — build, then call. The full four steps, including the link every built object gets, are lesson 5's opening concept.",
+        purpose: "Watch new build first, call after, and hand the fresh object back.",
+        code: `function Cat(name) {
+  // inside a constructor body, this is the fresh object new built
+  this.name = name;
+}
+
+var milo = new Cat("Milo");
+
+console.log(milo.name);   // -> Milo
+console.log(typeof milo); // -> object — a fresh object, not a call result
+console.log(typeof Cat);  // -> function — the function stays a function`,
+      },
+      {
         heading: "var self = this keeps the call site's this",
-        text: "An inner function called on its own does not inherit the outer call's this — the call site decides, and a plain call supplies none. The fix is to capture this in an ordinary variable while it is still correct, and use that variable inside.",
+        text: "An inner function called on its own does not inherit the outer call's this — the call site decides, and a plain call supplies none. new Counter() runs Counter the new way, fresh object first, then one call with this on it (the previous concept). The fix is to capture this in an ordinary variable while it is still correct, and use that variable inside.",
         purpose: "Watch the count climb through a callback that would otherwise lose this.",
         code: `function Counter() {
   this.count = 0;
@@ -1173,7 +1188,7 @@ console.log(typeof rex); // -> object`,
       },
       {
         heading: "Prototype methods are shared, not copied",
-        text: "A method assigned to Dog.prototype exists once. Instances do not own it — reaching rex.bark walks the prototype link and finds it on the prototype. hasOwnProperty makes the split visible: name is on rex, bark is not.",
+        text: "This sharing should already feel familiar: lesson 4 found call, apply and bind worked without anyone writing them onto each function — they were found on a shared object every function looks to. That shared object has a name, the prototype, and from this lesson on the mechanism is yours to use: a method assigned to Dog.prototype exists once. Instances do not own it — reaching rex.bark walks the prototype link and finds it on the prototype. hasOwnProperty makes the split visible: name is on rex, bark is not.",
         purpose: "Watch the instance own its data but borrow its method.",
         code: `function Dog(name) {
   this.name = name;
@@ -1715,7 +1730,7 @@ console.log(obj2["42"]); // "answer" — number keys become strings too`,
     checklist: [
       "Use === instead of == to avoid coercion",
       "Remember + coerces to string when either side is a string",
-      "Object keys are always strings (or Symbols)",
+      "Object keys are always strings (Symbol is lesson 12's exception)",
       "[] == ![] is true — both sides coerce to 0",
       "A number key like obj[42] is stored as obj[\"42\"]",
       "ToPrimitive calls valueOf first for +, toString for string contexts",
@@ -2390,7 +2405,7 @@ console.log("done"); // -> done
     tier: 0,
     sugarReplaces: "async/await, implicit promise wrapping",
     intro:
-      "Asynchronous code is a function you hand to code that runs later. A promise makes that hand-off composable: an object holding a state and a list of reactions, built by an executor that runs immediately. then chains those reactions — and async/await is a different spelling of exactly that.",
+      "Asynchronous code is a function you hand to code that runs later. A promise makes that hand-off composable: an object holding a state and a list of waiting functions — the state calls them reactions — built once by the function you hand to new Promise, the executor, which runs immediately. then chains those reactions — and async/await is a different spelling of exactly that.",
     concepts: [
       {
         heading: "A callback is the function you hand to later code",
@@ -2417,7 +2432,7 @@ console.log("after");
       },
       {
         heading: "A promise is an object with a state machine inside",
-        text: "A promise is a three-state machine: it starts pending. new Promise(executor) runs the executor immediately with two functions: resolve marks the state fulfilled and remembers the value; reject marks it rejected. Nothing else happens yet — the promise just holds its state and waits. The first of the two to run moves it out of pending, and that move is final.",
+        text: "A promise is a three-state machine: it starts pending, and new Promise(executor) runs the executor immediately with two functions: resolve marks the state fulfilled and remembers the value; reject marks it rejected. Nothing else happens yet — the promise just holds its state and waits. The first of the two to run moves it out of pending, and that move is final.",
         purpose: "Watch the executor run right away, and the reaction run after the sync code.",
         code: `var p = new Promise(function (resolve, reject) {
   console.log("executor runs now"); // synchronous — not later
@@ -2441,7 +2456,7 @@ p.then(function (value) {
       },
       {
         heading: "then returns a new promise",
-        text: "then registers a reaction and returns a NEW promise — never the same one. The returned promise settles when the callback finishes: with the returned value, or with a returned promise's outcome. That hand-off is the entire chaining mechanism.",
+        text: "then registers a reaction and returns a NEW promise — never the same one. The returned promise settles when the callback finishes — settling is its one transition out of pending — with the returned value, or with a returned promise's outcome. That hand-off is the entire chaining mechanism.",
         purpose: "Watch two different promises pass one value down a chain.",
         code: `var p1 = Promise.resolve("done");
 var p2 = p1.then(function (value) {
@@ -2592,7 +2607,7 @@ delay(30).then(function (ms) {
       "Never use async or await in this course",
     ],
     realTalk:
-      "A promise is not magic and it is not a thread. It is an object with a state (pending, fulfilled, rejected) and a list of reactions that run as microtasks. async/await is just a different spelling of .then chains.",
+      "A promise is not magic and it is not a thread. It is an object with a state (pending, fulfilled, rejected) and a list of reactions that run as microtasks — queued jobs the engine runs right after your current code finishes. async/await is just a different spelling of .then chains.",
     quiz: [
       {
         q: "What does then return?",
@@ -2899,7 +2914,7 @@ console.log(ids.next()); // -> { value: 2, done: false }`,
     concepts: [
       {
         heading: "The constructor owns storage; the prototype owns methods",
-        text: "EventEmitter starts with the split every prototype lesson teaches: this.events = {} in the constructor gives each emitter its own listener map, while on, off and emit live on the prototype — one shared copy for all emitters.",
+        text: "EventEmitter starts with the split every prototype lesson teaches: this.events = {} in the constructor gives each emitter its own listener map (an object of arrays, each row a function waiting for its event), while on, off and emit live on the prototype — one shared copy for all emitters.",
         purpose: "Watch two emitters keep separate listener maps through shared methods.",
         code: `function Emitter() {
   this.events = {};
@@ -3307,7 +3322,7 @@ readAge("-3");`,
       "throw fails fast, catch recovers, finally always runs",
     ],
     realTalk:
-      "Node's EventEmitter has more methods and edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener. A Promise is the same machinery — state, reactions, resolve/reject — without the async keyword.",
+      "Node's EventEmitter has more methods and edge cases, but the core is exactly this lesson: an object of arrays and a loop that applies each listener — the function waiting for its event. A Promise is the same machinery — state, reactions, resolve/reject — without the async keyword.",
     quiz: [
       {
         q: "How does emit forward extra arguments?",
@@ -3436,7 +3451,7 @@ console.log(deep.tags === original.tags); // -> false — a brand-new branch`,
       },
       {
         heading: "JSON.parse(JSON.stringify) is not a deep copy",
-        text: "The JSON shortcut looks like a deep copy but loses its way: undefined values and functions are dropped, Dates become strings, circular references throw. It copies only what JSON can represent — not what the object holds.",
+        text: "The JSON shortcut looks like a deep copy but loses its way: undefined values and functions are dropped, Dates become strings, and an object that contains itself (a circular reference) throws. It copies only what JSON can represent — not what the object holds.",
         purpose: "Watch two properties vanish and a Date degrade through the JSON shortcut.",
         code: `var source = {
   when: new Date("2024-01-01"),
