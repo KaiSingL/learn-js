@@ -41,10 +41,15 @@ Working rules for this repo, learned the hard way.
   English, (2) names an earlier lesson taught, or (3) a name it teaches
   right now, backed by its own concept and code.
 - If a concept needs a name the reader does not have yet, first give the
-  reasoning in plain words ("one shared object every function looks to"),
-  then add a named pointer to where the real term arrives ("lesson 5 names
-  it the prototype"). Never rely on the later term alone (lesson 4's
-  call/apply/bind is the cautionary case).
+  reasoning in plain words ("one shared object every function looks to")
+  and leave the real term out until its lesson arrives; that lesson then
+  closes the loop by naming it backward ("the shared object lesson 4
+  found call on is the prototype"). A forward pointer that spends its
+  sentence promising an unused word is awkward — lesson 4's "the
+  prototype, named in lesson 5" is the cautionary case. (Why the wait:
+  for functions the word is genuinely premature — call lives on
+  Function.prototype, while a function's own .prototype is the instances'
+  object, a distinction that only makes sense in lesson 5.)
 - When a lesson builds on an earlier chain, name the step it stands on in
   the first concept that uses it ("the functions-are-objects fact from
   lesson 3"). One clause of pointer is the unit; never re-teach an earlier
