@@ -35,6 +35,25 @@ Working rules for this repo, learned the hard way.
   the lesson that can prove them). Lesson 9's `window.z` bug is the
   cautionary example.
 
+## Every name has a homeland
+
+- Teaching flows strictly forward: a concept may use only (1) ordinary
+  English, (2) names an earlier lesson taught, or (3) a name it teaches
+  right now, backed by its own concept and code.
+- If a concept needs a name the reader does not have yet, first give the
+  reasoning in plain words ("one shared object every function looks to"),
+  then add a named pointer to where the real term arrives ("lesson 5 names
+  it the prototype"). Never rely on the later term alone (lesson 4's
+  call/apply/bind is the cautionary case).
+- When a lesson builds on an earlier chain, name the step it stands on in
+  the first concept that uses it ("the functions-are-objects fact from
+  lesson 3"). One clause of pointer is the unit; never re-teach an earlier
+  lesson unless something is judged necessary.
+- Trace the chain to the bottom: the terms inside a new concept's own
+  explanation must resolve backward too. Every pointer ("Symbol, lesson
+  12", "the rule the previous concept taught") must name a real concept or
+  lesson that exists — vague toward a later lesson is a bug, not a hedge.
+
 ## Mechanical edits to structured data
 
 - When transforming lessons.js or similar, remove one field at a time with
