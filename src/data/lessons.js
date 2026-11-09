@@ -927,11 +927,11 @@ console.log(toArray("a", "b").length); // -> 2`,
     tier: 0,
     sugarReplaces: "arrow lexical this, hidden receiver tricks",
     intro:
-      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways to set it, each with a different way of passing the rest of the arguments. And when a nested call would lose the right this, an ordinary variable holds onto it.",
+      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways to set it, each with a different way of passing the rest of the arguments. And when a nested call would lose the right this, an ordinary variable holds onto it. None of these are new syntax: call, apply and bind arrive from a shared object every function uses — the prototype, named in lesson 5.",
     concepts: [
       {
         heading: "this is decided by the call site",
-        text: "A real function does not own its this. Calling through an object sets this to that object; calling the function on its own leaves this without a home (undefined in strict mode). Same function, different call sites, different this.",
+        text: "A real function does not own its this. Every call carries a this with it: the object before the dot becomes this; calling the function on its own leaves this without a home (undefined in strict mode). Same function, different call sites, different this.",
         purpose: "Watch one function answer with two different verdicts, depending on how it was called.",
         code: `function whoami() {
   return this === speaker; // in strict mode a plain call makes this undefined
@@ -944,7 +944,7 @@ console.log(whoami());        // -> false — called on its own`,
       },
       {
         heading: "call sets this and lists arguments one by one",
-        text: "call borrows the function for one invocation: the first argument becomes this, and the rest are passed on as normal comma-separated arguments.",
+        text: "call is not syntax — it is a property that comes to a function from the outside, and the reasoning chain is: a function is an object (lesson 3), so it can carry properties; the built-in ones — call, apply, bind — are not written onto each function, they sit on one shared object that every function looks to, which is why greet.call works without anyone ever writing call onto greet; lesson 5 names that shared object — the prototype — and shows the same sharing for methods you define yourself. The method's job here: borrow the function for one invocation, the first argument becomes this, and the rest are passed on as normal comma-separated arguments.",
         purpose: "Watch greet run twice with two different this objects, arguments passed one by one.",
         code: `function greet(greeting) {
   return greeting + " " + this.name;
