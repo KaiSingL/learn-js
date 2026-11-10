@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #f3f1ea;
+  --paper: #ffffff;
+  --ink: #172033;
+  --muted: #687184;
+  --line: #ddd9cf;
+  --canvas-dot: #d9d4c7;
+  --canvas-bg: #fffdf8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #11141a;
+    --paper: #1b1f29;
+    --ink: #f2f1ec;
+    --muted: #a9b0bd;
+    --line: #343a48;
+    --canvas-dot: #33394a;
+    --canvas-bg: #171a21;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Lexend", ui-sans-serif, system-ui, sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+}
+
+.font-code {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.canvas-grid {
+  background-color: var(--canvas-bg);
+  background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.node-card {
+  width: 216px;
+  height: 118px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cfc9ba;
+  border-radius: 99px;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: #3a4152;
+  }
+}

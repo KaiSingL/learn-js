@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-10T10:10:26.881Z",
+  "nodes": {
+    "L1:2": {
+      "newNames": [
+        {
+          "name": "implicit global (bare assignment)",
+          "glossed": false
+        },
+        {
+          "name": "global object",
+          "glossed": true
+        },
+        {
+          "name": "globalThis",
+          "glossed": true
+        },
+        {
+          "name": "sloppy mode",
+          "glossed": true
+        }
+      ]
+    },
+    "L2:2": {
+      "newNames": [
+        {
+          "name": "closure",
+          "glossed": false
+        },
+        {
+          "name": "garbage collector",
+          "glossed": true
+        },
+        {
+          "name": "scope chain",
+          "glossed": true
+        }
+      ]
+    },
+    "L3:1": {
+      "newNames": [
+        {
+          "name": "callability is an internal trait",
+          "glossed": false
+        },
+        {
+          "name": "Object.getOwnPropertyNames",
+          "glossed": true
+        },
+        {
+          "name": "Object.assign",
+          "glossed": true
+        }
+      ]
+    },
+    "L3:4": {
+      "newNames": [
+        {
+          "name": "array-like",
+          "glossed": false
+        },
+        {
+          "name": "Array.prototype.slice.call conversion",
+          "glossed": true
+        }
+      ]
+    },
+    "L5:0": {
+      "newNames": [
+        {
+          "name": "the four steps of new",
+          "glossed": false
+        },
+        {
+          "name": "prototype (the word lands here)",
+          "glossed": true
+        },
+        {
+          "name": "constructor object-return override",
+          "glossed": true
+        }
+      ]
+    },
+    "L5:2": {
+      "newNames": [
+        {
+          "name": "manual inheritance pattern",
+          "glossed": false
+        },
+        {
+          "name": "Object.create",
+          "glossed": false
+        },
+        {
+          "name": ".constructor property",
+          "glossed": false
+        }
+      ]
+    },
+    "L6:0": {
+      "newNames": [
+        {
+          "name": "defineProperty (the long form)",
+          "glossed": false
+        },
+        {
+          "name": "descriptor object",
+          "glossed": true
+        },
+        {
+          "name": "getOwnPropertyDescriptor",
+          "glossed": true
+        },
+        {
+          "name": "writable/enumerable/configurable flags",
+          "glossed": true
+        }
+      ]
+    },
+    "L7:3": {
+      "newNames": [
+        {
+          "name": "ToPrimitive",
+          "glossed": false
+        },
+        {
+          "name": "valueOf",
+          "glossed": true
+        },
+        {
+          "name": "toString",
+          "glossed": true
+        },
+        {
+          "name": "hint (numeric vs string)",
+          "glossed": true
+        }
+      ]
+    },
+    "L9:1": {
+      "newNames": [
+        {
+          "name": "\"use strict\" directive",
+          "glossed": false
+        },
+        {
+          "name": "ReferenceError (named here, thrown for real)",
+          "glossed": true
+        }
+      ]
+    },
+    "L10:0": {
+      "newNames": [
+        {
+          "name": "call stack",
+          "glossed": false
+        },
+        {
+          "name": "setTimeout (used one section early)",
+          "glossed": true
+        }
+      ]
+    },
+    "L10:1": {
+      "newNames": [
+        {
+          "name": "queue-before-run",
+          "glossed": false
+        },
+        {
+          "name": "setTimeout",
+          "glossed": true
+        },
+        {
+          "name": "event loop",
+          "glossed": true
+        }
+      ]
+    },
+    "L11:1": {
+      "newNames": [
+        {
+          "name": "promise (object with state machine)",
+          "glossed": false
+        },
+        {
+          "name": "executor",
+          "glossed": true
+        },
+        {
+          "name": "resolve / reject",
+          "glossed": true
+        },
+        {
+          "name": "pending / fulfilled / rejected",
+          "glossed": true
+        },
+        {
+          "name": "then (first appearance)",
+          "glossed": true
+        }
+      ]
+    },
+    "L12:3": {
+      "newNames": [
+        {
+          "name": "Symbol.iterator key",
+          "glossed": false
+        },
+        {
+          "name": "Symbol (the primitive, never taught)",
+          "glossed": true
+        },
+        {
+          "name": "for...of",
+          "glossed": true
+        }
+      ]
+    },
+    "L13:5": {
+      "newNames": [
+        {
+          "name": "try / catch / finally",
+          "glossed": false
+        },
+        {
+          "name": "throw",
+          "glossed": false
+        },
+        {
+          "name": "custom error via prototype link",
+          "glossed": false
+        }
+      ]
+    },
+    "L14:2": {
+      "newNames": [
+        {
+          "name": "deep copy",
+          "glossed": false
+        },
+        {
+          "name": "recursion (never taught)",
+          "glossed": false
+        },
+        {
+          "name": "Array.isArray",
+          "glossed": true
+        }
+      ]
+    }
+  },
+  "overrides": {
+    "L4:5": "consolidation",
+    "L9:0": "consolidation",
+    "L10:2": "consolidation",
+    "L10:3": "consolidation",
+    "L12:1": "consolidation",
+    "L12:4": "consolidation",
+    "L13:0": "consolidation",
+    "L13:1": "consolidation",
+    "L13:4": "consolidation"
+  },
+  "edges": [
+    {
+      "from": "L3:4",
+      "to": "L4:1",
+      "names": [
+        "call"
+      ]
+    },
+    {
+      "from": "L3:4",
+      "to": "L5:1",
+      "names": [
+        "prototype"
+      ]
+    },
+    {
+      "from": "L9:1",
+      "to": "L13:5",
+      "names": [
+        "try/catch"
+      ]
+    },
+    {
+      "from": "L5:2",
+      "to": null,
+      "names": [
+        "Object.create"
+      ]
+    },
+    {
+      "from": "L5:2",
+      "to": null,
+      "names": [
+        ".constructor"
+      ]
+    },
+    {
+      "from": "L14:2",
+      "to": null,
+      "names": [
+        "recursion"
+      ]
+    },
+    {
+      "from": "L10:0",
+      "to": "L10:1",
+      "names": [
+        "setTimeout"
+      ]
+    }
+  ],
+  "layout": {
+    "positions": {},
+    "collapsedLessons": []
+  }
+}

@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "studio:merge": "node scripts/studio.mjs merge",
+    "studio:validate": "node scripts/studio.mjs validate",
+    "studio:build": "vite build --config vite.studio.config.js"
   },
   "dependencies": {
     "react": "18.3.1",
