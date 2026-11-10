@@ -1,5 +1,7 @@
 # Teach `new` Before Its First Use (lesson 4 new concept)
 
+> Superseded 2026-11-07: executed, then rethought with the author — the lesson 4 concept was removed and `new`'s homeland is now lesson 5 concept 1 ("new builds the object in four steps"), which carries the full behavior including the object-return rule. Lesson 4's var-self concept no longer uses `new` (plain-object counter with a detached inner call). This document is kept for the decision trail.
+
 > **For Hermes:** Execute task-by-task; content rules live in AGENTS.md and the learn-js-dev skill.
 
 **Goal:** `new` becomes a taught keyword before lesson 4 concept 5 (`var self = this`) uses `new Counter()` in its code. Today its mechanic is taught in lesson 5 concept 1, so the first use predates its homeland.

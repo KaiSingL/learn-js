@@ -927,7 +927,7 @@ console.log(toArray("a", "b").length); // -> 2`,
     tier: 0,
     sugarReplaces: "arrow lexical this, hidden receiver tricks",
     intro:
-      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways you control here; new is the fifth, supplying this while building an object, with its own concept before its first use. And when a nested call would lose the right this, an ordinary variable holds onto it. Of the five, only new is syntax; call, apply and bind come with every function, found on one shared object rather than written onto each one.",
+      "A real function does not own this — every call supplies it. The object before the dot, call, apply or bind: four ways to set it, each with a different way of passing the rest of the arguments. And when a nested call would lose the right this, an ordinary variable holds onto it. None of these are new syntax: call, apply and bind come with every function, found on one shared object rather than written onto each one.",
     concepts: [
       {
         heading: "this is decided by the call site",
@@ -985,24 +985,6 @@ console.log(helloAlex("Hello")); // -> Hello Alex — the lock holds
 console.log(typeof helloAlex);   // -> function — a new function, not a result`,
       },
       {
-        heading: "new builds the object, then calls the function once",
-        text: "new is another way to call a function: new Cat(\"Milo\") works in two ordered halves — first it builds a fresh object, then it calls Cat once with this pointed at that fresh object, so every property the function writes on this lands on the object it just built. When the function does not return an object of its own, the whole new Cat(\"Milo\") expression is the built object — an ordinary call hands back the return value, new hands back the built object. Each call builds its own object; one call's writes never land on the other's. The link every built object gets is lesson 5's opening concept, together with what happens on an object return.",
-        purpose: "Watch new build first, call after, and hand the fresh object back.",
-        code: `function Cat(name) {
-  // inside this call, this is the fresh object new built
-  this.name = name;
-}
-
-var milo = new Cat("Milo");
-var nub = new Cat("Nub");
-
-console.log(milo.name);    // -> Milo
-console.log(nub.name);     // -> Nub — the next call built its own object
-console.log(milo === nub); // -> false — two calls, two fresh objects
-console.log(typeof milo);  // -> object — the built object, not a call result
-console.log(typeof Cat);   // -> function — the function itself stays a function`,
-      },
-      {
         heading: "Borrowing a method with call",
         text: "A method is just a function stored on an object — any object with a matching shape can lend itself as this. call lets a different object run someone else's method without copying the code.",
         purpose: "Watch a quiet object borrow a speaker's method — no copying, just call.",
@@ -1020,25 +1002,27 @@ console.log(speaker.speak("hi")); // -> Nova: hi — the original is untouched`,
       },
       {
         heading: "var self = this keeps the call site's this",
-        text: "An inner function called on its own does not inherit the outer call's this — the call site decides, and a plain call supplies none. new Counter() runs Counter the new way, fresh object first, then one call with this on it (the new concept, two back). The fix is to capture this in an ordinary variable while it is still correct, and use that variable inside.",
-        purpose: "Watch the count climb through a callback that would otherwise lose this.",
-        code: `function Counter() {
-  this.count = 0;
-  var self = this;
-  this.inc = function () {
-    self.count = self.count + 1;
-  };
-}
+        text: "An inner function called on its own does not inherit the outer call's this — the call site decides, and a plain call supplies none. The fix is to capture this in an ordinary variable while it is still correct, and use that variable inside.",
+        purpose: "Watch a detached inner call keep writing on the object thanks to self.",
+        code: `var counter = {
+  count: 0,
+  bump: function () {
+    var self = this;
+    var step = function () {
+      self.count = self.count + 1;
+    };
+    step(); // a plain inner call — this would be lost here, self keeps it
+  },
+};
 
-var counter = new Counter();
-counter.inc();
-counter.inc();
-console.log(counter.count); // -> 2 — self kept the call site's this`,
+counter.bump();
+counter.bump();
+console.log(counter.count); // -> 2 — self carried this through the plain calls`,
         check: {
-          q: "Why capture var self = this inside the function new calls?",
+          q: "Why capture var self = this before the inner call?",
           options: ["An inner plain call would not inherit this from the method call","this is undefined inside every function body","self becomes a private property of the object","It copies the whole object for safety"],
           answer: 0,
-          why: "this is decided per call. Inside this.inc it still points at the object, but a nested plain call would not — self freezes the value while it is correct.",
+          why: "this is decided per call. Inside the method it still points at the object, but the inner plain call would not — self freezes the value while it is correct.",
         },
       },
     ],
@@ -1107,7 +1091,6 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
       "call passes arguments one by one",
       "apply passes an array-like second argument",
       "bind returns a new function and does not call it",
-      "new builds a fresh object and calls the function once with this on it",
       "Store var self = this before a callback",
     ],
     realTalk:
@@ -1171,7 +1154,7 @@ console.log(detached.call({ name: "Borrowed" }, "works")); // -> Borrowed: works
     concepts: [
       {
         heading: "new builds the object in four steps",
-        text: "Lesson 4 saw two halves — build, then call; the full count is four steps: new Dog(\"Rex\") creates a fresh object, links it to Dog.prototype (the link lesson 4 deferred to here), calls Dog with this set to that object, and — unless the constructor returns its own object, in which case that returned object is what new hands back — hands the new object back. Everything the constructor writes on this lands on the fresh object.",
+        text: "new Dog(\"Rex\") does four things in order: it creates a fresh object, links it to Dog.prototype, calls Dog once with this set to that object, and — unless the constructor returns an object of its own, in which case that returned object is what new hands back — hands the fresh object back. Everything the constructor writes on this lands on the fresh object.",
         purpose: "Watch the constructor's this become the returned instance.",
         code: `function Dog(name) {
   // new made the object and set this to it:
