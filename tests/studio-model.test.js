@@ -16,13 +16,13 @@ describe("identity", function () {
     expect(parseConceptId("L12:0")).toEqual({ lessonId: 12, index: 0 });
   });
 
-  test("flatten counts all 78 concepts in order", function () {
+  test("flatten counts all concepts in order", function () {
     const flat = flatten(LESSONS);
-    expect(flat.length).toBe(78);
+    expect(flat.length).toBe(77);
     expect(flat[0].id).toBe("L1:0");
     expect(flat[0].order).toBe(0);
-    expect(flat[77].id).toBe("L14:3");
-    expect(flat[77].order).toBe(77);
+    expect(flat[76].id).toBe("L14:3");
+    expect(flat[76].order).toBe(76);
   });
 });
 

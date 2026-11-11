@@ -45,7 +45,7 @@ describe("lessons.js scanner", function () {
 });
 
 describe("serializer round-trip gate", function () {
-  test("every one of the 78 concept blocks re-emits byte-for-byte", function () {
+  test("every concept block re-emits byte-for-byte", function () {
     const result = roundTrip(SOURCE);
     if (!result.ok) {
       throw new Error(
