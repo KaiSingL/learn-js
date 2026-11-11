@@ -317,11 +317,11 @@
         },
         {
           "name": "Object.create",
-          "glossed": false
+          "glossed": true
         },
         {
           "name": ".constructor property",
-          "glossed": false
+          "glossed": true
         }
       ]
     },
@@ -356,34 +356,6 @@
         },
         {
           "name": "writable/enumerable/configurable flags",
-          "glossed": true
-        }
-      ]
-    },
-    "L6:1": {
-      "newNames": [
-        {
-          "name": "flag defaults (false)",
-          "glossed": false
-        }
-      ]
-    },
-    "L6:2": {
-      "newNames": [
-        {
-          "name": "non-writable property",
-          "glossed": false
-        }
-      ]
-    },
-    "L6:3": {
-      "newNames": [
-        {
-          "name": "enumerable",
-          "glossed": false
-        },
-        {
-          "name": "Object.keys",
           "glossed": true
         }
       ]
@@ -734,11 +706,11 @@
         },
         {
           "name": "throw",
-          "glossed": false
+          "glossed": true
         },
         {
           "name": "custom error via prototype link",
-          "glossed": false
+          "glossed": true
         }
       ]
     },
@@ -765,8 +737,8 @@
           "glossed": false
         },
         {
-          "name": "recursion (never taught)",
-          "glossed": false
+          "name": "recursion (the function calls itself)",
+          "glossed": true
         },
         {
           "name": "Array.isArray",
@@ -787,6 +759,38 @@
         {
           "name": "Date (built-in)",
           "glossed": true
+        }
+      ]
+    },
+    "L6:1": {
+      "newNames": [
+        {
+          "name": "Object.keys",
+          "glossed": false
+        },
+        {
+          "name": "enumerable",
+          "glossed": true
+        }
+      ]
+    },
+    "L6:2": {
+      "newNames": [
+        {
+          "name": "flag defaults (false)",
+          "glossed": false
+        },
+        {
+          "name": "for-in (named, loop over keys)",
+          "glossed": true
+        }
+      ]
+    },
+    "L6:3": {
+      "newNames": [
+        {
+          "name": "non-writable property",
+          "glossed": false
         }
       ]
     }
@@ -833,27 +837,6 @@
       ]
     },
     {
-      "from": "L5:2",
-      "to": null,
-      "names": [
-        "Object.create"
-      ]
-    },
-    {
-      "from": "L5:2",
-      "to": null,
-      "names": [
-        ".constructor"
-      ]
-    },
-    {
-      "from": "L14:2",
-      "to": null,
-      "names": [
-        "recursion"
-      ]
-    },
-    {
       "from": "L10:0",
       "to": "L10:1",
       "names": [
@@ -893,20 +876,6 @@
       "to": "L9:3",
       "names": [
         "configurable"
-      ]
-    },
-    {
-      "from": "L6:1",
-      "to": "L6:3",
-      "names": [
-        "Object.keys"
-      ]
-    },
-    {
-      "from": "L6:2",
-      "to": "L6:3",
-      "names": [
-        "Object.keys"
       ]
     },
     {

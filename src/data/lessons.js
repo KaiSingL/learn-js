@@ -182,7 +182,7 @@ if (empty !== undefined) {
       },
       {
         heading: "NaN is the number that is not equal to itself",
-        text: "NaN is what a failed number operation produces, like 0 / 0. Its type is still \"number\". It is the only value in JavaScript that is not equal to itself, so the reliable test is value !== value.",
+        text: "NaN is what a failed number operation produces, like 0 / 0. Its type is still \"number\". It is the only value in JavaScript that is not equal to itself, so the reliable test is value !== value — not-equal, compared with no conversion; the full equality rules are lesson 7's subject.",
         purpose: "Watch NaN fail every equality check, even against itself.",
         code: `var broken = 0 / 0;
 console.log(broken);            // -> NaN
@@ -243,7 +243,7 @@ console.log(letters); // -> ["a", "b", "c"] — the original array grew too`,
       },
       {
         heading: "=== on objects compares references, not contents",
-        text: "=== on primitives compares values. On objects it compares references: two separately created objects are never equal, even when every property matches. Same reference, equal; different references, not equal — contents are irrelevant.",
+        text: "=== on primitives compares values. On objects it compares references: two separately created objects are never equal, even when every property matches. Same reference, equal; different references, not equal — contents are irrelevant. (=== itself is lesson 7's subject; here it only needs to mean \"no conversion\".)",
         purpose: "Watch identical contents fail === while a shared reference passes.",
         code: `var obj1 = { x: 1 };
 var obj2 = { x: 1 };
@@ -1193,7 +1193,7 @@ console.log(rex.hasOwnProperty("bark")); // -> false — lives on the prototype`
       },
       {
         heading: "Inheritance: link prototypes, then repair the constructor",
-        text: "Student inherits by calling the parent constructor for its own state (Person.call(this, name)) and replacing its prototype with an object linked to the parent's (Object.create(Person.prototype)). The constructor property is then repaired, because replacing the prototype destroyed it.",
+        text: "Student inherits by calling the parent constructor for its own state (Person.call(this, name)) and replacing its prototype with an object linked to the parent's (Object.create(parent) builds an empty object that looks to parent — the same prototype link, used by hand). The constructor property is then repaired — each prototype keeps a back-pointer to the function that built it — because replacing the prototype destroyed it.",
         purpose: "Watch a Student answer both a Person call and its own, through one chain.",
         code: `function Person(name) {
   this.name = name;
@@ -1411,6 +1411,17 @@ console.log(descriptor.enumerable); // -> true
 console.log(descriptor.configurable); // -> true`,
       },
       {
+        heading: "Object.keys lists enumerable own properties only",
+        text: "Object.keys walks the object's own properties and keeps exactly the enumerable ones. Enumerable is a property flag, not a judgment: defineProperty controls it, and inherited properties never leak in — only own properties qualify.",
+        purpose: "Watch one flag decide whether a property appears.",
+        code: `var visible = { a: 1 };
+Object.defineProperty(visible, "b", { value: 2, enumerable: true });
+Object.defineProperty(visible, "c", { value: 3, enumerable: false });
+
+console.log(Object.keys(visible)); // -> ["a","b"] — c exists but hides
+console.log(visible.c); // -> 3 — still there when read directly`,
+      },
+      {
         heading: "Missing flags default to false",
         text: "defineProperty with only a value leaves every flag false. The property exists and reads fine — but it cannot be written, it hides from Object.keys and for-in, and it cannot be deleted or redefined.",
         purpose: "Watch a defined property exist, read — and stay invisible to Object.keys.",
@@ -1442,17 +1453,6 @@ Object.defineProperty(config, "version", {
 config.version = 3;
 console.log(config.version); // -> 2 — the write was ignored
 console.log(Object.keys(config)); // -> ["version"] — enumerable this time`,
-      },
-      {
-        heading: "Object.keys lists enumerable own properties only",
-        text: "Object.keys walks the object's own properties and keeps exactly the enumerable ones. Enumerable is a property flag, not a judgment: defineProperty controls it, and inherited properties never leak in — only own properties qualify.",
-        purpose: "Watch one flag decide whether a property appears.",
-        code: `var visible = { a: 1 };
-Object.defineProperty(visible, "b", { value: 2, enumerable: true });
-Object.defineProperty(visible, "c", { value: 3, enumerable: false });
-
-console.log(Object.keys(visible)); // -> ["a","b"] — c exists but hides
-console.log(visible.c); // -> 3 — still there when read directly`,
       },
       {
         heading: "Accessors are get and set instead of value and writable",
@@ -3413,7 +3413,7 @@ console.log(shallow.tags === original.tags); // -> true — one array, two shell
       },
       {
         heading: "A deep copy clones every branch",
-        text: "A deep copy recurses: primitives copy as-is, arrays clone element by element, plain objects clone key by key. Nothing is shared afterwards — changing the copy can never reach the original, at any depth.",
+        text: "A deep copy recurses — the function calls itself on every nested value: primitives copy as-is, arrays clone element by element, plain objects clone key by key. Nothing is shared afterwards — changing the copy can never reach the original, at any depth.",
         purpose: "Watch the deep clone mutate freely while the original stands still.",
         code: `function deepCopy(value) {
   if (value === null || typeof value !== "object") {
