@@ -1,7 +1,27 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-10T10:10:26.881Z",
+  "updatedAt": "2026-11-11T10:57:39.859Z",
   "nodes": {
+    "L1:0": {
+      "newNames": [
+        {
+          "name": "var declaration (= assignment)",
+          "glossed": false
+        }
+      ]
+    },
+    "L1:1": {
+      "newNames": [
+        {
+          "name": "typeof",
+          "glossed": false
+        },
+        {
+          "name": "typeof null returns object (the 1995 bug)",
+          "glossed": true
+        }
+      ]
+    },
     "L1:2": {
       "newNames": [
         {
@@ -22,6 +42,92 @@
         }
       ]
     },
+    "L1:3": {
+      "newNames": [
+        {
+          "name": "function scope for var",
+          "glossed": false
+        }
+      ]
+    },
+    "L1:4": {
+      "newNames": []
+    },
+    "L1:5": {
+      "newNames": [
+        {
+          "name": "window",
+          "glossed": true
+        },
+        {
+          "name": "self (worker-side)",
+          "glossed": true
+        }
+      ]
+    },
+    "L1:6": {
+      "newNames": [
+        {
+          "name": "undefined",
+          "glossed": false
+        },
+        {
+          "name": "null",
+          "glossed": true
+        }
+      ]
+    },
+    "L1:7": {
+      "newNames": [
+        {
+          "name": "NaN",
+          "glossed": false
+        },
+        {
+          "name": "value !== value test",
+          "glossed": true
+        }
+      ]
+    },
+    "L1:8": {
+      "newNames": [
+        {
+          "name": "value copy (primitives)",
+          "glossed": false
+        }
+      ]
+    },
+    "L1:9": {
+      "newNames": [
+        {
+          "name": "reference copy",
+          "glossed": false
+        }
+      ]
+    },
+    "L1:10": {
+      "newNames": [
+        {
+          "name": "reference equality",
+          "glossed": false
+        }
+      ]
+    },
+    "L2:0": {
+      "newNames": [
+        {
+          "name": "hoisting",
+          "glossed": false
+        },
+        {
+          "name": "undefined as the default binding state",
+          "glossed": true
+        }
+      ]
+    },
+    "L2:1": {
+      "newNames": []
+    },
     "L2:2": {
       "newNames": [
         {
@@ -35,6 +141,45 @@
         {
           "name": "scope chain",
           "glossed": true
+        }
+      ]
+    },
+    "L2:3": {
+      "newNames": []
+    },
+    "L2:4": {
+      "newNames": [
+        {
+          "name": "IIFE",
+          "glossed": false
+        },
+        {
+          "name": "immediately invoked (spelled out)",
+          "glossed": true
+        }
+      ]
+    },
+    "L2:5": {
+      "newNames": [
+        {
+          "name": "let",
+          "glossed": false
+        },
+        {
+          "name": "temporal dead zone (full term + abbreviation)",
+          "glossed": true
+        },
+        {
+          "name": "block scope",
+          "glossed": true
+        }
+      ]
+    },
+    "L3:0": {
+      "newNames": [
+        {
+          "name": "function object",
+          "glossed": false
         }
       ]
     },
@@ -54,6 +199,22 @@
         }
       ]
     },
+    "L3:2": {
+      "newNames": [
+        {
+          "name": "function expression",
+          "glossed": false
+        }
+      ]
+    },
+    "L3:3": {
+      "newNames": [
+        {
+          "name": "arguments",
+          "glossed": false
+        }
+      ]
+    },
     "L3:4": {
       "newNames": [
         {
@@ -63,6 +224,56 @@
         {
           "name": "Array.prototype.slice.call conversion",
           "glossed": true
+        }
+      ]
+    },
+    "L3:5": {
+      "newNames": []
+    },
+    "L4:0": {
+      "newNames": [
+        {
+          "name": "this",
+          "glossed": false
+        }
+      ]
+    },
+    "L4:1": {
+      "newNames": [
+        {
+          "name": "call",
+          "glossed": false
+        },
+        {
+          "name": "shared object every function looks to (plain words)",
+          "glossed": true
+        }
+      ]
+    },
+    "L4:2": {
+      "newNames": [
+        {
+          "name": "apply",
+          "glossed": false
+        }
+      ]
+    },
+    "L4:3": {
+      "newNames": [
+        {
+          "name": "bind",
+          "glossed": false
+        }
+      ]
+    },
+    "L4:4": {
+      "newNames": []
+    },
+    "L4:5": {
+      "newNames": [
+        {
+          "name": "self capture",
+          "glossed": false
         }
       ]
     },
@@ -78,6 +289,22 @@
         },
         {
           "name": "constructor object-return override",
+          "glossed": true
+        }
+      ]
+    },
+    "L5:1": {
+      "newNames": [
+        {
+          "name": "prototype",
+          "glossed": false
+        },
+        {
+          "name": "prototype link",
+          "glossed": true
+        },
+        {
+          "name": "hasOwnProperty",
           "glossed": true
         }
       ]
@@ -98,6 +325,21 @@
         }
       ]
     },
+    "L5:3": {
+      "newNames": [
+        {
+          "name": "instanceof",
+          "glossed": false
+        },
+        {
+          "name": "prototype chain",
+          "glossed": true
+        }
+      ]
+    },
+    "L5:4": {
+      "newNames": []
+    },
     "L6:0": {
       "newNames": [
         {
@@ -114,6 +356,78 @@
         },
         {
           "name": "writable/enumerable/configurable flags",
+          "glossed": true
+        }
+      ]
+    },
+    "L6:1": {
+      "newNames": [
+        {
+          "name": "flag defaults (false)",
+          "glossed": false
+        }
+      ]
+    },
+    "L6:2": {
+      "newNames": [
+        {
+          "name": "non-writable property",
+          "glossed": false
+        }
+      ]
+    },
+    "L6:3": {
+      "newNames": [
+        {
+          "name": "enumerable",
+          "glossed": false
+        },
+        {
+          "name": "Object.keys",
+          "glossed": true
+        }
+      ]
+    },
+    "L6:4": {
+      "newNames": [
+        {
+          "name": "accessor property",
+          "glossed": false
+        },
+        {
+          "name": "getter/setter machinery",
+          "glossed": true
+        }
+      ]
+    },
+    "L7:0": {
+      "newNames": [
+        {
+          "name": "coercion (+ concatenation rule)",
+          "glossed": false
+        }
+      ]
+    },
+    "L7:1": {
+      "newNames": [
+        {
+          "name": "== (loose equality)",
+          "glossed": false
+        },
+        {
+          "name": "=== (strict, named here)",
+          "glossed": true
+        }
+      ]
+    },
+    "L7:2": {
+      "newNames": [
+        {
+          "name": "string keys",
+          "glossed": false
+        },
+        {
+          "name": "Symbol (pointer to lesson 12)",
           "glossed": true
         }
       ]
@@ -138,6 +452,77 @@
         }
       ]
     },
+    "L7:4": {
+      "newNames": [
+        {
+          "name": "wrapper object",
+          "glossed": false
+        },
+        {
+          "name": "new String (sugar)",
+          "glossed": true
+        }
+      ]
+    },
+    "L8:0": {
+      "newNames": [
+        {
+          "name": "index append (arr[arr.length])",
+          "glossed": false
+        },
+        {
+          "name": "length as the append boundary",
+          "glossed": true
+        }
+      ]
+    },
+    "L8:1": {
+      "newNames": [
+        {
+          "name": "map",
+          "glossed": false
+        },
+        {
+          "name": "allocation (plain word)",
+          "glossed": true
+        }
+      ]
+    },
+    "L8:2": {
+      "newNames": [
+        {
+          "name": "filter",
+          "glossed": false
+        }
+      ]
+    },
+    "L8:3": {
+      "newNames": [
+        {
+          "name": "reduce",
+          "glossed": false
+        },
+        {
+          "name": "accumulator",
+          "glossed": true
+        }
+      ]
+    },
+    "L8:4": {
+      "newNames": [
+        {
+          "name": "early return",
+          "glossed": false
+        },
+        {
+          "name": "indexOf (hand-written)",
+          "glossed": true
+        }
+      ]
+    },
+    "L9:0": {
+      "newNames": []
+    },
     "L9:1": {
       "newNames": [
         {
@@ -146,6 +531,25 @@
         },
         {
           "name": "ReferenceError (named here, thrown for real)",
+          "glossed": true
+        }
+      ]
+    },
+    "L9:2": {
+      "newNames": []
+    },
+    "L9:3": {
+      "newNames": [
+        {
+          "name": "delete",
+          "glossed": false
+        },
+        {
+          "name": "TypeError",
+          "glossed": true
+        },
+        {
+          "name": "configurable (first real use)",
           "glossed": true
         }
       ]
@@ -178,6 +582,24 @@
         }
       ]
     },
+    "L10:2": {
+      "newNames": []
+    },
+    "L10:3": {
+      "newNames": []
+    },
+    "L11:0": {
+      "newNames": [
+        {
+          "name": "callback",
+          "glossed": false
+        },
+        {
+          "name": "(err, value) convention",
+          "glossed": true
+        }
+      ]
+    },
     "L11:1": {
       "newNames": [
         {
@@ -202,6 +624,60 @@
         }
       ]
     },
+    "L11:2": {
+      "newNames": [
+        {
+          "name": "new promise per then",
+          "glossed": false
+        },
+        {
+          "name": "settling (defined here)",
+          "glossed": true
+        }
+      ]
+    },
+    "L11:3": {
+      "newNames": [
+        {
+          "name": "catch",
+          "glossed": false
+        },
+        {
+          "name": "rejection reaction",
+          "glossed": true
+        }
+      ]
+    },
+    "L11:4": {
+      "newNames": []
+    },
+    "L12:0": {
+      "newNames": [
+        {
+          "name": "iterator protocol",
+          "glossed": false
+        },
+        {
+          "name": "next / done pair",
+          "glossed": true
+        }
+      ]
+    },
+    "L12:1": {
+      "newNames": []
+    },
+    "L12:2": {
+      "newNames": [
+        {
+          "name": "generator",
+          "glossed": false
+        },
+        {
+          "name": "function* / yield (sugar, translated)",
+          "glossed": true
+        }
+      ]
+    },
     "L12:3": {
       "newNames": [
         {
@@ -218,6 +694,38 @@
         }
       ]
     },
+    "L12:4": {
+      "newNames": []
+    },
+    "L13:0": {
+      "newNames": []
+    },
+    "L13:1": {
+      "newNames": []
+    },
+    "L13:2": {
+      "newNames": [
+        {
+          "name": "splice (named, not taught)",
+          "glossed": true
+        }
+      ]
+    },
+    "L13:3": {
+      "newNames": [
+        {
+          "name": "once",
+          "glossed": false
+        },
+        {
+          "name": "wrapper function",
+          "glossed": true
+        }
+      ]
+    },
+    "L13:4": {
+      "newNames": []
+    },
     "L13:5": {
       "newNames": [
         {
@@ -230,6 +738,22 @@
         },
         {
           "name": "custom error via prototype link",
+          "glossed": false
+        }
+      ]
+    },
+    "L14:0": {
+      "newNames": [
+        {
+          "name": "shell (the shared reference)",
+          "glossed": false
+        }
+      ]
+    },
+    "L14:1": {
+      "newNames": [
+        {
+          "name": "shallow copy",
           "glossed": false
         }
       ]
@@ -249,13 +773,37 @@
           "glossed": true
         }
       ]
+    },
+    "L14:3": {
+      "newNames": [
+        {
+          "name": "JSON round-trip copy",
+          "glossed": false
+        },
+        {
+          "name": "circular reference",
+          "glossed": true
+        },
+        {
+          "name": "Date (built-in)",
+          "glossed": true
+        }
+      ]
     }
   },
   "overrides": {
+    "L1:4": "consolidation",
+    "L1:5": "consolidation",
+    "L2:1": "consolidation",
+    "L2:3": "consolidation",
+    "L3:5": "consolidation",
     "L4:4": "consolidation",
+    "L5:4": "consolidation",
     "L9:0": "consolidation",
+    "L9:2": "consolidation",
     "L10:2": "consolidation",
     "L10:3": "consolidation",
+    "L11:4": "consolidation",
     "L12:1": "consolidation",
     "L12:4": "consolidation",
     "L13:0": "consolidation",
@@ -310,6 +858,62 @@
       "to": "L10:1",
       "names": [
         "setTimeout"
+      ]
+    },
+    {
+      "from": "L1:7",
+      "to": "L7:1",
+      "names": [
+        "!=="
+      ]
+    },
+    {
+      "from": "L1:9",
+      "to": "L7:1",
+      "names": [
+        "==="
+      ]
+    },
+    {
+      "from": "L1:10",
+      "to": "L7:1",
+      "names": [
+        "==="
+      ]
+    },
+    {
+      "from": "L4:0",
+      "to": "L9:1",
+      "names": [
+        "strict mode (code comment)"
+      ]
+    },
+    {
+      "from": "L6:0",
+      "to": "L9:3",
+      "names": [
+        "configurable"
+      ]
+    },
+    {
+      "from": "L6:1",
+      "to": "L6:3",
+      "names": [
+        "Object.keys"
+      ]
+    },
+    {
+      "from": "L6:2",
+      "to": "L6:3",
+      "names": [
+        "Object.keys"
+      ]
+    },
+    {
+      "from": "L7:2",
+      "to": "L12:3",
+      "names": [
+        "Symbol"
       ]
     }
   ],
