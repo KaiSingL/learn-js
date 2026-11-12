@@ -7,6 +7,7 @@ import Canvas from "./Canvas.jsx";
 import Outline from "./Outline.jsx";
 import Inspector from "./Inspector.jsx";
 import ChecksPanel from "./ChecksPanel.jsx";
+import studioIcon from "./icon.png";
 
 const NODE_W = 216;
 const NODE_H = 118;
@@ -533,7 +534,7 @@ export default function Studio() {
     <div className="h-screen w-screen flex flex-col overflow-hidden select-none" style={{ minWidth: 1080 }}>
       <header className="shrink-0 bg-cs-paper border-b border-cs-line px-4 py-2 flex flex-wrap items-center gap-2 z-30">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white grid place-items-center font-bold font-display">CS</div>
+          <img src={studioIcon} alt="" className="w-9 h-9 rounded-xl" />
           <div className="min-w-0">
             <h1 className="font-display text-lg font-bold leading-none tracking-tight">Concept Studio</h1>
             <p className="text-[11px] text-cs-muted mt-0.5">
