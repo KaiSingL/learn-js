@@ -76,7 +76,7 @@ export default function Outline(props) {
         return (
           <div key={lesson.id} className="mb-1.5">
             <button
-              className="w-full flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-slate-50 text-left"
+              className="w-full flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-700 text-left"
               onClick={function () { setOpenLesson(open ? -1 : li); }}
             >
               <span className="text-[10px] font-code font-bold text-slate-400 w-7 shrink-0">L{lesson.id}</span>
@@ -99,7 +99,7 @@ export default function Outline(props) {
                     onPointerDown={function (e) { rowPointerDown(e, li, ci); }}
                     className={
                       "group flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-md cursor-pointer text-[12px] " +
-                      (isSel ? "bg-indigo-50 ring-1 ring-indigo-300" : "hover:bg-slate-50") +
+                      (isSel ? "bg-indigo-50 text-slate-700 ring-1 ring-indigo-300" : "hover:bg-slate-50 hover:text-slate-700") +
                       (isOver ? " border-t-2 border-indigo-500" : "")
                     }
                   >
