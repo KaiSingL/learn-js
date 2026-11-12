@@ -2,27 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme tokens — the only colors studio components may use (enforced by
+  tests/studio-theme.test.js). Two families:
+
+  Paper family flips with dark mode. Anything sitting directly on a panel,
+  header, card or the canvas uses it: cs-paper (surface), cs-ink (primary
+  text), cs-muted (secondary text), cs-faint (tertiary text), cs-line
+  (hairline borders).
+
+  Chip family is light in BOTH modes — floating controls, toolbar buttons,
+  selects and badges keep their white-chip look on the dark theme. A chip
+  must always pair with its own inks: cs-chip (surface), cs-chip-soft
+  (soft/hover surface), cs-chip-line / cs-chip-edge (borders), cs-chip-ink
+  (primary text), cs-chip-muted (secondary text), cs-chip-faint (tertiary
+  text), cs-chip-strong / cs-chip-strong-ink (solid dark chip, e.g. the
+  active tab).
+
+  Accent colors (indigo, rose, amber, emerald) are exempt: their pairs
+  (X-50 bg + X-200 border + X-700/800 text) are self-consistent in both
+  modes.
+*/
 :root {
   color-scheme: light;
-  --surface: #f3f1ea;
-  --paper: #ffffff;
-  --ink: #172033;
-  --muted: #687184;
-  --line: #ddd9cf;
-  --canvas-dot: #d9d4c7;
-  --canvas-bg: #fffdf8;
+  --cs-surface: #f3f1ea;
+  --cs-paper: #ffffff;
+  --cs-ink: #172033;
+  --cs-muted: #687184;
+  --cs-faint: #94a3b8;
+  --cs-line: #ddd9cf;
+  --cs-canvas-dot: #d9d4c7;
+  --cs-canvas-bg: #fffdf8;
+  --cs-chip: #ffffff;
+  --cs-chip-soft: #f8fafc;
+  --cs-chip-line: #e2e8f0;
+  --cs-chip-edge: #cbd5e1;
+  --cs-chip-ink: #334155;
+  --cs-chip-muted: #64748b;
+  --cs-chip-faint: #94a3b8;
+  --cs-chip-strong: #0f172a;
+  --cs-chip-strong-ink: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --surface: #11141a;
-    --paper: #1b1f29;
-    --ink: #f2f1ec;
-    --muted: #a9b0bd;
-    --line: #343a48;
-    --canvas-dot: #33394a;
-    --canvas-bg: #171a21;
+    --cs-surface: #11141a;
+    --cs-paper: #1b1f29;
+    --cs-ink: #f2f1ec;
+    --cs-muted: #a9b0bd;
+    --cs-faint: #79839b;
+    --cs-line: #343a48;
+    --cs-canvas-dot: #33394a;
+    --cs-canvas-bg: #171a21;
   }
 }
 
@@ -35,8 +67,8 @@ body,
 body {
   margin: 0;
   font-family: "Lexend", ui-sans-serif, system-ui, sans-serif;
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--cs-surface);
+  color: var(--cs-ink);
 }
 
 .font-display {
@@ -48,8 +80,8 @@ body {
 }
 
 .canvas-grid {
-  background-color: var(--canvas-bg);
-  background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
+  background-color: var(--cs-canvas-bg);
+  background-image: radial-gradient(var(--cs-canvas-dot) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 

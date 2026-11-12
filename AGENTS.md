@@ -59,6 +59,25 @@ Working rules for this repo, learned the hard way.
   12", "the rule the previous concept taught") must name a real concept or
   lesson that exists — vague toward a later lesson is a bug, not a hedge.
 
+## Studio theming (src/studio)
+
+- Color only via theme tokens, never raw palette classes. Two families,
+  defined in studio.css and mapped in tailwind.config.js: the paper family
+  (`cs-paper/cs-ink/cs-muted/cs-faint/cs-line`) flips with dark mode and is
+  for anything on a panel, header, card or the canvas; the chip family
+  (`cs-chip*`) stays light in both modes for floating controls and always
+  travels with its own inks (`cs-chip-ink/cs-chip-muted/cs-chip-faint`).
+  The bug this prevents: mode-independent surfaces paired with the
+  mode-flipping ink — invisible text in dark mode, four separate incidents.
+- Accent pairs (indigo/rose/amber/emerald/sky, e.g. X-50 bg + X-700 text)
+  are self-consistent in both modes and stay literal. Verdict hues come
+  from `VERDICTS[k].color` in model.js.
+- tests/studio-theme.test.js fails on raw `slate-*`, `bg-white` or
+  arbitrary `var(--)` classes in src/studio. Run it before committing; if
+  it fails, pick the token pair for the surface, do not loosen the test.
+- `studio.css` declares `color-scheme: light/dark` — never remove it, or
+  native inputs/selects render white fields under the dark theme again.
+
 ## Mechanical edits to structured data
 
 - When transforming lessons.js or similar, remove one field at a time with

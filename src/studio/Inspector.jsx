@@ -44,13 +44,13 @@ export default function Inspector(props) {
           <span className="font-semibold text-[13px]" style={{ color: verdictInfo.color }}>
             {verdictInfo.label}
           </span>
-          {override && <span className="text-[10px] text-slate-400">(override)</span>}
+          {override && <span className="text-[10px] text-cs-chip-faint">(override)</span>}
         </div>
-        <p className="text-[11px] text-[color:var(--muted)] mt-1 leading-snug">{verdictInfo.hint}</p>
+        <p className="text-[11px] text-cs-muted mt-1 leading-snug">{verdictInfo.hint}</p>
         <div className="mt-2 flex flex-wrap gap-1.5 items-center">
-          <span className="text-[11px] text-[color:var(--muted)]">{coreCount} core · {glossedCount} glossed</span>
+          <span className="text-[11px] text-cs-muted">{coreCount} core · {glossedCount} glossed</span>
           <select
-            className="ml-auto text-[11px] text-slate-700 border border-slate-200 rounded-md px-1.5 py-1 bg-white"
+            className="ml-auto text-[11px] text-cs-chip-ink border border-cs-chip-line rounded-md px-1.5 py-1 bg-cs-chip"
             value={override || ""}
             onChange={function (e) { props.onOverride(id, e.target.value || null); }}
           >
@@ -72,7 +72,7 @@ export default function Inspector(props) {
               onClick={function () { setTab(t); }}
               className={
                 "px-2.5 py-1 rounded-lg border " +
-                (tab === t ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50")
+                (tab === t ? "bg-cs-chip-strong text-cs-chip-strong-ink border-cs-chip-strong" : "bg-cs-chip text-cs-chip-muted border-cs-chip-line hover:bg-cs-chip-soft")
               }
             >
               {t === "fields" ? "Text" : t === "names" ? "New names (" + newNames.length + ")" : t === "edges" ? "Edges (" + (outEdges.length + inEdges.length) + ")" : "Serialized"}
@@ -85,7 +85,7 @@ export default function Inspector(props) {
         <div className="mt-3 space-y-3">
           <Field label="Heading" hint="Renaming patches quiz tests: tags automatically on merge.">
             <input
-              className="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-[13px] font-medium"
+              className="w-full border border-cs-chip-edge rounded-lg px-2.5 py-2 text-[13px] font-medium"
               value={item.heading}
               onFocus={props.onSnapshot}
               onChange={function (e) { props.onField(id, "heading", e.target.value); }}
@@ -94,7 +94,7 @@ export default function Inspector(props) {
           <Field label="Text (1–3 sentences)">
             <textarea
               rows={5}
-              className="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-[12px] leading-relaxed"
+              className="w-full border border-cs-chip-edge rounded-lg px-2.5 py-2 text-[12px] leading-relaxed"
               value={item.text}
               onFocus={props.onSnapshot}
               onChange={function (e) { props.onField(id, "text", e.target.value); }}
@@ -102,7 +102,7 @@ export default function Inspector(props) {
           </Field>
           <Field label="Purpose line">
             <input
-              className="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-[12px]"
+              className="w-full border border-cs-chip-edge rounded-lg px-2.5 py-2 text-[12px]"
               value={item.purpose}
               onFocus={props.onSnapshot}
               onChange={function (e) { props.onField(id, "purpose", e.target.value); }}
@@ -112,13 +112,13 @@ export default function Inspector(props) {
             <textarea
               rows={9}
               spellCheck={false}
-              className="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-[11px] font-code leading-relaxed"
+              className="w-full border border-cs-chip-edge rounded-lg px-2.5 py-2 text-[11px] font-code leading-relaxed"
               value={item.code}
               onFocus={props.onSnapshot}
               onChange={function (e) { props.onField(id, "code", e.target.value); }}
             />
           </Field>
-          <div className="flex gap-3 text-[11px] text-slate-400">
+          <div className="flex gap-3 text-[11px] text-cs-faint">
             {item.hasCheck && <span className="flex items-center gap-1"><Check size={10} /> has inline check</span>}
             {item.diagram && <span className="flex items-center gap-1"><Check size={10} /> diagram: {item.diagram}</span>}
           </div>
@@ -127,7 +127,7 @@ export default function Inspector(props) {
 
       {tab === "names" && (
         <div className="mt-3">
-          <p className="text-[11px] text-[color:var(--muted)] leading-snug mb-2">
+          <p className="text-[11px] text-cs-muted leading-snug mb-2">
             Mark every name this section introduces. <b>Core</b> = a genuinely new idea it teaches.{" "}
             <b>Glossed</b> = rides along with a one-line explanation and gets its real treatment later.
           </p>
@@ -138,8 +138,8 @@ export default function Inspector(props) {
       {tab === "edges" && (
         <div className="mt-3 space-y-3 text-[12px]">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Uses (this concept is the student)</p>
-            {outEdges.length === 0 && <p className="text-slate-400 text-[11px]">None — drag the + handle to a teacher.</p>}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-cs-faint mb-1">Uses (this concept is the student)</p>
+            {outEdges.length === 0 && <p className="text-cs-faint text-[11px]">None — drag the + handle to a teacher.</p>}
             {outEdges.map(function (e) {
               return (
                 <EdgeRow
@@ -155,8 +155,8 @@ export default function Inspector(props) {
             })}
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Teaches (earlier concepts lean on this one)</p>
-            {inEdges.length === 0 && <p className="text-slate-400 text-[11px]">None yet.</p>}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-cs-faint mb-1">Teaches (earlier concepts lean on this one)</p>
+            {inEdges.length === 0 && <p className="text-cs-faint text-[11px]">None yet.</p>}
             {inEdges.map(function (e) {
               return (
                 <EdgeRow
@@ -175,12 +175,12 @@ export default function Inspector(props) {
 
       {tab === "preview" && (
         <div className="mt-3">
-          <p className="text-[11px] text-[color:var(--muted)] mb-1.5">
+          <p className="text-[11px] text-cs-muted mb-1.5">
             {props.canPreviewReal
               ? "Exactly what the merge writes for this concept (check & diagram verbatim):"
               : "Field summary (raw source not available in this build):"}
           </p>
-          <pre className="text-[10px] text-slate-700 font-code leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-2.5 overflow-x-auto whitespace-pre">{props.preview}</pre>
+          <pre className="text-[10px] text-cs-chip-ink font-code leading-relaxed bg-cs-chip-soft border border-cs-chip-line rounded-xl p-2.5 overflow-x-auto whitespace-pre">{props.preview}</pre>
         </div>
       )}
     </div>
@@ -190,9 +190,9 @@ export default function Inspector(props) {
 function Field(props) {
   return (
     <label className="block">
-      <span className="block text-[10px] font-bold uppercase tracking-wider text-[color:var(--muted)] mb-1">
+      <span className="block text-[10px] font-bold uppercase tracking-wider text-cs-muted mb-1">
         {props.label}
-        {props.hint && <span className="ml-1.5 font-medium normal-case tracking-normal text-slate-400">{props.hint}</span>}
+        {props.hint && <span className="ml-1.5 font-medium normal-case tracking-normal text-cs-faint">{props.hint}</span>}
       </span>
       {props.children}
     </label>
@@ -232,7 +232,7 @@ function NameEditor(props) {
               {entry.glossed ? "glossed" : "core"}
             </button>
             <input
-              className="flex-1 min-w-0 border border-slate-200 rounded-md px-2 py-1 text-[12px]"
+              className="flex-1 min-w-0 border border-cs-chip-line rounded-md px-2 py-1 text-[12px]"
               value={entry.name}
               onChange={function (e) {
                 const next = props.names.slice();
@@ -241,7 +241,7 @@ function NameEditor(props) {
               }}
             />
             <button
-              className="w-6 h-6 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+              className="w-6 h-6 rounded-md text-cs-faint hover:text-rose-600 hover:bg-rose-50"
               title="Remove name"
               onClick={function () {
                 props.onChange(props.names.filter(function (_, j) { return j !== i; }));
@@ -254,13 +254,13 @@ function NameEditor(props) {
       })}
       <div className="flex items-center gap-1.5 mt-2">
         <input
-          className="flex-1 min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-[12px]"
+          className="flex-1 min-w-0 border border-cs-chip-edge rounded-md px-2 py-1.5 text-[12px]"
           placeholder="e.g. call, prototype, recursion…"
           value={draft}
           onChange={function (e) { setDraft(e.target.value); }}
           onKeyDown={function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } }}
         />
-        <label className="flex items-center gap-1 text-[11px] text-[color:var(--muted)] whitespace-nowrap">
+        <label className="flex items-center gap-1 text-[11px] text-cs-muted whitespace-nowrap">
           <input type="checkbox" checked={glossedDraft} onChange={function (e) { setGlossedDraft(e.target.checked); }} />
           glossed
         </label>
@@ -278,11 +278,11 @@ function EdgeRow(props) {
   const [draft, setDraft] = useState((edge.names || []).join(", "));
 
   return (
-    <div className="flex items-center gap-1.5 border border-slate-200 rounded-lg px-2 py-1.5 mb-1.5 bg-white">
-      <button className="flex-1 min-w-0 text-left truncate text-[12px] text-slate-700 hover:text-indigo-700" onClick={props.onSelect} title="Select this edge">
+    <div className="flex items-center gap-1.5 border border-cs-chip-line rounded-lg px-2 py-1.5 mb-1.5 bg-cs-chip">
+      <button className="flex-1 min-w-0 text-left truncate text-[12px] text-cs-chip-ink hover:text-indigo-700" onClick={props.onSelect} title="Select this edge">
         {props.orphan && <Diamond size={10} className="inline-block align-[-1px] mr-1" />}
         {props.label}
-        <span className="block text-[10px] text-slate-400 truncate">
+        <span className="block text-[10px] text-cs-chip-faint truncate">
           {editing ? "" : (edge.names || []).join(", ") || "no names yet"}
         </span>
       </button>
@@ -290,7 +290,7 @@ function EdgeRow(props) {
         <>
           <input
             autoFocus
-            className="flex-1 min-w-0 border border-slate-300 rounded px-1.5 py-1 text-[11px] text-slate-700"
+            className="flex-1 min-w-0 border border-cs-chip-edge rounded px-1.5 py-1 text-[11px] text-cs-chip-ink"
             value={draft}
             onChange={function (e) { setDraft(e.target.value); }}
             onKeyDown={function (e) {
@@ -318,7 +318,7 @@ function EdgeRow(props) {
           <button className="text-[10px] font-bold text-indigo-700" onClick={function () { setDraft((edge.names || []).join(", ")); setEditing(true); }}>
             names
           </button>
-          <button className="w-5 h-5 rounded text-slate-400 hover:text-rose-600 grid place-items-center" title="Delete edge" onClick={props.onRemove}>
+          <button className="w-5 h-5 rounded text-cs-chip-faint hover:text-rose-600 grid place-items-center" title="Delete edge" onClick={props.onRemove}>
             <X size={11} />
           </button>
         </>

@@ -17,7 +17,7 @@ export default function ChecksPanel(props) {
     <div className="text-sm space-y-4">
       <div>
         <h2 className="font-display text-xl font-bold">Discipline check</h2>
-        <p className="text-[11px] text-[color:var(--muted)] mt-0.5">
+        <p className="text-[11px] text-cs-muted mt-0.5">
           One concept = one new idea ({all} concepts across {lessons.length} lessons)
         </p>
       </div>
@@ -32,29 +32,29 @@ export default function ChecksPanel(props) {
       </div>
 
       <Section title="Forward references" count={problems.forward.length} tone={problems.forward.length ? "warn" : "good"}>
-        {problems.forward.length === 0 && <p className="text-[11px] text-slate-500">No name is used before its lesson. Clean.</p>}
+        {problems.forward.length === 0 && <p className="text-[11px] text-cs-chip-muted">No name is used before its lesson. Clean.</p>}
         {problems.forward.map(function (p, i) {
           return (
             <ProblemRow key={i} onClick={function () { onWarnClick(p.user.id); }}>
-              <span className="font-mono text-[10px] text-slate-400">{p.user.id}</span> {p.reason}
+              <span className="font-mono text-[10px] text-cs-chip-faint">{p.user.id}</span> {p.reason}
             </ProblemRow>
           );
         })}
       </Section>
 
       <Section title="Orphan names — never taught" count={problems.orphan.length} tone={problems.orphan.length ? "warn" : "good"}>
-        {problems.orphan.length === 0 && <p className="text-[11px] text-slate-500">Every used name has a homeland.</p>}
+        {problems.orphan.length === 0 && <p className="text-[11px] text-cs-chip-muted">Every used name has a homeland.</p>}
         {problems.orphan.map(function (p, i) {
           return (
             <ProblemRow key={i} onClick={function () { onWarnClick(p.user.id); }}>
-              <span className="font-mono text-[10px] text-slate-400">{p.user.id}</span> {p.reason}
+              <span className="font-mono text-[10px] text-cs-chip-faint">{p.user.id}</span> {p.reason}
             </ProblemRow>
           );
         })}
       </Section>
 
       <Section title="Quiz tags" count={problems.quiz.length} tone={problems.quiz.length ? "bad" : "good"}>
-        {problems.quiz.length === 0 && <p className="text-[11px] text-slate-500">Every tests: tag resolves to this-or-earlier lesson.</p>}
+        {problems.quiz.length === 0 && <p className="text-[11px] text-cs-chip-muted">Every tests: tag resolves to this-or-earlier lesson.</p>}
         {problems.quiz.map(function (e, i) {
           return <ProblemRow key={i}>{e.reason}</ProblemRow>;
         })}
@@ -78,8 +78,8 @@ export default function ChecksPanel(props) {
             order[li].forEach(function (id) { counts[verdictOf(id)] += 1; });
             return (
               <div key={lesson.id} className="flex items-center gap-1.5 text-[11px]">
-                <span className="font-mono text-slate-400 w-7 shrink-0">L{lesson.id}</span>
-                <span className="flex-1 truncate text-slate-600">{lesson.title}</span>
+                <span className="font-mono text-cs-chip-faint w-7 shrink-0">L{lesson.id}</span>
+                <span className="flex-1 truncate text-cs-chip-muted">{lesson.title}</span>
                 <Count color="#059669" n={counts.ok} title="1 new idea" />
                 <Count color="#0284c7" n={counts.consolidation} title="consolidation" />
                 <Count color="#d97706" n={counts.heavy} title="heavy" />
@@ -91,7 +91,7 @@ export default function ChecksPanel(props) {
         </div>
       </Section>
 
-      <div className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-200 pt-3">
+      <div className="text-[10px] text-cs-faint leading-relaxed border-t border-cs-line pt-3">
         <p>
           <b>Gate:</b>{" "}
           {gate.state === "ok"
@@ -113,11 +113,11 @@ export default function ChecksPanel(props) {
 
 function Stat(props) {
   return (
-    <div className="border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50">
+    <div className="border border-cs-chip-line rounded-xl px-2.5 py-2 bg-cs-chip-soft">
       <p className="text-lg font-bold leading-none" style={{ color: props.color }}>
         {props.value}
       </p>
-      <p className="text-[9px] text-slate-500 mt-1 leading-tight">{props.label}</p>
+      <p className="text-[9px] text-cs-chip-muted mt-1 leading-tight">{props.label}</p>
     </div>
   );
 }
@@ -138,13 +138,13 @@ function Section(props) {
         ? "border-amber-200 bg-amber-50/50"
         : props.tone === "good"
           ? "border-emerald-200 bg-emerald-50/40"
-          : "border-slate-200 bg-slate-50/60";
+          : "border-cs-chip-line bg-cs-chip-soft";
   return (
     <div className={"border rounded-xl p-2.5 " + tone}>
-      <p className="text-[11px] font-bold flex items-center gap-2 text-slate-700">
+      <p className="text-[11px] font-bold flex items-center gap-2 text-cs-chip-ink">
         {props.title}
         {props.count > 0 && (
-          <span className="text-[10px] bg-white border border-slate-200 rounded-full px-1.5 py-0.5 text-slate-600">{props.count}</span>
+          <span className="text-[10px] bg-cs-chip border border-cs-chip-line rounded-full px-1.5 py-0.5 text-cs-chip-muted">{props.count}</span>
         )}
       </p>
       <div className="mt-1.5 space-y-1">{props.children}</div>
@@ -156,7 +156,7 @@ function ProblemRow(props) {
   return (
     <button
       onClick={props.onClick}
-      className="block w-full text-left text-[11px] leading-snug text-slate-600 hover:text-indigo-700 bg-white/70 border border-slate-200 rounded-lg px-2 py-1.5"
+      className="block w-full text-left text-[11px] leading-snug text-cs-chip-muted hover:text-indigo-700 bg-cs-chip-soft border border-cs-chip-line rounded-lg px-2 py-1.5"
     >
       {props.children}
     </button>

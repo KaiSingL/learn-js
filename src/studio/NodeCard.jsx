@@ -14,8 +14,8 @@ export default function NodeCard(props) {
   return (
     <article
       className={
-        "node-card bg-[var(--paper)] rounded-xl border text-left shadow-[0_6px_18px_rgba(15,23,42,0.09)] cursor-grab active:cursor-grabbing " +
-        (selected ? "border-indigo-500 ring-2 ring-indigo-400" : "border-slate-200 hover:border-slate-300")
+        "node-card bg-cs-paper rounded-xl border text-left shadow-[0_6px_18px_rgba(15,23,42,0.09)] cursor-grab active:cursor-grabbing " +
+        (selected ? "border-indigo-500 ring-2 ring-indigo-400" : "border-cs-chip-line hover:border-cs-chip-edge")
       }
       onPointerDown={props.onPointerDown}
       onPointerMove={props.onDragMove}
@@ -26,7 +26,7 @@ export default function NodeCard(props) {
           <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: color }}>
             {VERDICT_LABELS[node.verdict]}
           </span>
-          <span className="ml-auto text-[10px] text-slate-400 font-code">
+          <span className="ml-auto text-[10px] text-cs-faint font-code">
             L{node.lessonId}·{node.index + 1}
           </span>
           {node.touched && (
@@ -36,7 +36,7 @@ export default function NodeCard(props) {
           )}
         </div>
         <h3 className="mt-1 font-semibold text-[13px] leading-snug line-clamp-2">{node.heading}</h3>
-        <p className="mt-auto text-[11px] text-[color:var(--muted)] truncate">{node.purpose}</p>
+        <p className="mt-auto text-[11px] text-cs-muted truncate">{node.purpose}</p>
       </div>
       <button
         aria-label={"Connect from " + node.heading}

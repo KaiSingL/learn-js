@@ -531,12 +531,12 @@ export default function Studio() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden select-none" style={{ minWidth: 1080 }}>
-      <header className="shrink-0 bg-[var(--paper)] border-b border-[var(--line)] px-4 py-2 flex flex-wrap items-center gap-2 z-30">
+      <header className="shrink-0 bg-cs-paper border-b border-cs-line px-4 py-2 flex flex-wrap items-center gap-2 z-30">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white grid place-items-center font-bold font-display">CS</div>
           <div className="min-w-0">
             <h1 className="font-display text-lg font-bold leading-none tracking-tight">Concept Studio</h1>
-            <p className="text-[11px] text-[color:var(--muted)] mt-0.5">
+            <p className="text-[11px] text-cs-muted mt-0.5">
               14 lessons · {flat.length} concepts · dev tool — edits go through the merge CLI
             </p>
           </div>
@@ -550,7 +550,7 @@ export default function Studio() {
           </ToolbarButton>
           <ToolbarButton onClick={exportMergeFile} primary title="Download the file for npm run studio:merge"><Download size={13} /> Export merge file</ToolbarButton>
           <ToolbarButton onClick={function () { download("concept-graph-backup.json", JSON.stringify(doc.graph, null, 2)); }} title="Graph metadata backup">Graph backup</ToolbarButton>
-          <label className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
+          <label className="h-8 px-3 rounded-lg border border-cs-chip-edge bg-cs-chip text-cs-chip-ink text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-cs-chip-soft">
             Load backup
             <input
               type="file"
@@ -562,7 +562,7 @@ export default function Studio() {
         </div>
       </header>
 
-      <div className="status-shrink shrink-0 bg-[var(--paper)] border-b border-[var(--line)] px-4 py-1.5 text-xs text-[color:var(--muted)] flex items-center gap-3 flex-wrap">
+      <div className="status-shrink shrink-0 bg-cs-paper border-b border-cs-line px-4 py-1.5 text-xs text-cs-muted flex items-center gap-3 flex-wrap">
         <span className={(blocking ? "text-rose-700 font-medium" : "text-emerald-700") + " flex items-center gap-1"}>
           {blocking === 0 ? <Check size={12} /> : <X size={12} />}
           {blocking === 0 ? "quiz tags resolve" : blocking + " blocking problem(s)"}
@@ -573,8 +573,8 @@ export default function Studio() {
         <span className="text-amber-700 flex items-center gap-1">
           <Diamond size={11} /> {problems.orphan.length} orphan name(s)
         </span>
-        <span className="text-slate-400">·</span>
-        <span className="text-[color:var(--muted)] flex-1 truncate">{status}</span>
+        <span className="text-cs-faint">·</span>
+        <span className="text-cs-muted flex-1 truncate">{status}</span>
       </div>
 
       <div className="flex-1 flex min-h-0">
@@ -603,16 +603,16 @@ export default function Studio() {
             onModeHandled={function () { setMode("select"); }}
           />
         </main>
-        <aside className="w-[350px] shrink-0 bg-[var(--paper)] border-l border-[var(--line)] flex flex-col min-h-0">
-          <div className="flex border-b border-[var(--line)] shrink-0">
+        <aside className="w-[350px] shrink-0 bg-cs-paper border-l border-cs-line flex flex-col min-h-0">
+          <div className="flex border-b border-cs-line shrink-0">
             <button
-              className={"flex-1 py-2 text-xs font-semibold " + (panel === "inspector" ? "bg-slate-900 text-white" : "text-[color:var(--muted)] hover:bg-slate-50 hover:text-slate-600")}
+              className={"flex-1 py-2 text-xs font-semibold " + (panel === "inspector" ? "bg-cs-chip-strong text-cs-chip-strong-ink" : "text-cs-muted hover:bg-cs-chip-soft hover:text-cs-chip-muted")}
               onClick={function () { setPanel("inspector"); }}
             >
               Inspector
             </button>
             <button
-              className={"flex-1 py-2 text-xs font-semibold " + (panel === "checks" ? "bg-slate-900 text-white" : "text-[color:var(--muted)] hover:bg-slate-50 hover:text-slate-600")}
+              className={"flex-1 py-2 text-xs font-semibold " + (panel === "checks" ? "bg-cs-chip-strong text-cs-chip-strong-ink" : "text-cs-muted hover:bg-cs-chip-soft hover:text-cs-chip-muted")}
               onClick={function () { setPanel("checks"); }}
             >
               Discipline check
@@ -681,13 +681,13 @@ function GateBadge(props) {
   }
   if (gate.state === "off") {
     return (
-      <span className="h-8 px-2.5 rounded-lg bg-slate-50 text-slate-500 border border-slate-200 text-xs font-semibold flex items-center">
+      <span className="h-8 px-2.5 rounded-lg bg-cs-chip-soft text-cs-chip-muted border border-cs-chip-line text-xs font-semibold flex items-center">
         gate n/a (no source)
       </span>
     );
   }
   return (
-    <span className="h-8 px-2.5 rounded-lg bg-slate-50 text-slate-400 border border-slate-200 text-xs font-semibold flex items-center">
+    <span className="h-8 px-2.5 rounded-lg bg-cs-chip-soft text-cs-chip-faint border border-cs-chip-line text-xs font-semibold flex items-center">
       checking gate…
     </span>
   );
@@ -705,7 +705,7 @@ function ToolbarButton(props) {
           ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
           : props.active
             ? "bg-indigo-50 text-indigo-800 border-indigo-300"
-            : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50") +
+            : "bg-cs-chip text-cs-chip-ink border-cs-chip-edge hover:bg-cs-chip-soft") +
         (props.disabled ? " opacity-40 cursor-default" : "")
       }
     >
@@ -716,8 +716,8 @@ function ToolbarButton(props) {
 
 function EmptyInspector() {
   return (
-    <div className="text-xs text-[color:var(--muted)] leading-relaxed">
-      <p className="font-semibold text-sm text-[color:var(--ink)] mb-2">Nothing selected</p>
+    <div className="text-xs text-cs-muted leading-relaxed">
+      <p className="font-semibold text-sm text-cs-ink mb-2">Nothing selected</p>
       <p className="mb-2">Click a concept card or an edge on the canvas, or a row in the outline.</p>
       <ul className="list-disc pl-4 space-y-1">
         <li>Drag a card's <b>+</b> handle onto its teacher to record a "uses" edge.</li>

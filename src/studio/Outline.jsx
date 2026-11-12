@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
+import { VERDICTS } from "./model.js";
 
 // The authoritative teaching order. Drag rows, use arrows, or move a concept
 // to another lesson — this order is what the merge writes back to lessons.js.
@@ -52,22 +53,14 @@ export default function Outline(props) {
     props.onMove(id, targetLessonPos, order[targetLessonPos].length);
   }
 
-  const verdictDot = {
-    unmarked: "bg-slate-400",
-    ok: "bg-emerald-600",
-    consolidation: "bg-sky-600",
-    heavy: "bg-amber-600",
-    violation: "bg-rose-600",
-  };
-
   return (
     <aside
-      className="w-[300px] shrink-0 bg-[var(--paper)] border-r border-[var(--line)] overflow-y-auto p-2"
+      className="w-[300px] shrink-0 bg-cs-paper border-r border-cs-line overflow-y-auto p-2"
       onDragOver={function (e) { if (dragging) e.preventDefault(); }}
       onDrop={onDrop}
       aria-label="Teaching order outline"
     >
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1.5 pb-1.5">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-cs-faint px-1.5 pb-1.5">
         Teaching order — this is what gets written back
       </p>
       {lessons.map(function (lesson, li) {
@@ -76,13 +69,13 @@ export default function Outline(props) {
         return (
           <div key={lesson.id} className="mb-1.5">
             <button
-              className="w-full flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-700 text-left"
+              className="w-full flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-cs-chip-soft hover:text-cs-chip-ink text-left"
               onClick={function () { setOpenLesson(open ? -1 : li); }}
             >
-              <span className="text-[10px] font-code font-bold text-slate-400 w-7 shrink-0">L{lesson.id}</span>
+              <span className="text-[10px] font-code font-bold text-cs-faint w-7 shrink-0">L{lesson.id}</span>
               <span className="text-xs font-semibold truncate flex-1">{lesson.title}</span>
-              <span className="text-[10px] text-slate-400">{ids.length}</span>
-              <span className="text-slate-400">{open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
+              <span className="text-[10px] text-cs-faint">{ids.length}</span>
+              <span className="text-cs-faint">{open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
             </button>
             {open &&
               ids.map(function (id, ci) {
@@ -99,12 +92,12 @@ export default function Outline(props) {
                     onPointerDown={function (e) { rowPointerDown(e, li, ci); }}
                     className={
                       "group flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-md cursor-pointer text-[12px] " +
-                      (isSel ? "bg-indigo-50 text-slate-700 ring-1 ring-indigo-300" : "hover:bg-slate-50 hover:text-slate-700") +
+                      (isSel ? "bg-indigo-50 text-cs-chip-ink ring-1 ring-indigo-300" : "hover:bg-cs-chip-soft hover:text-cs-chip-ink") +
                       (isOver ? " border-t-2 border-indigo-500" : "")
                     }
                   >
-                    <span className={"w-1.5 h-1.5 rounded-full shrink-0 " + verdictDot[verdictOf(id)]} />
-                    <span className="text-[9px] font-code text-slate-400 w-6 shrink-0 text-right">{ci + 1}</span>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: VERDICTS[verdictOf(id)].color }} />
+                    <span className="text-[9px] font-code text-cs-faint w-6 shrink-0 text-right">{ci + 1}</span>
                     <span className="truncate flex-1" title={item.heading}>
                       {item.heading}
                     </span>
@@ -116,7 +109,7 @@ export default function Outline(props) {
                         onClick={function () { moveBy(li, ci, 1); }}
                       ><ArrowDown size={9} /></MiniBtn>
                       <select
-                        className="text-[9px] border border-slate-200 rounded bg-white px-0.5 py-0 text-slate-500 w-11 h-4"
+                        className="text-[9px] border border-cs-chip-line rounded bg-cs-chip px-0.5 py-0 text-cs-chip-muted w-11 h-4"
                         title="Move to lesson"
                         value=""
                         onPointerDown={function (e) { e.stopPropagation(); }}
@@ -153,7 +146,7 @@ function MiniBtn(props) {
       onClick={props.onClick}
       className={
         "w-4 h-4 grid place-items-center rounded border text-[9px] leading-none " +
-        (props.disabled ? "opacity-30 border-slate-200 text-slate-300" : "border-slate-300 text-slate-600 hover:bg-slate-100")
+        (props.disabled ? "opacity-30 border-cs-chip-line text-cs-chip-faint" : "border-cs-chip-edge text-cs-chip-muted hover:bg-cs-chip-soft")
       }
     >
       {props.children}
