@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeftRight, Check, Columns3, Diamond, Download, TriangleAlert, Undo2, X } from "lucide-react";
+import { ArrowLeftRight, Check, ChevronDown, Columns3, Diamond, Download, FileDown, FileUp, Save, TriangleAlert, Undo2, X } from "lucide-react";
 import { LESSONS } from "../data/lessons.js";
 import { computeVerdict, edgeErrors, findCycles, parseConceptId, quizTagErrors } from "./model.js";
 import { rewriteConceptBlock, roundTrip, scanLessons, getConceptBlock } from "./serialize.js";
@@ -549,17 +549,11 @@ export default function Studio() {
           <ToolbarButton onClick={function () { setMode(mode === "connect" ? "select" : "connect"); }} active={mode === "connect"} title="Click a user, then its teacher">
             <ArrowLeftRight size={13} /> Connect{mode === "connect" ? <Check size={13} /> : ""}
           </ToolbarButton>
-          <ToolbarButton onClick={exportMergeFile} primary title="Download the file for npm run studio:merge"><Download size={13} /> Export merge file</ToolbarButton>
-          <ToolbarButton onClick={function () { download("concept-graph-backup.json", JSON.stringify(doc.graph, null, 2)); }} title="Graph metadata backup">Graph backup</ToolbarButton>
-          <label className="h-8 px-3 rounded-lg border border-cs-chip-edge bg-cs-chip text-cs-chip-ink text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-cs-chip-soft">
-            Load backup
-            <input
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={function (e) { if (e.target.files[0]) loadGraphBackup(e.target.files[0]); e.target.value = ""; }}
-            />
-          </label>
+          <FileMenu
+            onExport={exportMergeFile}
+            onGraphBackup={function () { download("concept-graph-backup.json", JSON.stringify(doc.graph, null, 2)); }}
+            onLoadBackup={loadGraphBackup}
+          />
         </div>
       </header>
 
@@ -712,6 +706,52 @@ function ToolbarButton(props) {
     >
       {props.children}
     </button>
+  );
+}
+
+function FileMenu(props) {
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(function () {
+    if (!open) return undefined;
+    function onKey(e) { if (e.key === "Escape") setOpen(false); }
+    window.addEventListener("keydown", onKey);
+    return function () { window.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  const itemClass = "w-full h-8 px-2.5 rounded-lg text-xs font-medium text-cs-chip-ink flex items-center gap-1.5 hover:bg-cs-chip-soft text-left";
+
+  return (
+    <div className="relative">
+      <ToolbarButton onClick={function () { setOpen(!open); }} active={open} title="Export, backup, restore">
+        <FileDown size={13} /> File <ChevronDown size={12} />
+      </ToolbarButton>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={function () { setOpen(false); }} />
+          <div className="absolute right-0 top-full mt-1 z-40 w-56 p-1.5 bg-cs-chip border border-cs-chip-line rounded-xl shadow flex flex-col gap-0.5">
+            <button className={itemClass} title="Download the file for npm run studio:merge" onClick={function () { setOpen(false); props.onExport(); }}>
+              <Download size={13} /> Export merge file
+            </button>
+            <button className={itemClass} title="Graph metadata backup" onClick={function () { setOpen(false); props.onGraphBackup(); }}>
+              <Save size={13} /> Graph backup
+            </button>
+            <button className={itemClass} title="Restore a previously saved graph backup" onClick={function () { if (inputRef.current) inputRef.current.click(); }}>
+              <FileUp size={13} /> Load backup
+            </button>
+          </div>
+        </>
+      )}
+      {/* Lives outside the conditional so the native file picker survives the menu closing. */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/json"
+        className="hidden"
+        onChange={function (e) { if (e.target.files[0]) props.onLoadBackup(e.target.files[0]); e.target.value = ""; setOpen(false); }}
+      />
+    </div>
   );
 }
 
