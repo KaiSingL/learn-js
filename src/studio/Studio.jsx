@@ -548,7 +548,7 @@ export default function Studio() {
           </ToolbarButton>
           <ToolbarButton onClick={exportMergeFile} primary title="Download the file for npm run studio:merge">⬇ Export merge file</ToolbarButton>
           <ToolbarButton onClick={function () { download("concept-graph-backup.json", JSON.stringify(doc.graph, null, 2)); }} title="Graph metadata backup">Graph backup</ToolbarButton>
-          <label className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
+          <label className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
             Load backup
             <input
               type="file"

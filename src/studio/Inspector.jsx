@@ -49,7 +49,7 @@ export default function Inspector(props) {
         <div className="mt-2 flex flex-wrap gap-1.5 items-center">
           <span className="text-[11px] text-slate-500">{coreCount} core · {glossedCount} glossed</span>
           <select
-            className="ml-auto text-[11px] border border-slate-200 rounded-md px-1.5 py-1 bg-white"
+            className="ml-auto text-[11px] text-slate-700 border border-slate-200 rounded-md px-1.5 py-1 bg-white"
             value={override || ""}
             onChange={function (e) { props.onOverride(id, e.target.value || null); }}
           >
@@ -178,7 +178,7 @@ export default function Inspector(props) {
               ? "Exactly what the merge writes for this concept (check & diagram verbatim):"
               : "Field summary (raw source not available in this build):"}
           </p>
-          <pre className="text-[10px] font-code leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-2.5 overflow-x-auto whitespace-pre">{props.preview}</pre>
+          <pre className="text-[10px] text-slate-700 font-code leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-2.5 overflow-x-auto whitespace-pre">{props.preview}</pre>
         </div>
       )}
     </div>
@@ -277,7 +277,7 @@ function EdgeRow(props) {
 
   return (
     <div className="flex items-center gap-1.5 border border-slate-200 rounded-lg px-2 py-1.5 mb-1.5 bg-white">
-      <button className="flex-1 min-w-0 text-left truncate text-[12px] hover:text-indigo-700" onClick={props.onSelect} title="Select this edge">
+      <button className="flex-1 min-w-0 text-left truncate text-[12px] text-slate-700 hover:text-indigo-700" onClick={props.onSelect} title="Select this edge">
         {props.label}
         <span className="block text-[10px] text-slate-400 truncate">
           {editing ? "" : (edge.names || []).join(", ") || "no names yet"}
@@ -287,7 +287,7 @@ function EdgeRow(props) {
         <>
           <input
             autoFocus
-            className="flex-1 min-w-0 border border-slate-300 rounded px-1.5 py-1 text-[11px]"
+            className="flex-1 min-w-0 border border-slate-300 rounded px-1.5 py-1 text-[11px] text-slate-700"
             value={draft}
             onChange={function (e) { setDraft(e.target.value); }}
             onKeyDown={function (e) {

@@ -365,9 +365,9 @@ export default function Canvas(props) {
 
       {/* zoom controls */}
       <div className="absolute right-3 top-3 flex flex-col gap-1.5 z-10">
-        <button className="w-9 h-9 bg-white/95 border border-slate-200 rounded-lg shadow grid place-items-center font-bold" onClick={function () { zoomAt(1.25, 200, 200); }} aria-label="Zoom in">＋</button>
-        <button className="w-9 h-9 bg-white/95 border border-slate-200 rounded-lg shadow grid place-items-center font-bold" onClick={function () { zoomAt(0.8, 200, 200); }} aria-label="Zoom out">－</button>
-        <button className="h-9 px-2 bg-white/95 border border-slate-200 rounded-lg shadow text-xs font-semibold" onClick={fit}>Fit</button>
+        <button className="w-9 h-9 bg-white/95 border border-slate-200 rounded-lg shadow grid place-items-center font-bold text-slate-700" onClick={function () { zoomAt(1.25, 200, 200); }} aria-label="Zoom in">＋</button>
+        <button className="w-9 h-9 bg-white/95 border border-slate-200 rounded-lg shadow grid place-items-center font-bold text-slate-700" onClick={function () { zoomAt(0.8, 200, 200); }} aria-label="Zoom out">－</button>
+        <button className="h-9 px-2 bg-white/95 border border-slate-200 rounded-lg shadow text-xs font-semibold text-slate-700" onClick={fit}>Fit</button>
       </div>
       <div className="absolute left-3 bottom-3 bg-white/95 border border-slate-200 rounded-xl shadow px-3 py-2 text-[11px] text-slate-600 z-10 hidden xl:block">
         <p className="font-bold uppercase tracking-wider text-slate-400 mb-1">Verdicts</p>
