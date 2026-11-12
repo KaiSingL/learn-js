@@ -1,4 +1,5 @@
 import React from "react";
+import { Plus, TriangleAlert } from "lucide-react";
 
 const VERDICT_LABELS = {
   unmarked: "unmarked",
@@ -29,8 +30,8 @@ export default function NodeCard(props) {
             L{node.lessonId}·{node.index + 1}
           </span>
           {node.touched && (
-            <span className="text-rose-600 font-bold text-[11px]" title="Uses a name before it is taught (or never taught)">
-              ⚠
+            <span className="text-rose-600 font-bold text-[11px] flex items-center" title="Uses a name before it is taught (or never taught)">
+              <TriangleAlert size={11} />
             </span>
           )}
         </div>
@@ -45,7 +46,7 @@ export default function NodeCard(props) {
           (connectArmed ? "bg-rose-500 scale-110" : "bg-indigo-600 hover:bg-indigo-700 hover:scale-110")
         }
       >
-        +
+        <Plus size={14} strokeWidth={2.5} />
       </button>
     </article>
   );

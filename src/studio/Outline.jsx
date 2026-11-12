@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
 
 // The authoritative teaching order. Drag rows, use arrows, or move a concept
 // to another lesson — this order is what the merge writes back to lessons.js.
@@ -81,7 +82,7 @@ export default function Outline(props) {
               <span className="text-[10px] font-code font-bold text-slate-400 w-7 shrink-0">L{lesson.id}</span>
               <span className="text-xs font-semibold truncate flex-1">{lesson.title}</span>
               <span className="text-[10px] text-slate-400">{ids.length}</span>
-              <span className="text-slate-400 text-[10px]">{open ? "▾" : "▸"}</span>
+              <span className="text-slate-400">{open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
             </button>
             {open &&
               ids.map(function (id, ci) {
@@ -108,13 +109,12 @@ export default function Outline(props) {
                       {item.heading}
                     </span>
                     <span className="hidden group-hover:flex items-center gap-0.5 shrink-0">
-                      <MiniBtn label="↑" title="Move up" disabled={ci === 0} onClick={function () { moveBy(li, ci, -1); }} />
+                      <MiniBtn title="Move up" disabled={ci === 0} onClick={function () { moveBy(li, ci, -1); }}><ArrowUp size={9} /></MiniBtn>
                       <MiniBtn
-                        label="↓"
                         title="Move down"
                         disabled={ci === ids.length - 1}
                         onClick={function () { moveBy(li, ci, 1); }}
-                      />
+                      ><ArrowDown size={9} /></MiniBtn>
                       <select
                         className="text-[9px] border border-slate-200 rounded bg-white px-0.5 py-0 text-slate-500 w-11 h-4"
                         title="Move to lesson"
@@ -156,7 +156,7 @@ function MiniBtn(props) {
         (props.disabled ? "opacity-30 border-slate-200 text-slate-300" : "border-slate-300 text-slate-600 hover:bg-slate-100")
       }
     >
-      {props.label}
+      {props.children}
     </button>
   );
 }

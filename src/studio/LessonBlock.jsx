@@ -1,4 +1,5 @@
 import React from "react";
+import { Check, Circle, TriangleAlert } from "lucide-react";
 
 // A lesson container drawn behind its concept cards. Hue per lesson position.
 export default function LessonBlock(props) {
@@ -8,8 +9,14 @@ export default function LessonBlock(props) {
   const dot = "hsl(" + hue + ", 55%, 45%)";
 
   const counts = block.counts;
-  const summary =
-    counts.violation + "⚠ " + counts.heavy + "🟡 " + counts.ok + "✓ " + counts.unmarked + "·";
+  const summary = (
+    <span className="inline-flex items-center gap-1">
+      <TriangleAlert size={10} className="text-rose-600" /> {counts.violation}
+      <Circle size={8} fill="currentColor" stroke="none" className="text-[#d97706]" /> {counts.heavy}
+      <Check size={10} className="text-emerald-600" /> {counts.ok}
+      {counts.unmarked}·
+    </span>
+  );
 
   return (
     <section

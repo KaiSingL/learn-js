@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Check, Diamond, X } from "lucide-react";
 import { VERDICTS } from "./model.js";
 
 // Edit a concept: the four text fields, its new-name list, verdict override,
@@ -118,8 +119,8 @@ export default function Inspector(props) {
             />
           </Field>
           <div className="flex gap-3 text-[11px] text-slate-400">
-            {item.hasCheck && <span>✓ has inline check</span>}
-            {item.diagram && <span>✓ diagram: {item.diagram}</span>}
+            {item.hasCheck && <span className="flex items-center gap-1"><Check size={10} /> has inline check</span>}
+            {item.diagram && <span className="flex items-center gap-1"><Check size={10} /> diagram: {item.diagram}</span>}
           </div>
         </div>
       )}
@@ -144,7 +145,8 @@ export default function Inspector(props) {
                 <EdgeRow
                   key={e.index}
                   edge={e}
-                  label={e.to === null ? "◆ never taught" : nameById[e.to] || e.to}
+                  label={e.to === null ? "never taught" : nameById[e.to] || e.to}
+                  orphan={e.to === null}
                   onSelect={function () { props.onSelect({ type: "edge", index: e.index }); }}
                   onRemove={function () { props.onRemoveEdge(e.index); }}
                   onUpdate={function (names) { props.onUpdateEdge(e.index, { names: names }); }}
@@ -245,7 +247,7 @@ function NameEditor(props) {
                 props.onChange(props.names.filter(function (_, j) { return j !== i; }));
               }}
             >
-              ×
+              <X size={12} />
             </button>
           </div>
         );
@@ -278,6 +280,7 @@ function EdgeRow(props) {
   return (
     <div className="flex items-center gap-1.5 border border-slate-200 rounded-lg px-2 py-1.5 mb-1.5 bg-white">
       <button className="flex-1 min-w-0 text-left truncate text-[12px] text-slate-700 hover:text-indigo-700" onClick={props.onSelect} title="Select this edge">
+        {props.orphan && <Diamond size={10} className="inline-block align-[-1px] mr-1" />}
         {props.label}
         <span className="block text-[10px] text-slate-400 truncate">
           {editing ? "" : (edge.names || []).join(", ") || "no names yet"}
@@ -315,8 +318,8 @@ function EdgeRow(props) {
           <button className="text-[10px] font-bold text-indigo-700" onClick={function () { setDraft((edge.names || []).join(", ")); setEditing(true); }}>
             names
           </button>
-          <button className="w-5 h-5 rounded text-slate-400 hover:text-rose-600" title="Delete edge" onClick={props.onRemove}>
-            ×
+          <button className="w-5 h-5 rounded text-slate-400 hover:text-rose-600 grid place-items-center" title="Delete edge" onClick={props.onRemove}>
+            <X size={11} />
           </button>
         </>
       )}

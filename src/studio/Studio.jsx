@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeftRight, Check, Columns3, Diamond, Download, TriangleAlert, Undo2, X } from "lucide-react";
 import { LESSONS } from "../data/lessons.js";
 import { computeVerdict, edgeErrors, findCycles, parseConceptId, quizTagErrors } from "./model.js";
 import { rewriteConceptBlock, roundTrip, scanLessons, getConceptBlock } from "./serialize.js";
@@ -526,6 +527,7 @@ export default function Studio() {
   );
 
   const selectedNode = selection && selection.type === "node" ? doc.items[selection.id] : null;
+  const blocking = problems.quiz.length + problems.broken.length;
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden select-none" style={{ minWidth: 1080 }}>
@@ -541,12 +543,12 @@ export default function Studio() {
         </div>
         <div className="flex items-center gap-1.5 ml-auto flex-wrap">
           <GateBadge gate={gate} />
-          <ToolbarButton onClick={undo} disabled={!history.length} title="Ctrl+Z">↶ Undo</ToolbarButton>
-          <ToolbarButton onClick={applyColumnLayout} title="One lesson per column, order top to bottom">▤ Columns</ToolbarButton>
+          <ToolbarButton onClick={undo} disabled={!history.length} title="Ctrl+Z"><Undo2 size={13} /> Undo</ToolbarButton>
+          <ToolbarButton onClick={applyColumnLayout} title="One lesson per column, order top to bottom"><Columns3 size={13} /> Columns</ToolbarButton>
           <ToolbarButton onClick={function () { setMode(mode === "connect" ? "select" : "connect"); }} active={mode === "connect"} title="Click a user, then its teacher">
-            ⇄ Connect{mode === "connect" ? " ✓" : ""}
+            <ArrowLeftRight size={13} /> Connect{mode === "connect" ? <Check size={13} /> : ""}
           </ToolbarButton>
-          <ToolbarButton onClick={exportMergeFile} primary title="Download the file for npm run studio:merge">⬇ Export merge file</ToolbarButton>
+          <ToolbarButton onClick={exportMergeFile} primary title="Download the file for npm run studio:merge"><Download size={13} /> Export merge file</ToolbarButton>
           <ToolbarButton onClick={function () { download("concept-graph-backup.json", JSON.stringify(doc.graph, null, 2)); }} title="Graph metadata backup">Graph backup</ToolbarButton>
           <label className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
             Load backup
@@ -561,13 +563,16 @@ export default function Studio() {
       </header>
 
       <div className="status-shrink shrink-0 bg-[var(--paper)] border-b border-[var(--line)] px-4 py-1.5 text-xs text-slate-600 flex items-center gap-3 flex-wrap">
-        <span className={problems.quiz.length || problems.broken.length ? "text-rose-700 font-medium" : "text-emerald-700"}>
-          {problems.quiz.length + problems.broken.length === 0
-            ? "✓ quiz tags resolve"
-            : "✗ " + (problems.quiz.length + problems.broken.length) + " blocking problem(s)"}
+        <span className={(blocking ? "text-rose-700 font-medium" : "text-emerald-700") + " flex items-center gap-1"}>
+          {blocking === 0 ? <Check size={12} /> : <X size={12} />}
+          {blocking === 0 ? "quiz tags resolve" : blocking + " blocking problem(s)"}
         </span>
-        <span className="text-amber-700">⚠ {problems.forward.length} forward ref(s)</span>
-        <span className="text-amber-700">◆ {problems.orphan.length} orphan name(s)</span>
+        <span className="text-amber-700 flex items-center gap-1">
+          <TriangleAlert size={12} /> {problems.forward.length} forward ref(s)
+        </span>
+        <span className="text-amber-700 flex items-center gap-1">
+          <Diamond size={11} /> {problems.orphan.length} orphan name(s)
+        </span>
         <span className="text-slate-400">·</span>
         <span className="text-slate-500 flex-1 truncate">{status}</span>
       </div>
@@ -659,18 +664,18 @@ function GateBadge(props) {
   const gate = props.gate;
   if (gate.state === "ok") {
     return (
-      <span className="h-8 px-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center">
-        ✓ serializer gate
+      <span className="h-8 px-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center gap-1.5">
+        <Check size={12} /> serializer gate
       </span>
     );
   }
   if (gate.state === "failed") {
     return (
       <span
-        className="h-8 px-2.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold flex items-center"
+        className="h-8 px-2.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold flex items-center gap-1.5"
         title={gate.problems && gate.problems.map(function (p) { return p.reason; }).join("\n")}
       >
-        ✗ serializer gate — merge blocked
+        <X size={12} /> serializer gate — merge blocked
       </span>
     );
   }
@@ -695,7 +700,7 @@ function ToolbarButton(props) {
       title={props.title}
       disabled={props.disabled}
       className={
-        "h-8 px-3 rounded-lg text-xs font-semibold border transition " +
+        "h-8 px-3 rounded-lg text-xs font-semibold border transition inline-flex items-center justify-center gap-1.5 " +
         (props.primary
           ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
           : props.active
