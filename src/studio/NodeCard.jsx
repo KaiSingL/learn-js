@@ -36,7 +36,7 @@ export default function NodeCard(props) {
           )}
         </div>
         <h3 className="mt-1 font-semibold text-[13px] leading-snug line-clamp-2">{node.heading}</h3>
-        <p className="mt-auto text-[11px] text-slate-500 truncate">{node.purpose}</p>
+        <p className="mt-auto text-[11px] text-[color:var(--muted)] truncate">{node.purpose}</p>
       </div>
       <button
         aria-label={"Connect from " + node.heading}

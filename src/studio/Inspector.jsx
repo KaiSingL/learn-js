@@ -46,9 +46,9 @@ export default function Inspector(props) {
           </span>
           {override && <span className="text-[10px] text-slate-400">(override)</span>}
         </div>
-        <p className="text-[11px] text-slate-500 mt-1 leading-snug">{verdictInfo.hint}</p>
+        <p className="text-[11px] text-[color:var(--muted)] mt-1 leading-snug">{verdictInfo.hint}</p>
         <div className="mt-2 flex flex-wrap gap-1.5 items-center">
-          <span className="text-[11px] text-slate-500">{coreCount} core · {glossedCount} glossed</span>
+          <span className="text-[11px] text-[color:var(--muted)]">{coreCount} core · {glossedCount} glossed</span>
           <select
             className="ml-auto text-[11px] text-slate-700 border border-slate-200 rounded-md px-1.5 py-1 bg-white"
             value={override || ""}
@@ -127,7 +127,7 @@ export default function Inspector(props) {
 
       {tab === "names" && (
         <div className="mt-3">
-          <p className="text-[11px] text-slate-500 leading-snug mb-2">
+          <p className="text-[11px] text-[color:var(--muted)] leading-snug mb-2">
             Mark every name this section introduces. <b>Core</b> = a genuinely new idea it teaches.{" "}
             <b>Glossed</b> = rides along with a one-line explanation and gets its real treatment later.
           </p>
@@ -175,7 +175,7 @@ export default function Inspector(props) {
 
       {tab === "preview" && (
         <div className="mt-3">
-          <p className="text-[11px] text-slate-500 mb-1.5">
+          <p className="text-[11px] text-[color:var(--muted)] mb-1.5">
             {props.canPreviewReal
               ? "Exactly what the merge writes for this concept (check & diagram verbatim):"
               : "Field summary (raw source not available in this build):"}
@@ -190,7 +190,7 @@ export default function Inspector(props) {
 function Field(props) {
   return (
     <label className="block">
-      <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+      <span className="block text-[10px] font-bold uppercase tracking-wider text-[color:var(--muted)] mb-1">
         {props.label}
         {props.hint && <span className="ml-1.5 font-medium normal-case tracking-normal text-slate-400">{props.hint}</span>}
       </span>
@@ -260,7 +260,7 @@ function NameEditor(props) {
           onChange={function (e) { setDraft(e.target.value); }}
           onKeyDown={function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } }}
         />
-        <label className="flex items-center gap-1 text-[11px] text-slate-500 whitespace-nowrap">
+        <label className="flex items-center gap-1 text-[11px] text-[color:var(--muted)] whitespace-nowrap">
           <input type="checkbox" checked={glossedDraft} onChange={function (e) { setGlossedDraft(e.target.checked); }} />
           glossed
         </label>

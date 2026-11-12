@@ -37,7 +37,7 @@ export default function LessonBlock(props) {
         </span>
       </div>
       <button
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[var(--paper)] border text-slate-500 hover:text-indigo-700 hover:border-indigo-300 whitespace-nowrap shadow-sm"
+        className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[var(--paper)] border text-[color:var(--muted)] hover:text-indigo-700 hover:border-indigo-300 whitespace-nowrap shadow-sm"
         style={{ borderColor: border }}
         onPointerDown={function (e) { e.stopPropagation(); }}
         onClick={function (e) { e.stopPropagation(); props.onToggleCollapse(); }}

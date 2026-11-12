@@ -536,7 +536,7 @@ export default function Studio() {
           <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white grid place-items-center font-bold font-display">CS</div>
           <div className="min-w-0">
             <h1 className="font-display text-lg font-bold leading-none tracking-tight">Concept Studio</h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-[color:var(--muted)] mt-0.5">
               14 lessons · {flat.length} concepts · dev tool — edits go through the merge CLI
             </p>
           </div>
@@ -562,7 +562,7 @@ export default function Studio() {
         </div>
       </header>
 
-      <div className="status-shrink shrink-0 bg-[var(--paper)] border-b border-[var(--line)] px-4 py-1.5 text-xs text-slate-600 flex items-center gap-3 flex-wrap">
+      <div className="status-shrink shrink-0 bg-[var(--paper)] border-b border-[var(--line)] px-4 py-1.5 text-xs text-[color:var(--muted)] flex items-center gap-3 flex-wrap">
         <span className={(blocking ? "text-rose-700 font-medium" : "text-emerald-700") + " flex items-center gap-1"}>
           {blocking === 0 ? <Check size={12} /> : <X size={12} />}
           {blocking === 0 ? "quiz tags resolve" : blocking + " blocking problem(s)"}
@@ -574,7 +574,7 @@ export default function Studio() {
           <Diamond size={11} /> {problems.orphan.length} orphan name(s)
         </span>
         <span className="text-slate-400">·</span>
-        <span className="text-slate-500 flex-1 truncate">{status}</span>
+        <span className="text-[color:var(--muted)] flex-1 truncate">{status}</span>
       </div>
 
       <div className="flex-1 flex min-h-0">
@@ -606,13 +606,13 @@ export default function Studio() {
         <aside className="w-[350px] shrink-0 bg-[var(--paper)] border-l border-[var(--line)] flex flex-col min-h-0">
           <div className="flex border-b border-[var(--line)] shrink-0">
             <button
-              className={"flex-1 py-2 text-xs font-semibold " + (panel === "inspector" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}
+              className={"flex-1 py-2 text-xs font-semibold " + (panel === "inspector" ? "bg-slate-900 text-white" : "text-[color:var(--muted)] hover:bg-slate-50 hover:text-slate-600")}
               onClick={function () { setPanel("inspector"); }}
             >
               Inspector
             </button>
             <button
-              className={"flex-1 py-2 text-xs font-semibold " + (panel === "checks" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}
+              className={"flex-1 py-2 text-xs font-semibold " + (panel === "checks" ? "bg-slate-900 text-white" : "text-[color:var(--muted)] hover:bg-slate-50 hover:text-slate-600")}
               onClick={function () { setPanel("checks"); }}
             >
               Discipline check
@@ -716,8 +716,8 @@ function ToolbarButton(props) {
 
 function EmptyInspector() {
   return (
-    <div className="text-xs text-slate-500 leading-relaxed">
-      <p className="font-semibold text-sm text-slate-700 mb-2">Nothing selected</p>
+    <div className="text-xs text-[color:var(--muted)] leading-relaxed">
+      <p className="font-semibold text-sm text-[color:var(--ink)] mb-2">Nothing selected</p>
       <p className="mb-2">Click a concept card or an edge on the canvas, or a row in the outline.</p>
       <ul className="list-disc pl-4 space-y-1">
         <li>Drag a card's <b>+</b> handle onto its teacher to record a "uses" edge.</li>

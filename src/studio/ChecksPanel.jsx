@@ -17,7 +17,7 @@ export default function ChecksPanel(props) {
     <div className="text-sm space-y-4">
       <div>
         <h2 className="font-display text-xl font-bold">Discipline check</h2>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="text-[11px] text-[color:var(--muted)] mt-0.5">
           One concept = one new idea ({all} concepts across {lessons.length} lessons)
         </p>
       </div>
